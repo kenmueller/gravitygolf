@@ -13,6 +13,15 @@
 	export let url: URL
 </script>
 
+<svelte:head>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" />
+	<link
+		rel="stylesheet"
+		href="https://fonts.googleapis.com/css2?family=Kdam+Thmor+Pro&display=swap"
+	/>
+</svelte:head>
+
 {#key url}
 	<div in:blur={{ duration, delay: duration }} out:blur={{ duration }}>
 		<slot />
@@ -26,8 +35,9 @@
 		box-sizing: border-box;
 		margin: 0;
 		padding: 0;
-		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-			Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+		font-family: 'Kdam Thmor Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+			Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
+			sans-serif;
 		border: none;
 		outline: none;
 	}
@@ -36,5 +46,10 @@
 	body,
 	div {
 		height: 100%;
+	}
+
+	body {
+		overflow: hidden;
+		background: colors.$gray;
 	}
 </style>
