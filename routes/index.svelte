@@ -40,7 +40,6 @@
 		}
 
 		> :global(svg) {
-			display: block;
 			width: 4rem;
 			transform: translateX(0.1rem);
 		}

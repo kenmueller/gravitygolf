@@ -20,6 +20,7 @@
 
 	import levels from '$lib/level/levels.json'
 	import BackLink from '../../components/Link/Back.svelte'
+	import Reset from '../../images/Reset.svelte'
 
 	export let id: number
 
@@ -45,25 +46,49 @@
 </svelte:head>
 
 <main>
+	<header>
+		<BackLink href="/levels">
+			Level {id} | Gravity Golf
+		</BackLink>
+		<button>
+			<Reset />
+		</button>
+	</header>
 	<canvas
 		bind:this={canvas}
 		width={size && scale && Math.floor(size[0] * scale)}
 		height={size && scale && Math.floor(size[1] * scale)}
 		style={size && `width: ${size[0]}px; height: ${size[1]}px;`}
 	/>
-	<BackLink href="/levels">
-		Level {id} | Gravity Golf
-	</BackLink>
 </main>
 
 <style lang="scss">
 	main {
 		position: relative;
+		height: 100%;
+	}
 
-		> :global(a) {
-			position: absolute;
-			top: 1rem;
-			left: 1rem;
+	header {
+		display: flex;
+		align-items: center;
+		position: absolute;
+		top: 1rem;
+		left: 1rem;
+		right: 1rem;
+		z-index: 100;
+	}
+
+	button {
+		margin-left: auto;
+		color: rgba(white, 0.7);
+		transition: color 0.3s;
+
+		&:hover {
+			color: white;
+		}
+
+		> :global(svg) {
+			width: 1.5rem;
 		}
 	}
 </style>

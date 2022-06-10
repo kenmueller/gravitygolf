@@ -48,4 +48,17 @@
 		overflow: hidden;
 		background: colors.$gray;
 	}
+
+	button {
+		cursor: pointer;
+		background: none;
+
+		&:disabled {
+			cursor: default;
+		}
+	}
+
+	svg {
+		display: block;
+	}
 </style>

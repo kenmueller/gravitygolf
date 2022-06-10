@@ -22,7 +22,7 @@
 		}
 
 		> :global(svg) {
-			display: block;
+			margin: -0.5rem 0 -0.5rem -0.7rem;
 			width: 2.5rem;
 		}
 	}
