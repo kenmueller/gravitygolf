@@ -6,9 +6,8 @@
 
 <script lang="ts">
 	import type { Load } from '@sveltejs/kit'
-	import { blur } from 'svelte/transition'
 
-	const duration = 500
+	import PageTransition from '../components/Transition/Page.svelte'
 
 	export let url: URL
 </script>
@@ -22,11 +21,9 @@
 	/>
 </svelte:head>
 
-{#key url}
-	<div in:blur={{ duration, delay: duration }} out:blur={{ duration }}>
-		<slot />
-	</div>
-{/key}
+<PageTransition {url}>
+	<slot />
+</PageTransition>
 
 <style lang="scss" global>
 	*,
@@ -43,8 +40,7 @@
 	}
 
 	html,
-	body,
-	div {
+	body {
 		height: 100%;
 	}
 

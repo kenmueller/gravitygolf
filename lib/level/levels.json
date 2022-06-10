@@ -1,0 +1,226 @@
+[
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	},
+	{
+		"gravity": 1,
+		"antigravity": 1,
+		"puck": [200, 500],
+		"hole": [800, 500],
+		"walls": [[500, 500, 50, 300]]
+	}
+]
