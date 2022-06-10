@@ -1,7 +1,7 @@
 <script lang="ts">
 	import levels from '$lib/level/levels.json'
 	import Level from '../../components/Levels/Level.svelte'
-	import Back from '../../images/Back.svelte'
+	import BackLink from '../../components/Link/Back.svelte'
 </script>
 
 <svelte:head>
@@ -10,10 +10,7 @@
 
 <main>
 	<header>
-		<a href="/">
-			<Back />
-			Gravity Golf
-		</a>
+		<BackLink href="/" />
 	</header>
 	<div>
 		{#each levels as _level, index}
@@ -41,23 +38,6 @@
 	header {
 		display: flex;
 		align-items: center;
-	}
-
-	a {
-		display: flex;
-		align-items: center;
-		text-decoration: none;
-		color: rgba(white, 0.7);
-		transition: color 0.3s;
-
-		&:hover {
-			color: white;
-		}
-
-		> :global(svg) {
-			display: block;
-			width: 2.5rem;
-		}
 	}
 
 	div {
