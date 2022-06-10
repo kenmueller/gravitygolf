@@ -41,7 +41,7 @@
 <svelte:window on:resize={onResize} />
 
 <svelte:head>
-	<title>Level {id}</title>
+	<title>Level {id} | Gravity Golf</title>
 </svelte:head>
 
 <main>
@@ -51,7 +51,9 @@
 		height={size && scale && Math.floor(size[1] * scale)}
 		style={size && `width: ${size[0]}px; height: ${size[1]}px;`}
 	/>
-	<BackLink href="/levels" />
+	<BackLink href="/levels">
+		Level {id} | Gravity Golf
+	</BackLink>
 </main>
 
 <style lang="scss">

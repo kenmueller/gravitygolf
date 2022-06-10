@@ -6,7 +6,7 @@
 
 <a {href}>
 	<Back />
-	Gravity Golf
+	<slot />
 </a>
 
 <style lang="scss">

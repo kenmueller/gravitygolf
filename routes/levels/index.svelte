@@ -10,7 +10,7 @@
 
 <main>
 	<header>
-		<BackLink href="/" />
+		<BackLink href="/">Levels | Gravity Golf</BackLink>
 	</header>
 	<div>
 		{#each levels as _level, index}
