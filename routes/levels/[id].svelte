@@ -15,12 +15,15 @@
 
 <script lang="ts">
 	import type { Load } from '@sveltejs/kit'
+	import { onDestroy } from 'svelte'
 
 	import { browser } from '$app/env'
 
 	import levels from '$lib/level/levels.json'
+	import Scene from '$lib/scene'
 	import BackLink from '../../components/Link/Back.svelte'
 	import Reset from '../../images/Reset.svelte'
+	import Trash from '../../images/Trash.svelte'
 
 	export let id: number
 
@@ -34,9 +37,15 @@
 	$: scale = browser ? window.devicePixelRatio : null
 	$: scale && context?.scale(scale, scale)
 
+	$: scene = canvas && context && new Scene(canvas, context, levels[id - 1])
+
 	const onResize = () => {
 		size = [window.innerWidth, window.innerHeight]
 	}
+
+	onDestroy(() => {
+		scene?.destroy()
+	})
 </script>
 
 <svelte:window on:resize={onResize} />
@@ -50,8 +59,11 @@
 		<BackLink href="/levels">
 			Level {id} | Gravity Golf
 		</BackLink>
-		<button>
+		<button class="reset" disabled={!scene} on:click={() => scene?.reset()}>
 			<Reset />
+		</button>
+		<button class="clear" disabled={!scene} on:click={() => scene?.clear()}>
+			<Trash />
 		</button>
 	</header>
 	<canvas
@@ -79,7 +91,6 @@
 	}
 
 	button {
-		margin-left: auto;
 		color: rgba(white, 0.7);
 		transition: color 0.3s;
 
@@ -90,5 +101,13 @@
 		> :global(svg) {
 			width: 1.5rem;
 		}
+	}
+
+	.reset {
+		margin-left: auto;
+	}
+
+	.clear {
+		margin-left: 1rem;
 	}
 </style>
