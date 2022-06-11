@@ -1,5 +1,7 @@
-import type levels from './levels.json'
-
-type Level = typeof levels[number]
-
-export default Level
+export default interface Level {
+	gravity: number
+	antigravity: number
+	ball: [number, number, number]
+	hole: [number, number, number]
+	walls: [number, number, number, number][]
+}

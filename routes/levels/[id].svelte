@@ -17,10 +17,9 @@
 	import type { Load } from '@sveltejs/kit'
 	import { onDestroy } from 'svelte'
 
-	import { browser } from '$app/env'
-
-	import levels from '$lib/level/levels.json'
+	import type Level from '$lib/level'
 	import Scene from '$lib/scene'
+	import levels from '$lib/level/levels.json'
 	import BackLink from '../../components/Link/Back.svelte'
 	import Reset from '../../images/Reset.svelte'
 	import Trash from '../../images/Trash.svelte'
@@ -28,27 +27,15 @@
 	export let id: number
 
 	let canvas: HTMLCanvasElement | null = null
-	$: context = canvas && canvas.getContext('2d')
+	$: context = canvas?.getContext('2d')
 
-	let size: [number, number] | null = browser
-		? [window.innerWidth, window.innerHeight]
-		: null
-
-	$: scale = browser ? window.devicePixelRatio : null
-	$: scale && context?.scale(scale, scale)
-
-	$: scene = canvas && context && new Scene(canvas, context, levels[id - 1])
-
-	const onResize = () => {
-		size = [window.innerWidth, window.innerHeight]
-	}
+	$: scene =
+		canvas && context && new Scene(canvas, context, levels[id - 1] as Level)
 
 	onDestroy(() => {
 		scene?.destroy()
 	})
 </script>
-
-<svelte:window on:resize={onResize} />
 
 <svelte:head>
 	<title>Level {id} | Gravity Golf</title>
@@ -60,18 +47,14 @@
 			Level {id} | Gravity Golf
 		</BackLink>
 		<button class="reset" disabled={!scene} on:click={() => scene?.reset()}>
+			<span>Press SPACE BAR to restart</span>
 			<Reset />
 		</button>
 		<button class="clear" disabled={!scene} on:click={() => scene?.clear()}>
 			<Trash />
 		</button>
 	</header>
-	<canvas
-		bind:this={canvas}
-		width={size && scale && Math.floor(size[0] * scale)}
-		height={size && scale && Math.floor(size[1] * scale)}
-		style={size && `width: ${size[0]}px; height: ${size[1]}px;`}
-	/>
+	<canvas bind:this={canvas} />
 </main>
 
 <style lang="scss">
@@ -88,6 +71,11 @@
 		left: 1rem;
 		right: 1rem;
 		z-index: 100;
+		pointer-events: none;
+
+		> :global(*) {
+			pointer-events: all;
+		}
 	}
 
 	button {
@@ -104,7 +92,13 @@
 	}
 
 	.reset {
+		display: flex;
+		align-items: center;
 		margin-left: auto;
+
+		> :global(svg) {
+			margin-left: 0.7rem;
+		}
 	}
 
 	.clear {
