@@ -67,6 +67,8 @@ export default class Scene {
 		this.canvas.addEventListener('mousemove', this.move)
 		this.canvas.addEventListener('mouseup', this.up)
 
+		this.canvas.addEventListener('contextmenu', this.rightClick)
+
 		this.frame = requestAnimationFrame(this.tick)
 	}
 
@@ -241,15 +243,10 @@ export default class Scene {
 			this.mouseCurrent.y = mouse.y
 		}
 
-		this.canvas.style.cursor = this.forces.some(
-			force =>
-				distance(normalizeCircle(force, this.canvas), mouse) <= FORCE_RADIUS
-		)
-			? 'move'
-			: ''
+		this.updateCursor(mouse)
 	}
 
-	private readonly up = ({ offsetX, offsetY }: MouseEvent) => {
+	private readonly up = ({ offsetX, offsetY, button }: MouseEvent) => {
 		if (this.hit || !this.mouseStart) return
 
 		const scale = window.devicePixelRatio
@@ -259,7 +256,16 @@ export default class Scene {
 			y: Math.floor(offsetY * scale)
 		}
 
-		if (mouse.x === this.mouseStart.x && mouse.y === this.mouseStart.y) {
+		if (button === 2) {
+			const index = this.mouseCurrent
+				? this.forces.indexOf(this.mouseCurrent.force)
+				: -1
+
+			if (index >= 0) {
+				this.forces.splice(index, 1)
+				this.updateCursor(mouse)
+			}
+		} else if (mouse.x === this.mouseStart.x && mouse.y === this.mouseStart.y) {
 			this.hit = true
 
 			const normalizedBall = normalizeCircle(this.ball, this.canvas)
@@ -274,11 +280,22 @@ export default class Scene {
 
 			this.ball.vx = x
 			this.ball.vy = y
-		} else if (this.mouseCurrent) {
-			this.mouseCurrent = null
 		}
 
-		this.mouseStart = null
+		this.mouseStart = this.mouseCurrent = null
+	}
+
+	private readonly rightClick = (event: MouseEvent) => {
+		event.preventDefault()
+	}
+
+	private readonly updateCursor = (mouse: { x: number; y: number }) => {
+		this.canvas.style.cursor = this.forces.some(
+			force =>
+				distance(normalizeCircle(force, this.canvas), mouse) <= FORCE_RADIUS
+		)
+			? 'move'
+			: ''
 	}
 
 	private readonly key = ({ key }: KeyboardEvent) => {
