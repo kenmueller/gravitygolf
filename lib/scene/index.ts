@@ -210,23 +210,21 @@ export default class Scene {
 
 		const scale = window.devicePixelRatio
 
-		this.mouseStart = {
+		const mouse = (this.mouseStart = {
 			x: Math.floor(offsetX * scale),
 			y: Math.floor(offsetY * scale)
-		}
+		})
 
-		for (const force of this.forces)
-			if (
-				distance(normalizeCircle(force, this.canvas), this.mouseStart) <=
-				FORCE_RADIUS
-			) {
-				this.mouseCurrent = { ...this.mouseStart, force }
-				break
-			}
+		const force = this.forces.find(
+			force =>
+				distance(normalizeCircle(force, this.canvas), mouse) <= FORCE_RADIUS
+		)
+
+		if (force) this.mouseCurrent = { ...mouse, force }
 	}
 
 	private readonly move = ({ offsetX, offsetY }: MouseEvent) => {
-		if (this.hit || !this.mouseCurrent) return
+		if (this.hit) return
 
 		const scale = window.devicePixelRatio
 
@@ -235,11 +233,20 @@ export default class Scene {
 			y: Math.floor(offsetY * scale)
 		}
 
-		this.mouseCurrent.force.x += mouse.x - this.mouseCurrent.x
-		this.mouseCurrent.force.y -= mouse.y - this.mouseCurrent.y
+		if (this.mouseCurrent) {
+			this.mouseCurrent.force.x += mouse.x - this.mouseCurrent.x
+			this.mouseCurrent.force.y -= mouse.y - this.mouseCurrent.y
 
-		this.mouseCurrent.x = mouse.x
-		this.mouseCurrent.y = mouse.y
+			this.mouseCurrent.x = mouse.x
+			this.mouseCurrent.y = mouse.y
+		}
+
+		this.canvas.style.cursor = this.forces.some(
+			force =>
+				distance(normalizeCircle(force, this.canvas), mouse) <= FORCE_RADIUS
+		)
+			? 'move'
+			: ''
 	}
 
 	private readonly up = ({ offsetX, offsetY }: MouseEvent) => {
