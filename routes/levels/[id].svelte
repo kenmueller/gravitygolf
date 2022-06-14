@@ -30,7 +30,9 @@
 	$: context = canvas?.getContext('2d')
 
 	$: scene =
-		canvas && context && new Scene(canvas, context, levels[id - 1] as Level)
+		canvas &&
+		context &&
+		new Scene(canvas, context, { id, ...(levels[id - 1] as Level) })
 
 	onDestroy(() => {
 		scene?.destroy()
@@ -46,6 +48,10 @@
 		<BackLink href="/levels">
 			Level {id} | Gravity Golf
 		</BackLink>
+		<div>
+			<span data-remaining="2" />
+			<span data-remaining="2" />
+		</div>
 		<button class="reset" disabled={!scene} on:click={() => scene?.reset()}>
 			<span>Press SPACE BAR to restart</span>
 			<Reset />

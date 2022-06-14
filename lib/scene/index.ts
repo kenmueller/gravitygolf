@@ -1,22 +1,33 @@
+import { goto } from '$app/navigation'
+
 import type Level from '$lib/level'
 import type Ball from './ball'
 import type Hole from './hole'
 import type Wall from './wall'
 import type Force from './force'
+import levels from '../level/levels.json'
 import distance from './distance'
 import clear from './clear'
 import normalizeCircle from './normalize/circle'
 import normalizeRectangle from './normalize/rectangle'
-// import collision from './collision'
+import collision from './collision'
 import scale from './transform/scale'
 import resize from './transform/resize'
 import distanceSquared from './distance/squared'
 import splitHypotenuse from './split/hypotenuse'
 import clamp from './clamp'
 
+const FORCE_RADIUS = 30
+
+const MAX_DISTANCE = 800
+const MAX_VELOCITY = 500
+
 export default class Scene {
 	private previousTime: number | null = null
 	private frame: number | null = null
+
+	private mouseStart: { x: number; y: number } | null = null
+	private mouseCurrent: { x: number; y: number; force: Force } | null = null
 
 	private hit = false
 
@@ -28,7 +39,7 @@ export default class Scene {
 	constructor(
 		private readonly canvas: HTMLCanvasElement,
 		private readonly context: CanvasRenderingContext2D,
-		private readonly level: Level
+		private readonly level: Level & { id: number }
 	) {
 		this.clear()
 
@@ -50,9 +61,11 @@ export default class Scene {
 		this.resize()
 		window.addEventListener('resize', this.resize)
 
-		this.canvas.addEventListener('mouseup', this.click)
-
 		document.addEventListener('keydown', this.key)
+
+		this.canvas.addEventListener('mousedown', this.down)
+		this.canvas.addEventListener('mousemove', this.move)
+		this.canvas.addEventListener('mouseup', this.up)
 
 		this.frame = requestAnimationFrame(this.tick)
 	}
@@ -75,25 +88,36 @@ export default class Scene {
 					normalizeCircle(this.hole, this.canvas)
 				) <=
 				this.hole.radius - this.ball.radius
-			)
-				return alert('Congratulations!')
+			) {
+				alert('Congratulations!')
 
-			// loop: for (const wall of this.walls)
-			// 	switch (
-			// 		collision(
-			// 			normalizeCircle(this.ball, this.canvas),
-			// 			normalizeRectangle(wall, this.canvas)
-			// 		)
-			// 	) {
-			// 		case null:
-			// 			break
-			// 		case 'horizontal':
-			// 			this.ball.vx = -this.ball.vx
-			// 			break loop
-			// 		case 'vertical':
-			// 			this.ball.vy = -this.ball.vy
-			// 			break loop
-			// 	}
+				const lastLevel = this.level.id === levels.length
+				const suffix = lastLevel ? '' : `/${this.level.id + 1}`
+
+				goto(`/levels${suffix}`).catch(({ message }) => alert(message))
+
+				return
+			}
+
+			for (const wall of this.walls) {
+				const angle = collision(
+					normalizeCircle(this.ball, this.canvas),
+					normalizeRectangle(wall, this.canvas)
+				)
+
+				if (angle !== null) {
+					const v = Math.atan2(-this.ball.vy, this.ball.vx)
+
+					const bounceAngle = 2 * angle - v + Math.PI
+					const speed = Math.sqrt(this.ball.vy ** 2 + this.ball.vx ** 2)
+
+					this.ball.vy = -Math.sin(bounceAngle) * speed
+					this.ball.vx = Math.cos(bounceAngle) * speed
+
+					// console.log('hit', angle, v, bounceAngle, speed, this.ball)
+					// return
+				}
+			}
 
 			for (const force of this.forces) {
 				const rSquared = distanceSquared(
@@ -172,7 +196,7 @@ export default class Scene {
 			this.context.beginPath()
 
 			const { x, y } = normalizeCircle(force, this.canvas)
-			this.context.arc(x, y, 30, 0, 2 * Math.PI)
+			this.context.arc(x, y, FORCE_RADIUS, 0, 2 * Math.PI)
 
 			this.context.fillStyle = force.direction === 1 ? 'gold' : 'gray'
 			this.context.fill()
@@ -181,12 +205,28 @@ export default class Scene {
 		this.frame = requestAnimationFrame(this.tick)
 	}
 
-	private readonly click = ({ offsetX, offsetY }: MouseEvent) => {
+	private readonly down = ({ offsetX, offsetY }: MouseEvent) => {
 		if (this.hit) return
-		this.hit = true
 
-		const MAX_DISTANCE = 800
-		const MAX_VELOCITY = 500
+		const scale = window.devicePixelRatio
+
+		this.mouseStart = {
+			x: Math.floor(offsetX * scale),
+			y: Math.floor(offsetY * scale)
+		}
+
+		for (const force of this.forces)
+			if (
+				distance(normalizeCircle(force, this.canvas), this.mouseStart) <=
+				FORCE_RADIUS
+			) {
+				this.mouseCurrent = { ...this.mouseStart, force }
+				break
+			}
+	}
+
+	private readonly move = ({ offsetX, offsetY }: MouseEvent) => {
+		if (this.hit || !this.mouseCurrent) return
 
 		const scale = window.devicePixelRatio
 
@@ -195,18 +235,43 @@ export default class Scene {
 			y: Math.floor(offsetY * scale)
 		}
 
-		const normalizedBall = normalizeCircle(this.ball, this.canvas)
-		const distanceFactor = distance(mouse, normalizedBall)
+		this.mouseCurrent.force.x += mouse.x - this.mouseCurrent.x
+		this.mouseCurrent.force.y -= mouse.y - this.mouseCurrent.y
 
-		const { x, y } = splitHypotenuse(
-			mouse,
-			normalizedBall,
-			distanceFactor,
-			Math.min(distanceFactor / MAX_DISTANCE, 1) * MAX_VELOCITY
-		)
+		this.mouseCurrent.x = mouse.x
+		this.mouseCurrent.y = mouse.y
+	}
 
-		this.ball.vx = x
-		this.ball.vy = y
+	private readonly up = ({ offsetX, offsetY }: MouseEvent) => {
+		if (this.hit || !this.mouseStart) return
+
+		const scale = window.devicePixelRatio
+
+		const mouse = {
+			x: Math.floor(offsetX * scale),
+			y: Math.floor(offsetY * scale)
+		}
+
+		if (mouse.x === this.mouseStart.x && mouse.y === this.mouseStart.y) {
+			this.hit = true
+
+			const normalizedBall = normalizeCircle(this.ball, this.canvas)
+			const distanceFactor = distance(mouse, normalizedBall)
+
+			const { x, y } = splitHypotenuse(
+				mouse,
+				normalizedBall,
+				distanceFactor,
+				Math.min(distanceFactor / MAX_DISTANCE, 1) * MAX_VELOCITY
+			)
+
+			this.ball.vx = x
+			this.ball.vy = y
+		} else if (this.mouseCurrent) {
+			this.mouseCurrent = null
+		}
+
+		this.mouseStart = null
 	}
 
 	private readonly key = ({ key }: KeyboardEvent) => {
@@ -232,8 +297,11 @@ export default class Scene {
 
 	readonly destroy = () => {
 		window.removeEventListener('resize', this.resize)
-		this.canvas.removeEventListener('mouseup', this.click)
 		document.removeEventListener('keydown', this.key)
+
+		this.canvas.removeEventListener('mousedown', this.down)
+		this.canvas.removeEventListener('mousemove', this.move)
+		this.canvas.removeEventListener('mouseup', this.up)
 
 		if (this.frame) cancelAnimationFrame(this.frame)
 	}

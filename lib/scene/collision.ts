@@ -1,4 +1,4 @@
-import distance from "./distance";
+import distance from './distance'
 
 const likelyDirection = (
 	left: number,
@@ -13,12 +13,11 @@ const likelyDirection = (
 		: top < bottom
 		? (3 * Math.PI) / 2
 		: Math.PI / 2
+
 const collision = (
 	circle: { x: number; y: number; radius: number },
 	rectangle: { x: number; y: number; width: number; height: number }
 ) => {
-	// const halfWidth = rectangle.width / 2
-	// const halfHeight = rectangle.height / 2
 	const circleRight = circle.x + circle.radius
 	const circleLeft = circle.x - circle.radius
 	const circleBottom = circle.y + circle.radius
@@ -28,46 +27,52 @@ const collision = (
 
 	const leftDiff = circleRight - rectangle.x
 	const rightDiff = rectRight - circleLeft
-	const topDiff = circleTop - rectangle.y
-	const bottomDiff = rectBottom - circleBottom
-	// if (
-	// 	circle.x + circle.radius < rectangle.x ||
-	// 	circle.x - circle.radius > rectangle.x + rectangle.width ||
-	// 	circle.y + circle.radius < rectangle.y ||
-	// 	circle.y - circle.radius > rectangle.y + rectangle.height
-	// )
-	// 	return null
+	const topDiff = circleBottom - rectangle.y
+	const bottomDiff = rectBottom - circleTop
+
+	// Most of the time there's no collision so first see if there's possibly a collision
 
 	if (leftDiff < 0 || rightDiff < 0 || topDiff < 0 || bottomDiff < 0)
 		return null
+	// Next see if there's a collision on a side
 
+	// console.log(
+	// 	'collision',
+	// 	circle,
+	// 	rectangle,
+	// 	leftDiff,
+	// 	rightDiff,
+	// 	topDiff,
+	// 	bottomDiff,
+	// 	rectBottom
+	// )
 	if (
 		(leftDiff >= 0 &&
 			rightDiff >= 0 &&
-			circle.y > rectangle.y &&
-			circle.y < rectBottom) ||
+			circle.y >= rectangle.y &&
+			circle.y <= rectBottom) ||
 		(topDiff >= 0 &&
 			bottomDiff >= 0 &&
-			circle.x > rectangle.x &&
-			circle.x < rectRight)
+			circle.x >= rectangle.x &&
+			circle.x <= rectRight)
 	)
 		return likelyDirection(leftDiff, rightDiff, topDiff, bottomDiff)
-	
+
+	// Finally check if the collision is on a corner
+
 	if (distance(circle, rectangle) <= circle.radius)
+		return Math.atan2(circle.y - rectangle.y, rectangle.x - circle.x)
 
-	// const distX = Math.abs(circle.x - rectangle.x - rectangle.width / 2)
-	// const distY = Math.abs(circle.y - rectangle.y - rectangle.height / 2)
+	if (distance(circle, { x: rectRight, y: rectangle.y }) <= circle.radius)
+		return Math.atan2(circle.y - rectangle.y, rectRight - circle.x)
 
-	// if (distX > rectangle.width / 2 + circle.radius) return null
-	// if (distY > rectangle.height / 2 + circle.radius) return null
+	if (distance(circle, { x: rectangle.x, y: rectBottom }) <= circle.radius)
+		return Math.atan2(circle.y - rectBottom, rectangle.x - circle.x)
 
-	// if (distX <= rectangle.width / 2) return 'horizontal'
-	// if (distY <= rectangle.height / 2) return 'vertical'
+	if (distance(circle, { x: rectRight, y: rectBottom }) <= circle.radius)
+		return Math.atan2(circle.y - rectBottom, rectRight - circle.x)
 
-	// const deltaX = distX - rectangle.width / 2
-	// const deltaY = distY - rectangle.height / 2
-
-	// return deltaX ** 2 + deltaY ** 2 <= circle.radius ** 2
+	return null
 }
 
 export default collision
