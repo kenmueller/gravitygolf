@@ -34,18 +34,9 @@ const collision = (
 
 	if (leftDiff < 0 || rightDiff < 0 || topDiff < 0 || bottomDiff < 0)
 		return null
+
 	// Next see if there's a collision on a side
 
-	// console.log(
-	// 	'collision',
-	// 	circle,
-	// 	rectangle,
-	// 	leftDiff,
-	// 	rightDiff,
-	// 	topDiff,
-	// 	bottomDiff,
-	// 	rectBottom
-	// )
 	if (
 		(leftDiff >= 0 &&
 			rightDiff >= 0 &&
