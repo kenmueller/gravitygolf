@@ -20,19 +20,18 @@
 	import type Level from '$lib/level'
 	import Scene from '$lib/scene'
 	import levels from '$lib/level/levels.json'
+	import draggable from '$lib/draggable'
 	import BackLink from '../../components/Link/Back.svelte'
 	import Reset from '../../images/Reset.svelte'
 	import Trash from '../../images/Trash.svelte'
 
 	export let id: number
+	$: level = levels[id - 1] as Level
 
 	let canvas: HTMLCanvasElement | null = null
 	$: context = canvas?.getContext('2d')
 
-	$: scene =
-		canvas &&
-		context &&
-		new Scene(canvas, context, { id, ...(levels[id - 1] as Level) })
+	$: scene = canvas && context && new Scene(canvas, context, { id, ...level })
 
 	onDestroy(() => {
 		scene?.destroy()
@@ -49,8 +48,8 @@
 			Level {id} | Gravity Golf
 		</BackLink>
 		<div>
-			<span data-remaining="2" />
-			<span data-remaining="2" />
+			<span use:draggable={console.log} data-remaining="2" />
+			<span use:draggable={console.log} data-remaining="2" />
 		</div>
 		<button class="reset" disabled={!scene} on:click={() => scene?.reset()}>
 			<span>Press SPACE BAR to restart</span>
@@ -67,6 +66,7 @@
 	main {
 		position: relative;
 		height: 100%;
+		user-select: none;
 	}
 
 	header {
@@ -82,6 +82,17 @@
 		> :global(*) {
 			pointer-events: all;
 		}
+	}
+
+	[data-remaining] {
+		$size: 40px;
+
+		cursor: move;
+		display: inline-block;
+		width: $size;
+		height: $size;
+		background: blue;
+		border-radius: 50%;
 	}
 
 	button {
