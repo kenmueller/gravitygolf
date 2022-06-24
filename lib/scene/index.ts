@@ -5,7 +5,7 @@ import type Ball from './ball'
 import type Hole from './hole'
 import type Wall from './wall'
 import type Force from './force'
-import levels from '../level/levels.json'
+import levels from '$lib/level/levels.json'
 import distance from './distance'
 import clear from './clear'
 import normalizeCircle from './normalize/circle'
@@ -16,6 +16,12 @@ import resize from './transform/resize'
 import distanceSquared from './distance/squared'
 import splitHypotenuse from './split/hypotenuse'
 import clamp from './clamp'
+import useImage from '$lib/image/use'
+
+import ballImage from '../../images/ball.png'
+import holeImage from '../../images/ball.png'
+import gravityImage from '../../images/ball.png'
+import antigravityImage from '../../images/ball.png'
 
 const FORCE_RADIUS = 30
 
@@ -46,7 +52,8 @@ export default class Scene {
 		this.hole = {
 			x: this.level.hole[0],
 			y: this.level.hole[1],
-			radius: this.level.hole[2]
+			radius: this.level.hole[2],
+			image: useImage(holeImage)
 		}
 
 		this.walls = this.level.walls.map(wall => ({
@@ -146,62 +153,53 @@ export default class Scene {
 
 		// ball
 
-		this.context.beginPath()
-
 		const normalizedBall = normalizeCircle(this.ball, this.canvas)
 
-		this.context.arc(
-			normalizedBall.x,
-			normalizedBall.y,
-			this.ball.radius,
-			0,
-			2 * Math.PI
-		)
-
-		this.context.fillStyle = 'red'
-		this.context.fill()
+		if (this.ball.image.current)
+			this.context.drawImage(
+				this.ball.image.current,
+				normalizedBall.x - this.ball.radius,
+				normalizedBall.y - this.ball.radius,
+				this.ball.radius * 2,
+				this.ball.radius * 2
+			)
 
 		// hole
 
-		this.context.beginPath()
-
 		const normalizedHole = normalizeCircle(this.hole, this.canvas)
 
-		this.context.arc(
-			normalizedHole.x,
-			normalizedHole.y,
-			this.hole.radius,
-			0,
-			2 * Math.PI
-		)
-
-		this.context.strokeStyle = 'green'
-		this.context.lineWidth = 4
-
-		this.context.stroke()
+		if (this.hole.image.current)
+			this.context.drawImage(
+				this.hole.image.current,
+				normalizedHole.x - this.hole.radius,
+				normalizedHole.y - this.hole.radius,
+				this.hole.radius * 2,
+				this.hole.radius * 2
+			)
 
 		// walls
 
 		for (const wall of this.walls) {
-			this.context.beginPath()
-
 			const { x, y } = normalizeRectangle(wall, this.canvas)
-			this.context.rect(x, y, wall.width, wall.height)
 
 			this.context.fillStyle = 'white'
-			this.context.fill()
+			this.context.fillRect(x, y, wall.width, wall.height)
 		}
 
 		// forces
 
 		for (const force of this.forces) {
-			this.context.beginPath()
+			if (!force.image.current) continue
 
 			const { x, y } = normalizeCircle(force, this.canvas)
-			this.context.arc(x, y, FORCE_RADIUS, 0, 2 * Math.PI)
 
-			this.context.fillStyle = force.direction === 1 ? 'gold' : 'gray'
-			this.context.fill()
+			this.context.drawImage(
+				force.image.current,
+				x - FORCE_RADIUS,
+				y - FORCE_RADIUS,
+				FORCE_RADIUS * 2,
+				FORCE_RADIUS * 2
+			)
 		}
 
 		this.frame = requestAnimationFrame(this.tick)
@@ -310,13 +308,16 @@ export default class Scene {
 			y: this.level.ball[1],
 			radius: this.level.ball[2],
 			vx: 0,
-			vy: 0
+			vy: 0,
+			image: useImage(ballImage)
 		}
 	}
 
 	readonly clear = () => {
 		this.reset()
-		this.forces = [{ x: -100, y: 0, direction: 1 }]
+		this.forces = [
+			{ x: -100, y: 0, direction: 1, image: useImage(gravityImage) }
+		]
 	}
 
 	readonly destroy = () => {
