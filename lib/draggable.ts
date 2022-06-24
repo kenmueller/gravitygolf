@@ -17,6 +17,8 @@ const draggable = (
 
 		copy = element.cloneNode(true) as typeof element
 
+		copy.dataset.copy = ''
+
 		copy.style.position = 'absolute'
 
 		copy.style.left = `${elementStart.x}px`

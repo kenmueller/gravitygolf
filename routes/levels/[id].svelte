@@ -17,7 +17,10 @@
 	import type { Load } from '@sveltejs/kit'
 	import { onDestroy } from 'svelte'
 
+	import { browser } from '$app/env'
+
 	import type Level from '$lib/level'
+	import FORCE_RADIUS from '$lib/scene/force/radius'
 	import Scene from '$lib/scene'
 	import levels from '$lib/level/levels.json'
 	import draggable from '$lib/draggable'
@@ -33,10 +36,18 @@
 
 	$: scene = canvas && context && new Scene(canvas, context, { id, ...level })
 
+	$: scale = browser ? window.devicePixelRatio : null
+
+	const setScale = () => {
+		scale = window.devicePixelRatio
+	}
+
 	onDestroy(() => {
 		scene?.destroy()
 	})
 </script>
+
+<svelte:window on:resize={setScale} />
 
 <svelte:head>
 	<title>Level {id} | Gravity Golf</title>
@@ -48,11 +59,23 @@
 			Level {id} | Gravity Golf
 		</BackLink>
 		<div>
-			<span use:draggable={console.log} data-remaining="2" />
-			<span use:draggable={console.log} data-remaining="2" />
+			{#if scale}
+				<span
+					style="--radius: {FORCE_RADIUS / scale};"
+					data-force="gravity"
+					data-remaining={2}
+					use:draggable={console.log}
+				/>
+				<span
+					style="--radius: {FORCE_RADIUS / scale};"
+					data-force="antigravity"
+					data-remaining={2}
+					use:draggable={console.log}
+				/>
+			{/if}
 		</div>
 		<button class="reset" disabled={!scene} on:click={() => scene?.reset()}>
-			<span>Press SPACE BAR to restart</span>
+			Press SPACE BAR to restart
 			<Reset />
 		</button>
 		<button class="clear" disabled={!scene} on:click={() => scene?.clear()}>
@@ -73,9 +96,9 @@
 		display: flex;
 		align-items: center;
 		position: absolute;
-		top: 1rem;
-		left: 1rem;
-		right: 1rem;
+		top: 1.5rem;
+		left: 1.7rem;
+		right: 1.7rem;
 		z-index: 100;
 		pointer-events: none;
 
@@ -84,15 +107,46 @@
 		}
 	}
 
-	[data-remaining] {
-		$size: 40px;
+	div {
+		display: flex;
+		align-items: center;
+		margin: 0 auto;
+	}
 
+	[data-force] {
 		cursor: move;
-		display: inline-block;
-		width: $size;
-		height: $size;
-		background: blue;
+		display: block;
+		position: relative;
+		width: calc(var(--radius) * 2px);
+		height: calc(var(--radius) * 2px);
+		background-size: contain;
 		border-radius: 50%;
+
+		&:not([data-copy])::after {
+			content: attr(data-remaining);
+			pointer-events: none;
+			position: absolute;
+			top: 0;
+			right: 0;
+			padding: 0 0.5rem;
+			font-size: 0.8rem;
+			color: transparentize(black, 0.5);
+			background: transparentize(white, 0.4);
+			border-radius: 0.5rem;
+			transform: translate(1.2rem, -0.8rem);
+		}
+
+		& + & {
+			margin-left: 2rem;
+		}
+	}
+
+	[data-force='gravity'] {
+		background-image: url('../../images/ball.png');
+	}
+
+	[data-force='antigravity'] {
+		background-image: url('../../images/ball.png');
 	}
 
 	button {
@@ -111,7 +165,6 @@
 	.reset {
 		display: flex;
 		align-items: center;
-		margin-left: auto;
 
 		> :global(svg) {
 			margin-left: 0.7rem;

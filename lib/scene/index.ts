@@ -5,6 +5,7 @@ import type Ball from './ball'
 import type Hole from './hole'
 import type Wall from './wall'
 import type Force from './force'
+import FORCE_RADIUS from './force/radius'
 import levels from '$lib/level/levels.json'
 import distance from './distance'
 import clear from './clear'
@@ -22,8 +23,6 @@ import ballImage from '../../images/ball.png'
 import holeImage from '../../images/ball.png'
 import gravityImage from '../../images/ball.png'
 import antigravityImage from '../../images/ball.png'
-
-const FORCE_RADIUS = 30
 
 const MAX_DISTANCE = 800
 const MAX_VELOCITY = 500
