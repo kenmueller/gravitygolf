@@ -153,20 +153,6 @@ export default class Scene extends EventDispatcher<Events> {
 
 		clear(this.canvas, this.context)
 
-		// forces
-
-		for (const force of this.forces) {
-			if (!force.image.current) continue
-
-			const { x, y, radius } = normalizeShape(
-				{ ...force, radius: FORCE_RADIUS },
-				this.canvas,
-				this.center
-			)
-
-			this.context.drawImage(force.image.current, x, y, radius * 2, radius * 2)
-		}
-
 		// ball
 
 		const normalizedBall = normalizeShape(this.ball, this.canvas, this.center)
@@ -213,6 +199,20 @@ export default class Scene extends EventDispatcher<Events> {
 
 			this.context.fillStyle = 'white'
 			this.context.fillRect(x, y, width, height)
+		}
+
+		// forces
+
+		for (const force of this.forces) {
+			if (!force.image.current) continue
+
+			const { x, y, radius } = normalizeShape(
+				{ ...force, radius: FORCE_RADIUS },
+				this.canvas,
+				this.center
+			)
+
+			this.context.drawImage(force.image.current, x, y, radius * 2, radius * 2)
 		}
 
 		this.frame = requestAnimationFrame(this.tick)
