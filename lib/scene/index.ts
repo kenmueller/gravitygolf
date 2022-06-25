@@ -58,19 +58,8 @@ export default class Scene extends EventDispatcher<Events> {
 
 		this.clear()
 
-		this.hole = {
-			x: this.level.hole[0],
-			y: this.level.hole[1],
-			radius: this.level.hole[2],
-			image: useImage(holeImage)
-		}
-
-		this.walls = this.level.walls.map(wall => ({
-			x: wall[0],
-			y: wall[1],
-			width: wall[2],
-			height: wall[3]
-		}))
+		this.hole = { ...level.hole, image: useImage(holeImage) }
+		this.walls = level.walls
 
 		this.scale()
 
@@ -363,9 +352,7 @@ export default class Scene extends EventDispatcher<Events> {
 		this.hit = false
 
 		this.ball = {
-			x: this.level.ball[0],
-			y: this.level.ball[1],
-			radius: this.level.ball[2],
+			...this.level.ball,
 			vx: 0,
 			vy: 0,
 			image: useImage(ballImage)
@@ -375,7 +362,19 @@ export default class Scene extends EventDispatcher<Events> {
 	readonly clear = () => {
 		this.reset()
 
-		this.forces = []
+		this.forces = [
+			...this.level.defaultGravity.map(force => ({
+				...force,
+				direction: 1 as const,
+				image: useImage(gravityImage)
+			})),
+			...this.level.defaultAntigravity.map(force => ({
+				...force,
+				direction: 1 as const,
+				image: useImage(antigravityImage)
+			}))
+		]
+
 		this.dispatchForces()
 	}
 

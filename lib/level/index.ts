@@ -1,7 +1,12 @@
+import type Position from '$lib/position'
+
 export default interface Level {
-	gravity: number
-	antigravity: number
-	ball: [number, number, number]
-	hole: [number, number, number]
-	walls: [number, number, number, number][]
+	maxGravity: number
+	maxAntigravity: number
+	defaultGravity: Position[]
+	defaultAntigravity: Position[]
+	ball: Position & { radius: number }
+	hole: Position & { radius: number }
+	stars: (Position & { radius: number })[]
+	walls: (Position & { width: number; height: number })[]
 }

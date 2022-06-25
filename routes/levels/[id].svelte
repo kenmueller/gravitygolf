@@ -20,9 +20,10 @@
 	import { browser } from '$app/env'
 
 	import type Position from '$lib/position'
-	import type Level from '$lib/level'
 	import FORCE_RADIUS from '$lib/scene/force/radius'
 	import Scene from '$lib/scene'
+	import type RawLevel from '$lib/level/raw'
+	import levelFromRaw from '$lib/level/raw/from'
 	import levels from '$lib/level/levels.json'
 	import draggable from '$lib/draggable'
 	import BackLink from '../../components/Link/Back.svelte'
@@ -30,11 +31,11 @@
 	import Trash from '../../images/Trash.svelte'
 
 	export let id: number
-	$: level = levels[id - 1] as Level
+	$: level = levelFromRaw(levels[id - 1] as RawLevel)
 
 	$: forcesRemaining = {
-		gravity: level.gravity,
-		antigravity: level.antigravity
+		gravity: level.maxGravity - level.defaultGravity.length,
+		antigravity: level.maxAntigravity - level.defaultAntigravity.length
 	}
 
 	let canvas: HTMLCanvasElement | null = null
@@ -44,8 +45,8 @@
 
 	$: scene?.addEventListener('forces', (gravity, antigravity) => {
 		forcesRemaining = {
-			gravity: level.gravity - gravity,
-			antigravity: level.antigravity - antigravity
+			gravity: level.maxGravity - gravity,
+			antigravity: level.maxAntigravity - antigravity
 		}
 	})
 
