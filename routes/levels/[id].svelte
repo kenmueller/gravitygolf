@@ -21,6 +21,7 @@
 
 	import type Position from '$lib/position'
 	import FORCE_RADIUS from '$lib/scene/force/radius'
+	import MAX_STARS from '$lib/scene/star/max'
 	import Scene from '$lib/scene'
 	import type RawLevel from '$lib/level/raw'
 	import levelFromRaw from '$lib/level/raw/from'
@@ -30,6 +31,8 @@
 	import Reset from '../../images/Reset.svelte'
 	import Trash from '../../images/Trash.svelte'
 
+	import starImage from '../../images/star.png'
+
 	export let id: number
 	$: level = levelFromRaw(levels[id - 1] as RawLevel)
 
@@ -37,6 +40,8 @@
 		gravity: level.maxGravity - level.defaultGravity.length,
 		antigravity: level.maxAntigravity - level.defaultAntigravity.length
 	}
+
+	$: stars = MAX_STARS - level.stars.length
 
 	let canvas: HTMLCanvasElement | null = null
 	$: context = canvas?.getContext('2d')
@@ -48,6 +53,10 @@
 			gravity: level.maxGravity - gravity,
 			antigravity: level.maxAntigravity - antigravity
 		}
+	})
+
+	$: scene?.addEventListener('stars', newStars => {
+		stars = newStars
 	})
 
 	const addForce = (direction: 1 | -1) => (position: Position) => {
@@ -76,7 +85,7 @@
 		<BackLink href="/levels">
 			Level {id} | Gravity Golf
 		</BackLink>
-		<div>
+		<div class="forces">
 			{#if scale}
 				<span
 					style="--radius: {FORCE_RADIUS}; --scale: {scale};"
@@ -92,6 +101,19 @@
 						? addForce(-1)
 						: null}
 				/>
+			{/if}
+		</div>
+		<div class="stars">
+			{#if scale}
+				{#each { length: MAX_STARS } as _star, index}
+					<img
+						class="star"
+						src={starImage}
+						alt="Star"
+						style="--radius: {FORCE_RADIUS}; --scale: {scale};"
+						data-hit={index < stars ? '' : undefined}
+					/>
+				{/each}
 			{/if}
 		</div>
 		<button class="reset" disabled={!scene} on:click={() => scene?.reset()}>
@@ -127,15 +149,18 @@
 		}
 	}
 
-	div {
+	.forces,
+	.stars {
 		display: flex;
 		align-items: center;
-		margin: 0 auto;
+	}
+
+	.forces {
+		margin-left: auto;
 	}
 
 	[data-force] {
 		cursor: move;
-		display: block;
 		position: relative;
 		width: calc((var(--radius) / var(--scale)) * 2px);
 		height: calc((var(--radius) / var(--scale)) * 2px);
@@ -176,6 +201,26 @@
 	[data-remaining='0'] {
 		pointer-events: none;
 		opacity: 0.5;
+	}
+
+	.stars {
+		margin: 0 auto 0 3rem;
+	}
+
+	.star {
+		pointer-events: none;
+		width: calc((var(--radius) / var(--scale)) * 2px);
+		height: calc((var(--radius) / var(--scale)) * 2px);
+		opacity: 0.5;
+		transition: opacity 0.3s;
+
+		& + & {
+			margin-left: calc(1rem / var(--scale));
+		}
+	}
+
+	[data-hit] {
+		opacity: 1;
 	}
 
 	button {

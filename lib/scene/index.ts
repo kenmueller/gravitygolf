@@ -9,6 +9,7 @@ import type Star from './star'
 import type Wall from './wall'
 import EventDispatcher from '$lib/event/dispatcher'
 import FORCE_RADIUS from './force/radius'
+import MAX_STARS from './star/max'
 import levels from '$lib/level/levels.json'
 import distance from './distance'
 import clear from './clear'
@@ -33,6 +34,7 @@ const MAX_VELOCITY = 500
 
 interface Events {
 	forces: [number, number]
+	stars: [number]
 }
 
 export default class Scene extends EventDispatcher<Events> {
@@ -69,7 +71,7 @@ export default class Scene extends EventDispatcher<Events> {
 
 		this.walls = level.walls
 
-		this.clear()
+		this.clear(true)
 
 		this.scale()
 
@@ -193,8 +195,10 @@ export default class Scene extends EventDispatcher<Events> {
 				!star.hit &&
 				distance(normalizedBall, normalizedStar) <=
 					normalizedBall.radius + normalizedStar.radius
-			)
+			) {
 				star.hit = true
+				this.dispatchStars()
+			}
 
 			if (star.hit) this.context.globalAlpha = 0.5
 
@@ -371,6 +375,15 @@ export default class Scene extends EventDispatcher<Events> {
 		)
 	}
 
+	private readonly dispatchStars = () => {
+		this.dispatchEvent(
+			'stars',
+			MAX_STARS -
+				this.stars.length +
+				this.stars.reduce<number>((stars, { hit }) => stars + (hit ? 1 : 0), 0)
+		)
+	}
+
 	readonly addForce = ({ x, y }: Position, direction: 1 | -1) => {
 		const scale = window.devicePixelRatio
 
@@ -385,7 +398,7 @@ export default class Scene extends EventDispatcher<Events> {
 		this.canvas.style.cursor = 'move'
 	}
 
-	readonly reset = () => {
+	readonly reset = (initial = false) => {
 		this.hit = false
 
 		this.ball = {
@@ -396,10 +409,11 @@ export default class Scene extends EventDispatcher<Events> {
 		}
 
 		for (const star of this.stars) star.hit = false
+		if (!initial) this.dispatchStars()
 	}
 
-	readonly clear = () => {
-		this.reset()
+	readonly clear = (initial = false) => {
+		this.reset(initial)
 
 		this.forces = [
 			...this.level.defaultGravity.map(force => ({
