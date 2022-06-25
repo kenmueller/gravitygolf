@@ -129,9 +129,6 @@ export default class Scene extends EventDispatcher<Events> {
 
 					this.ball.vy = -Math.sin(bounceAngle) * speed
 					this.ball.vx = Math.cos(bounceAngle) * speed
-
-					// console.log('hit', angle, v, bounceAngle, speed, this.ball)
-					// return
 				}
 			}
 
@@ -333,6 +330,7 @@ export default class Scene extends EventDispatcher<Events> {
 		})
 
 		this.dispatchForces()
+		this.canvas.style.cursor = 'move'
 	}
 
 	readonly reset = () => {
