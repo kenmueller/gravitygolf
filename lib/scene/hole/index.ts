@@ -1,8 +1,7 @@
+import type Position from '$lib/position'
 import type ImageRef from '$lib/image/ref'
 
-export default interface Hole {
-	x: number
-	y: number
+export default interface Hole extends Position {
 	radius: number
 	image: ImageRef
 }

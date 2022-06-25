@@ -1,3 +1,4 @@
+import type Position from '$lib/position'
 import distance from './distance'
 
 const likelyDirection = (
@@ -15,8 +16,8 @@ const likelyDirection = (
 		: Math.PI / 2
 
 const collision = (
-	circle: { x: number; y: number; radius: number },
-	rectangle: { x: number; y: number; width: number; height: number }
+	circle: Position & { radius: number },
+	rectangle: Position & { width: number; height: number }
 ) => {
 	const circleRight = circle.x + circle.radius
 	const circleLeft = circle.x - circle.radius

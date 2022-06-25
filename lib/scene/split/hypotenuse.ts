@@ -1,6 +1,8 @@
+import type Position from '$lib/position'
+
 const splitHypotenuse = (
-	a: { x: number; y: number },
-	b: { x: number; y: number },
+	a: Position,
+	b: Position,
 	distance: number,
 	hypotenuse: number
 ) => {

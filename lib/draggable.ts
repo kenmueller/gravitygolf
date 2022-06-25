@@ -1,11 +1,13 @@
+import type Position from './position'
+
 const draggable = (
 	element: HTMLElement,
-	onDrop: ((position: { x: number; y: number }) => void) | null
+	onDrop: ((position: Position) => void) | null
 ): SvelteActionReturnType => {
-	let elementStart: { x: number; y: number } | null = null
+	let elementStart: Position | null = null
 
-	let start: { x: number; y: number } | null = null
-	let current: { x: number; y: number } | null = null
+	let start: Position | null = null
+	let current: Position | null = null
 
 	let copy: typeof element | null = null
 

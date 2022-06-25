@@ -1,10 +1,12 @@
 import { goto } from '$app/navigation'
 
+import type Position from '$lib/position'
 import type Level from '$lib/level'
 import type Ball from './ball'
 import type Hole from './hole'
 import type Wall from './wall'
 import type Force from './force'
+import EventDispatcher from '$lib/event/dispatcher'
 import FORCE_RADIUS from './force/radius'
 import levels from '$lib/level/levels.json'
 import distance from './distance'
@@ -27,12 +29,16 @@ import antigravityImage from '../../images/ball.png'
 const MAX_DISTANCE = 800
 const MAX_VELOCITY = 500
 
-export default class Scene {
+interface Events {
+	forces: [number, number]
+}
+
+export default class Scene extends EventDispatcher<Events> {
 	private previousTime: number | null = null
 	private frame: number | null = null
 
-	private mouseStart: { x: number; y: number } | null = null
-	private mouseCurrent: { x: number; y: number; force: Force } | null = null
+	private mouseStart: Position | null = null
+	private mouseCurrent: (Position & { force: Force }) | null = null
 
 	private hit = false
 
@@ -46,6 +52,8 @@ export default class Scene {
 		private readonly context: CanvasRenderingContext2D,
 		private readonly level: Level & { id: number }
 	) {
+		super()
+
 		this.clear()
 
 		this.hole = {
@@ -260,6 +268,8 @@ export default class Scene {
 
 			if (index >= 0) {
 				this.forces.splice(index, 1)
+				this.dispatchForces()
+
 				this.updateCursor(mouse)
 			}
 		} else if (mouse.x === this.mouseStart.x && mouse.y === this.mouseStart.y) {
@@ -286,7 +296,7 @@ export default class Scene {
 		event.preventDefault()
 	}
 
-	private readonly updateCursor = (mouse: { x: number; y: number }) => {
+	private readonly updateCursor = (mouse: Position) => {
 		this.canvas.style.cursor = this.forces.some(
 			force =>
 				distance(normalizeCircle(force, this.canvas), mouse) <= FORCE_RADIUS
@@ -297,6 +307,32 @@ export default class Scene {
 
 	private readonly key = ({ key }: KeyboardEvent) => {
 		if (key === ' ') this.reset()
+	}
+
+	private readonly dispatchForces = () => {
+		this.dispatchEvent(
+			'forces',
+			...this.forces.reduce<[number, number]>(
+				(remaining, force) => {
+					remaining[force.direction === 1 ? 0 : 1]++
+					return remaining
+				},
+				[0, 0]
+			)
+		)
+	}
+
+	readonly addForce = ({ x, y }: Position, direction: 1 | -1) => {
+		const scale = window.devicePixelRatio
+
+		this.forces.push({
+			x: x * scale + FORCE_RADIUS - this.canvas.width / 2,
+			y: -y * scale - FORCE_RADIUS + this.canvas.height / 2,
+			direction,
+			image: useImage(direction === 1 ? gravityImage : antigravityImage)
+		})
+
+		this.dispatchForces()
 	}
 
 	readonly reset = () => {
@@ -314,12 +350,12 @@ export default class Scene {
 
 	readonly clear = () => {
 		this.reset()
-		this.forces = [
-			{ x: -100, y: 0, direction: 1, image: useImage(gravityImage) }
-		]
+		this.forces = []
 	}
 
 	readonly destroy = () => {
+		this.removeAllEventListeners()
+
 		window.removeEventListener('resize', this.resize)
 		document.removeEventListener('keydown', this.key)
 

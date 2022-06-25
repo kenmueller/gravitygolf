@@ -1,5 +1,7 @@
+import type Position from '$lib/position'
+
 const normalizeRectangle = <
-	Rectangle extends { x: number; y: number; width: number; height: number }
+	Rectangle extends Position & { width: number; height: number }
 >(
 	rectangle: Rectangle,
 	bounds: { width: number; height: number }

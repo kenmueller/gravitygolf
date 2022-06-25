@@ -19,6 +19,7 @@
 
 	import { browser } from '$app/env'
 
+	import type Position from '$lib/position'
 	import type Level from '$lib/level'
 	import FORCE_RADIUS from '$lib/scene/force/radius'
 	import Scene from '$lib/scene'
@@ -31,10 +32,26 @@
 	export let id: number
 	$: level = levels[id - 1] as Level
 
+	$: forcesRemaining = {
+		gravity: level.gravity,
+		antigravity: level.antigravity
+	}
+
 	let canvas: HTMLCanvasElement | null = null
 	$: context = canvas?.getContext('2d')
 
 	$: scene = canvas && context && new Scene(canvas, context, { id, ...level })
+
+	$: scene?.addEventListener('forces', (gravity, antigravity) => {
+		forcesRemaining = {
+			gravity: level.gravity - gravity,
+			antigravity: level.antigravity - antigravity
+		}
+	})
+
+	const addForce = (direction: 1 | -1) => (position: Position) => {
+		scene?.addForce(position, direction)
+	}
 
 	$: scale = browser ? window.devicePixelRatio : null
 
@@ -61,16 +78,18 @@
 		<div>
 			{#if scale}
 				<span
-					style="--radius: {FORCE_RADIUS / scale};"
+					style="--radius: {FORCE_RADIUS}; --scale: {scale};"
 					data-force="gravity"
-					data-remaining={2}
-					use:draggable={console.log}
+					data-remaining={forcesRemaining.gravity}
+					use:draggable={scene && forcesRemaining.gravity ? addForce(1) : null}
 				/>
 				<span
-					style="--radius: {FORCE_RADIUS / scale};"
+					style="--radius: {FORCE_RADIUS}; --scale: {scale};"
 					data-force="antigravity"
-					data-remaining={2}
-					use:draggable={console.log}
+					data-remaining={forcesRemaining.antigravity}
+					use:draggable={scene && forcesRemaining.antigravity
+						? addForce(-1)
+						: null}
 				/>
 			{/if}
 		</div>
@@ -117,10 +136,11 @@
 		cursor: move;
 		display: block;
 		position: relative;
-		width: calc(var(--radius) * 2px);
-		height: calc(var(--radius) * 2px);
+		width: calc((var(--radius) / var(--scale)) * 2px);
+		height: calc((var(--radius) / var(--scale)) * 2px);
 		background-size: contain;
 		border-radius: 50%;
+		transition: opacity 0.3s;
 
 		&:not([data-copy])::after {
 			content: attr(data-remaining);
@@ -128,12 +148,15 @@
 			position: absolute;
 			top: 0;
 			right: 0;
-			padding: 0 0.5rem;
-			font-size: 0.8rem;
+			padding: 0 calc(1rem / var(--scale));
+			font-size: calc(1.6rem / var(--scale));
 			color: transparentize(black, 0.5);
 			background: transparentize(white, 0.4);
-			border-radius: 0.5rem;
-			transform: translate(1.2rem, -0.8rem);
+			border-radius: calc(1rem / var(--scale));
+			transform: translate(
+				calc(2.4rem / var(--scale)),
+				calc(-1.6rem / var(--scale))
+			);
 		}
 
 		& + & {
@@ -147,6 +170,11 @@
 
 	[data-force='antigravity'] {
 		background-image: url('../../images/ball.png');
+	}
+
+	[data-remaining='0'] {
+		pointer-events: none;
+		opacity: 0.5;
 	}
 
 	button {

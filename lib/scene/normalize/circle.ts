@@ -1,4 +1,6 @@
-const normalizeCircle = <Circle extends { x: number; y: number }>(
+import type Position from '$lib/position'
+
+const normalizeCircle = <Circle extends Position>(
 	circle: Circle,
 	bounds: { width: number; height: number }
 ): Circle => ({
