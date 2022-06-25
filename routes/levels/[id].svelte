@@ -160,7 +160,7 @@
 		}
 
 		& + & {
-			margin-left: 2rem;
+			margin-left: calc(4rem / var(--scale));
 		}
 	}
 
