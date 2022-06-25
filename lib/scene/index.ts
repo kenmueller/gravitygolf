@@ -11,8 +11,8 @@ import FORCE_RADIUS from './force/radius'
 import levels from '$lib/level/levels.json'
 import distance from './distance'
 import clear from './clear'
-import normalizeCircle from './normalize/circle'
-import normalizeRectangle from './normalize/rectangle'
+import normalizePoint from './normalize/point'
+import normalizeShape from './normalize/shape'
 import collision from './collision'
 import scale from './transform/scale'
 import resize from './transform/resize'
@@ -37,8 +37,10 @@ export default class Scene extends EventDispatcher<Events> {
 	private previousTime: number | null = null
 	private frame: number | null = null
 
-	private mouseStart: Position | null = null
-	private mouseCurrent: (Position & { force: Force }) | null = null
+	private center = { x: 0, y: 0 }
+
+	private mouseStart: (Position & { button: number }) | null = null
+	private mouseCurrent: (Position & { force: Force | null }) | null = null
 
 	private hit = false
 
@@ -100,8 +102,8 @@ export default class Scene extends EventDispatcher<Events> {
 		if (this.hit) {
 			if (
 				distance(
-					normalizeCircle(this.ball, this.canvas),
-					normalizeCircle(this.hole, this.canvas)
+					normalizePoint(this.ball, this.canvas, this.center),
+					normalizePoint(this.hole, this.canvas, this.center)
 				) <=
 				this.hole.radius - this.ball.radius
 			) {
@@ -117,8 +119,8 @@ export default class Scene extends EventDispatcher<Events> {
 
 			for (const wall of this.walls) {
 				const angle = collision(
-					normalizeCircle(this.ball, this.canvas),
-					normalizeRectangle(wall, this.canvas)
+					normalizePoint(this.ball, this.canvas, this.center),
+					normalizeShape(wall, this.canvas, this.center)
 				)
 
 				if (angle !== null) {
@@ -134,13 +136,13 @@ export default class Scene extends EventDispatcher<Events> {
 
 			for (const force of this.forces) {
 				const rSquared = distanceSquared(
-					normalizeCircle(this.ball, this.canvas),
-					normalizeCircle(force, this.canvas)
+					normalizePoint(this.ball, this.canvas, this.center),
+					normalizePoint(force, this.canvas, this.center)
 				)
 
 				const { x, y } = splitHypotenuse(
-					normalizeCircle(force, this.canvas),
-					normalizeCircle(this.ball, this.canvas),
+					normalizePoint(force, this.canvas, this.center),
+					normalizePoint(this.ball, this.canvas, this.center),
 					Math.sqrt(rSquared),
 					clamp(-5000, 5000, (force.direction * 100000000) / rSquared)
 				)
@@ -157,37 +159,41 @@ export default class Scene extends EventDispatcher<Events> {
 
 		// ball
 
-		const normalizedBall = normalizeCircle(this.ball, this.canvas)
+		const normalizedBall = normalizeShape(this.ball, this.canvas, this.center)
 
 		if (this.ball.image.current)
 			this.context.drawImage(
 				this.ball.image.current,
-				normalizedBall.x - this.ball.radius,
-				normalizedBall.y - this.ball.radius,
-				this.ball.radius * 2,
-				this.ball.radius * 2
+				normalizedBall.x,
+				normalizedBall.y,
+				normalizedBall.radius * 2,
+				normalizedBall.radius * 2
 			)
 
 		// hole
 
-		const normalizedHole = normalizeCircle(this.hole, this.canvas)
+		const normalizedHole = normalizeShape(this.hole, this.canvas, this.center)
 
 		if (this.hole.image.current)
 			this.context.drawImage(
 				this.hole.image.current,
-				normalizedHole.x - this.hole.radius,
-				normalizedHole.y - this.hole.radius,
-				this.hole.radius * 2,
-				this.hole.radius * 2
+				normalizedHole.x,
+				normalizedHole.y,
+				normalizedHole.radius * 2,
+				normalizedHole.radius * 2
 			)
 
 		// walls
 
 		for (const wall of this.walls) {
-			const { x, y } = normalizeRectangle(wall, this.canvas)
+			const { x, y, width, height } = normalizeShape(
+				wall,
+				this.canvas,
+				this.center
+			)
 
 			this.context.fillStyle = 'white'
-			this.context.fillRect(x, y, wall.width, wall.height)
+			this.context.fillRect(x, y, width, height)
 		}
 
 		// forces
@@ -195,41 +201,19 @@ export default class Scene extends EventDispatcher<Events> {
 		for (const force of this.forces) {
 			if (!force.image.current) continue
 
-			const { x, y } = normalizeCircle(force, this.canvas)
-
-			this.context.drawImage(
-				force.image.current,
-				x - FORCE_RADIUS,
-				y - FORCE_RADIUS,
-				FORCE_RADIUS * 2,
-				FORCE_RADIUS * 2
+			const { x, y, radius } = normalizeShape(
+				{ ...force, radius: FORCE_RADIUS },
+				this.canvas,
+				this.center
 			)
+
+			this.context.drawImage(force.image.current, x, y, radius * 2, radius * 2)
 		}
 
 		this.frame = requestAnimationFrame(this.tick)
 	}
 
-	private readonly down = ({ offsetX, offsetY }: MouseEvent) => {
-		if (this.hit) return
-
-		const scale = window.devicePixelRatio
-
-		const mouse = (this.mouseStart = {
-			x: Math.floor(offsetX * scale),
-			y: Math.floor(offsetY * scale)
-		})
-
-		const force = this.forces.find(
-			force =>
-				distance(normalizeCircle(force, this.canvas), mouse) <= FORCE_RADIUS
-		)
-
-		if (force) this.mouseCurrent = { ...mouse, force }
-	}
-
-	private readonly move = ({ offsetX, offsetY }: MouseEvent) => {
-		if (this.hit) return
-
+	private readonly down = ({ offsetX, offsetY, button }: MouseEvent) => {
 		const scale = window.devicePixelRatio
 
 		const mouse = {
@@ -237,9 +221,38 @@ export default class Scene extends EventDispatcher<Events> {
 			y: Math.floor(offsetY * scale)
 		}
 
-		if (this.mouseCurrent) {
-			this.mouseCurrent.force.x += mouse.x - this.mouseCurrent.x
-			this.mouseCurrent.force.y -= mouse.y - this.mouseCurrent.y
+		this.mouseStart = { x: mouse.x, y: mouse.y, button }
+
+		const force =
+			this.forces.find(
+				force =>
+					distance(normalizePoint(force, this.canvas, this.center), mouse) <=
+					FORCE_RADIUS
+			) ?? null
+
+		this.mouseCurrent = { ...mouse, force }
+	}
+
+	private readonly move = ({ offsetX, offsetY }: MouseEvent) => {
+		const scale = window.devicePixelRatio
+
+		const mouse = {
+			x: Math.floor(offsetX * scale),
+			y: Math.floor(offsetY * scale)
+		}
+
+		if (this.mouseStart?.button === 0 && this.mouseCurrent) {
+			if (this.mouseCurrent.force) {
+				// Dragging force
+
+				this.mouseCurrent.force.x += mouse.x - this.mouseCurrent.x
+				this.mouseCurrent.force.y -= mouse.y - this.mouseCurrent.y
+			} else {
+				// Panning
+
+				this.center.x += mouse.x - this.mouseCurrent.x
+				this.center.y -= mouse.y - this.mouseCurrent.y
+			}
 
 			this.mouseCurrent.x = mouse.x
 			this.mouseCurrent.y = mouse.y
@@ -248,7 +261,7 @@ export default class Scene extends EventDispatcher<Events> {
 		this.updateCursor(mouse)
 	}
 
-	private readonly up = ({ offsetX, offsetY, button }: MouseEvent) => {
+	private readonly up = ({ offsetX, offsetY }: MouseEvent) => {
 		if (this.hit || !this.mouseStart) return
 
 		const scale = window.devicePixelRatio
@@ -258,21 +271,16 @@ export default class Scene extends EventDispatcher<Events> {
 			y: Math.floor(offsetY * scale)
 		}
 
-		if (button === 2) {
-			const index = this.mouseCurrent
-				? this.forces.indexOf(this.mouseCurrent.force)
-				: -1
+		if (
+			this.mouseStart.button === 0 &&
+			mouse.x === this.mouseStart.x &&
+			mouse.y === this.mouseStart.y
+		) {
+			// Hit the ball
 
-			if (index >= 0) {
-				this.forces.splice(index, 1)
-				this.dispatchForces()
-
-				this.updateCursor(mouse)
-			}
-		} else if (mouse.x === this.mouseStart.x && mouse.y === this.mouseStart.y) {
 			this.hit = true
 
-			const normalizedBall = normalizeCircle(this.ball, this.canvas)
+			const normalizedBall = normalizePoint(this.ball, this.canvas, this.center)
 			const distanceFactor = distance(mouse, normalizedBall)
 
 			const { x, y } = splitHypotenuse(
@@ -284,6 +292,21 @@ export default class Scene extends EventDispatcher<Events> {
 
 			this.ball.vx = x
 			this.ball.vy = y
+		} else if (
+			this.mouseStart.button === 2 &&
+			this.mouseCurrent?.force &&
+			this.mouseOnForce(mouse, this.mouseCurrent.force)
+		) {
+			// Remove force
+
+			const index = this.forces.indexOf(this.mouseCurrent.force)
+
+			if (index >= 0) {
+				this.forces.splice(index, 1)
+				this.dispatchForces()
+
+				this.updateCursor(mouse)
+			}
 		}
 
 		this.mouseStart = this.mouseCurrent = null
@@ -293,10 +316,13 @@ export default class Scene extends EventDispatcher<Events> {
 		event.preventDefault()
 	}
 
+	private readonly mouseOnForce = (mouse: Position, force: Force) =>
+		distance(normalizePoint(force, this.canvas, this.center), mouse) <=
+		FORCE_RADIUS
+
 	private readonly updateCursor = (mouse: Position) => {
-		this.canvas.style.cursor = this.forces.some(
-			force =>
-				distance(normalizeCircle(force, this.canvas), mouse) <= FORCE_RADIUS
+		this.canvas.style.cursor = this.forces.some(force =>
+			this.mouseOnForce(mouse, force)
 		)
 			? 'move'
 			: ''
@@ -323,8 +349,8 @@ export default class Scene extends EventDispatcher<Events> {
 		const scale = window.devicePixelRatio
 
 		this.forces.push({
-			x: x * scale + FORCE_RADIUS - this.canvas.width / 2,
-			y: -y * scale - FORCE_RADIUS + this.canvas.height / 2,
+			x: x * scale + FORCE_RADIUS - this.canvas.width / 2 - this.center.x,
+			y: -y * scale - FORCE_RADIUS + this.canvas.height / 2 - this.center.y,
 			direction,
 			image: useImage(direction === 1 ? gravityImage : antigravityImage)
 		})
