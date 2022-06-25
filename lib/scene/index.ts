@@ -2,10 +2,11 @@ import { goto } from '$app/navigation'
 
 import type Position from '$lib/position'
 import type Level from '$lib/level'
+import type Force from './force'
 import type Ball from './ball'
 import type Hole from './hole'
+import type Star from './star'
 import type Wall from './wall'
-import type Force from './force'
 import EventDispatcher from '$lib/event/dispatcher'
 import FORCE_RADIUS from './force/radius'
 import levels from '$lib/level/levels.json'
@@ -21,10 +22,11 @@ import splitHypotenuse from './split/hypotenuse'
 import clamp from './clamp'
 import useImage from '$lib/image/use'
 
-import ballImage from '../../images/ball.png'
-import holeImage from '../../images/ball.png'
 import gravityImage from '../../images/ball.png'
 import antigravityImage from '../../images/ball.png'
+import ballImage from '../../images/ball.png'
+import holeImage from '../../images/ball.png'
+import starImage from '../../images/star.png'
 
 const MAX_DISTANCE = 800
 const MAX_VELOCITY = 500
@@ -44,10 +46,11 @@ export default class Scene extends EventDispatcher<Events> {
 
 	private hit = false
 
+	private forces: Force[] = undefined as never
 	private ball: Ball = undefined as never
 	private hole: Hole = undefined as never
+	private stars: Star[] = undefined as never
 	private walls: Wall[] = undefined as never
-	private forces: Force[] = undefined as never
 
 	constructor(
 		private readonly canvas: HTMLCanvasElement,
@@ -59,6 +62,10 @@ export default class Scene extends EventDispatcher<Events> {
 		this.clear()
 
 		this.hole = { ...level.hole, image: useImage(holeImage) }
+		this.stars = level.stars.map(star => ({
+			...star,
+			image: useImage(starImage)
+		}))
 		this.walls = level.walls
 
 		this.scale()
@@ -146,6 +153,20 @@ export default class Scene extends EventDispatcher<Events> {
 
 		clear(this.canvas, this.context)
 
+		// forces
+
+		for (const force of this.forces) {
+			if (!force.image.current) continue
+
+			const { x, y, radius } = normalizeShape(
+				{ ...force, radius: FORCE_RADIUS },
+				this.canvas,
+				this.center
+			)
+
+			this.context.drawImage(force.image.current, x, y, radius * 2, radius * 2)
+		}
+
 		// ball
 
 		const normalizedBall = normalizeShape(this.ball, this.canvas, this.center)
@@ -172,6 +193,15 @@ export default class Scene extends EventDispatcher<Events> {
 				normalizedHole.radius * 2
 			)
 
+		// stars
+
+		for (const star of this.stars) {
+			if (!star.image.current) continue
+
+			const { x, y, radius } = normalizeShape(star, this.canvas, this.center)
+			this.context.drawImage(star.image.current, x, y, radius * 2, radius * 2)
+		}
+
 		// walls
 
 		for (const wall of this.walls) {
@@ -183,20 +213,6 @@ export default class Scene extends EventDispatcher<Events> {
 
 			this.context.fillStyle = 'white'
 			this.context.fillRect(x, y, width, height)
-		}
-
-		// forces
-
-		for (const force of this.forces) {
-			if (!force.image.current) continue
-
-			const { x, y, radius } = normalizeShape(
-				{ ...force, radius: FORCE_RADIUS },
-				this.canvas,
-				this.center
-			)
-
-			this.context.drawImage(force.image.current, x, y, radius * 2, radius * 2)
 		}
 
 		this.frame = requestAnimationFrame(this.tick)
