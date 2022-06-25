@@ -350,7 +350,9 @@ export default class Scene extends EventDispatcher<Events> {
 
 	readonly clear = () => {
 		this.reset()
+
 		this.forces = []
+		this.dispatchForces()
 	}
 
 	readonly destroy = () => {
