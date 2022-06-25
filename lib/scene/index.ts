@@ -59,14 +59,17 @@ export default class Scene extends EventDispatcher<Events> {
 	) {
 		super()
 
-		this.clear()
-
 		this.hole = { ...level.hole, image: useImage(holeImage) }
+
 		this.stars = level.stars.map(star => ({
 			...star,
+			hit: false,
 			image: useImage(starImage)
 		}))
+
 		this.walls = level.walls
+
+		this.clear()
 
 		this.scale()
 
@@ -184,8 +187,26 @@ export default class Scene extends EventDispatcher<Events> {
 		for (const star of this.stars) {
 			if (!star.image.current) continue
 
-			const { x, y, radius } = normalizeShape(star, this.canvas, this.center)
-			this.context.drawImage(star.image.current, x, y, radius * 2, radius * 2)
+			const normalizedStar = normalizeShape(star, this.canvas, this.center)
+
+			if (
+				!star.hit &&
+				distance(normalizedBall, normalizedStar) <=
+					normalizedBall.radius + normalizedStar.radius
+			)
+				star.hit = true
+
+			if (star.hit) this.context.globalAlpha = 0.5
+
+			this.context.drawImage(
+				star.image.current,
+				normalizedStar.x,
+				normalizedStar.y,
+				normalizedStar.radius * 2,
+				normalizedStar.radius * 2
+			)
+
+			if (star.hit) this.context.globalAlpha = 1
 		}
 
 		// walls
@@ -373,6 +394,8 @@ export default class Scene extends EventDispatcher<Events> {
 			vy: 0,
 			image: useImage(ballImage)
 		}
+
+		for (const star of this.stars) star.hit = false
 	}
 
 	readonly clear = () => {
