@@ -257,12 +257,9 @@ export default class Scene extends EventDispatcher<Events> {
 
 		this.mouseStart = { x: mouse.x, y: mouse.y, button }
 
-		const force =
-			this.forces.find(
-				force =>
-					distance(normalizePoint(force, this.canvas, this.center), mouse) <=
-					FORCE_RADIUS
-			) ?? null
+		const force = this.hit
+			? null
+			: this.forces.find(force => this.mouseOnForce(mouse, force)) ?? null
 
 		this.mouseCurrent = { ...mouse, force }
 	}
@@ -296,50 +293,56 @@ export default class Scene extends EventDispatcher<Events> {
 	}
 
 	private readonly up = ({ offsetX, offsetY }: MouseEvent) => {
-		if (this.hit || !this.mouseStart) return
+		if (!this.mouseStart) return
 
-		const scale = window.devicePixelRatio
+		if (!this.hit) {
+			const scale = window.devicePixelRatio
 
-		const mouse = {
-			x: Math.floor(offsetX * scale),
-			y: Math.floor(offsetY * scale)
-		}
+			const mouse = {
+				x: Math.floor(offsetX * scale),
+				y: Math.floor(offsetY * scale)
+			}
 
-		if (
-			this.mouseStart.button === 0 &&
-			mouse.x === this.mouseStart.x &&
-			mouse.y === this.mouseStart.y
-		) {
-			// Hit the ball
+			if (
+				this.mouseStart.button === 0 &&
+				mouse.x === this.mouseStart.x &&
+				mouse.y === this.mouseStart.y
+			) {
+				// Hit the ball
 
-			this.hit = true
+				this.hit = true
 
-			const normalizedBall = normalizePoint(this.ball, this.canvas, this.center)
-			const distanceFactor = distance(mouse, normalizedBall)
+				const normalizedBall = normalizePoint(
+					this.ball,
+					this.canvas,
+					this.center
+				)
+				const distanceFactor = distance(mouse, normalizedBall)
 
-			const { x, y } = splitHypotenuse(
-				mouse,
-				normalizedBall,
-				distanceFactor,
-				Math.min(distanceFactor / MAX_DISTANCE, 1) * MAX_VELOCITY
-			)
+				const { x, y } = splitHypotenuse(
+					mouse,
+					normalizedBall,
+					distanceFactor,
+					Math.min(distanceFactor / MAX_DISTANCE, 1) * MAX_VELOCITY
+				)
 
-			this.ball.vx = x
-			this.ball.vy = y
-		} else if (
-			this.mouseStart.button === 2 &&
-			this.mouseCurrent?.force &&
-			this.mouseOnForce(mouse, this.mouseCurrent.force)
-		) {
-			// Remove force
+				this.ball.vx = x
+				this.ball.vy = y
+			} else if (
+				this.mouseStart.button === 2 &&
+				this.mouseCurrent?.force &&
+				this.mouseOnForce(mouse, this.mouseCurrent.force)
+			) {
+				// Remove force
 
-			const index = this.forces.indexOf(this.mouseCurrent.force)
+				const index = this.forces.indexOf(this.mouseCurrent.force)
 
-			if (index >= 0) {
-				this.forces.splice(index, 1)
-				this.dispatchForces()
+				if (index >= 0) {
+					this.forces.splice(index, 1)
+					this.dispatchForces()
 
-				this.updateCursor(mouse)
+					this.updateCursor(mouse)
+				}
 			}
 		}
 
@@ -355,11 +358,10 @@ export default class Scene extends EventDispatcher<Events> {
 		FORCE_RADIUS
 
 	private readonly updateCursor = (mouse: Position) => {
-		this.canvas.style.cursor = this.forces.some(force =>
-			this.mouseOnForce(mouse, force)
-		)
-			? 'move'
-			: ''
+		this.canvas.style.cursor =
+			!this.hit && this.forces.some(force => this.mouseOnForce(mouse, force))
+				? 'move'
+				: ''
 	}
 
 	private readonly key = ({ key }: KeyboardEvent) => {
