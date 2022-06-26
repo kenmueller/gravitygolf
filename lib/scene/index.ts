@@ -22,6 +22,7 @@ import distanceSquared from './distance/squared'
 import splitHypotenuse from './split/hypotenuse'
 import clamp from './clamp'
 import useImage from '$lib/image/use'
+import setStars from '$lib/level/stars/set'
 
 import gravityImage from '../../images/ball.png'
 import antigravityImage from '../../images/ball.png'
@@ -108,7 +109,10 @@ export default class Scene extends EventDispatcher<Events> {
 				) <=
 				this.hole.radius - this.ball.radius
 			) {
-				alert('Congratulations!')
+				const stars = this.starCount
+				setStars(this.level.id, stars)
+
+				alert(`Congratulations! You got ${stars} star${stars === 1 ? '' : 's'}`)
 
 				const lastLevel = this.level.id === levels.length
 				const suffix = lastLevel ? '' : `/${this.level.id + 1}`
@@ -375,13 +379,16 @@ export default class Scene extends EventDispatcher<Events> {
 		)
 	}
 
-	private readonly dispatchStars = () => {
-		this.dispatchEvent(
-			'stars',
+	private get starCount() {
+		return (
 			MAX_STARS -
-				this.stars.length +
-				this.stars.reduce<number>((stars, { hit }) => stars + (hit ? 1 : 0), 0)
+			this.stars.length +
+			this.stars.reduce<number>((stars, { hit }) => stars + (hit ? 1 : 0), 0)
 		)
+	}
+
+	private readonly dispatchStars = () => {
+		this.dispatchEvent('stars', this.starCount)
 	}
 
 	readonly addForce = ({ x, y }: Position, direction: 1 | -1) => {
