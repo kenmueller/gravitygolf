@@ -24,10 +24,10 @@ import clamp from './clamp'
 import useImage from '$lib/image/use'
 import setStars from '$lib/level/stars/set'
 
-import gravityImage from '../../images/ball.png'
-import antigravityImage from '../../images/ball.png'
+import gravityImage from '../../images/gravity.png'
+import antigravityImage from '../../images/antigravity.png'
 import ballImage from '../../images/ball.png'
-import holeImage from '../../images/ball.png'
+import holeImage from '../../images/hole.png'
 import starImage from '../../images/star.png'
 
 const MAX_DISTANCE = 800
@@ -162,22 +162,10 @@ export default class Scene extends EventDispatcher<Events> {
 
 		clear(this.canvas, this.context)
 
-		// ball
-
 		const normalizedBall = normalizeShape(this.ball, this.canvas, this.center)
-
-		if (this.ball.image.current)
-			this.context.drawImage(
-				this.ball.image.current,
-				normalizedBall.x,
-				normalizedBall.y,
-				normalizedBall.radius * 2,
-				normalizedBall.radius * 2
-			)
+		const normalizedHole = normalizeShape(this.hole, this.canvas, this.center)
 
 		// hole
-
-		const normalizedHole = normalizeShape(this.hole, this.canvas, this.center)
 
 		if (this.hole.image.current)
 			this.context.drawImage(
@@ -217,19 +205,6 @@ export default class Scene extends EventDispatcher<Events> {
 			if (star.hit) this.context.globalAlpha = 1
 		}
 
-		// walls
-
-		for (const wall of this.walls) {
-			const { x, y, width, height } = normalizeShape(
-				wall,
-				this.canvas,
-				this.center
-			)
-
-			this.context.fillStyle = 'white'
-			this.context.fillRect(x, y, width, height)
-		}
-
 		// forces
 
 		for (const force of this.forces) {
@@ -242,6 +217,30 @@ export default class Scene extends EventDispatcher<Events> {
 			)
 
 			this.context.drawImage(force.image.current, x, y, radius * 2, radius * 2)
+		}
+
+		// ball
+
+		if (this.ball.image.current)
+			this.context.drawImage(
+				this.ball.image.current,
+				normalizedBall.x,
+				normalizedBall.y,
+				normalizedBall.radius * 2,
+				normalizedBall.radius * 2
+			)
+
+		// walls
+
+		for (const wall of this.walls) {
+			const { x, y, width, height } = normalizeShape(
+				wall,
+				this.canvas,
+				this.center
+			)
+
+			this.context.fillStyle = 'white'
+			this.context.fillRect(x, y, width, height)
 		}
 
 		this.frame = requestAnimationFrame(this.tick)

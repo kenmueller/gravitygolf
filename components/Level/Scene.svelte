@@ -173,11 +173,11 @@
 	}
 
 	[data-force='gravity'] {
-		background-image: url('../../images/ball.png');
+		background-image: url('../../images/gravity.png');
 	}
 
 	[data-force='antigravity'] {
-		background-image: url('../../images/ball.png');
+		background-image: url('../../images/antigravity.png');
 	}
 
 	[data-remaining='0'] {
