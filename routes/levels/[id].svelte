@@ -18,7 +18,7 @@
 
 	import { goto } from '$app/navigation'
 
-	import levels from '$lib/level/levels.json'
+	import levels from '$lib/level/levels'
 	import stars from '$lib/level/stars/store'
 	import LevelScene from '../../components/Level/Scene.svelte'
 

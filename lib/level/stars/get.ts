@@ -1,4 +1,4 @@
-import levels from '../levels.json'
+import levels from '../levels'
 
 const getStars = () => {
 	try {

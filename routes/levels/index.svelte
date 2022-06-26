@@ -1,5 +1,5 @@
 <script lang="ts">
-	import levels from '$lib/level/levels.json'
+	import levels from '$lib/level/levels'
 	import Level from '../../components/Levels/Level.svelte'
 	import BackLink from '../../components/Link/Back.svelte'
 </script>

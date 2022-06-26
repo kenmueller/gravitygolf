@@ -7,7 +7,7 @@
 	import Scene from '$lib/scene'
 	import type RawLevel from '$lib/level/raw'
 	import levelFromRaw from '$lib/level/raw/from'
-	import levels from '$lib/level/levels.json'
+	import levels from '$lib/level/levels'
 	import draggable from '$lib/draggable'
 	import BackLink from '../../components/Link/Back.svelte'
 	import Reset from '../../images/Reset.svelte'
