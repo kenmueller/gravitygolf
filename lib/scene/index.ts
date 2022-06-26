@@ -165,6 +165,19 @@ export default class Scene extends EventDispatcher<Events> {
 		const normalizedBall = normalizeShape(this.ball, this.canvas, this.center)
 		const normalizedHole = normalizeShape(this.hole, this.canvas, this.center)
 
+		// walls
+
+		for (const wall of this.walls) {
+			const { x, y, width, height } = normalizeShape(
+				wall,
+				this.canvas,
+				this.center
+			)
+
+			this.context.fillStyle = 'white'
+			this.context.fillRect(x, y, width, height)
+		}
+
 		// hole
 
 		if (this.hole.image.current)
@@ -229,19 +242,6 @@ export default class Scene extends EventDispatcher<Events> {
 				normalizedBall.radius * 2,
 				normalizedBall.radius * 2
 			)
-
-		// walls
-
-		for (const wall of this.walls) {
-			const { x, y, width, height } = normalizeShape(
-				wall,
-				this.canvas,
-				this.center
-			)
-
-			this.context.fillStyle = 'white'
-			this.context.fillRect(x, y, width, height)
-		}
 
 		this.frame = requestAnimationFrame(this.tick)
 	}
