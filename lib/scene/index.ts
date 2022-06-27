@@ -27,6 +27,7 @@ import splitHypotenuse from './split/hypotenuse'
 import clamp from './clamp'
 import useImage from '$lib/image/use'
 import setStars from '$lib/level/stars/set'
+import cursorHandler from '$lib/cursor/handler'
 
 import gravityImage from '../../images/gravity.png'
 import antigravityImage from '../../images/antigravity.png'
@@ -91,9 +92,15 @@ export default class Scene extends EventDispatcher<Events> {
 
 		document.addEventListener('keydown', this.key)
 
-		this.canvas.addEventListener('mousedown', this.down)
-		this.canvas.addEventListener('mousemove', this.move)
-		this.canvas.addEventListener('mouseup', this.up)
+		if (this.view.mobile) {
+			this.canvas.addEventListener('touchstart', this.down)
+			this.canvas.addEventListener('touchmove', this.move)
+			this.canvas.addEventListener('touchend', this.up)
+		} else {
+			this.canvas.addEventListener('mousedown', this.down)
+			this.canvas.addEventListener('mousemove', this.move)
+			this.canvas.addEventListener('mouseup', this.up)
+		}
 
 		this.canvas.addEventListener('contextmenu', this.rightClick)
 
@@ -256,25 +263,25 @@ export default class Scene extends EventDispatcher<Events> {
 		this.frame = requestAnimationFrame(this.tick)
 	}
 
-	private readonly down = ({ offsetX, offsetY, button }: MouseEvent) => {
+	private readonly down = cursorHandler(cursor => {
 		const mouse = {
-			x: Math.floor(offsetX * this.view.scale),
-			y: Math.floor(offsetY * this.view.scale)
+			x: Math.floor(cursor.x * this.view.scale),
+			y: Math.floor(cursor.y * this.view.scale)
 		}
 
-		this.mouseStart = { x: mouse.x, y: mouse.y, button }
+		this.mouseStart = { x: mouse.x, y: mouse.y, button: cursor.button }
 
 		const force = this.hit
 			? null
 			: this.forces.find(force => this.mouseOnForce(mouse, force)) ?? null
 
 		this.mouseCurrent = { ...mouse, force }
-	}
+	})
 
-	private readonly move = ({ offsetX, offsetY }: MouseEvent) => {
+	private readonly move = cursorHandler(cursor => {
 		const mouse = {
-			x: Math.floor(offsetX * this.view.scale),
-			y: Math.floor(offsetY * this.view.scale)
+			x: Math.floor(cursor.x * this.view.scale),
+			y: Math.floor(cursor.y * this.view.scale)
 		}
 
 		if (this.mouseStart?.button === 0 && this.mouseCurrent) {
@@ -295,21 +302,16 @@ export default class Scene extends EventDispatcher<Events> {
 		}
 
 		this.updateCursor(mouse)
-	}
+	})
 
-	private readonly up = ({ offsetX, offsetY }: MouseEvent) => {
-		if (!this.mouseStart) return
+	private readonly up = () => {
+		if (!(this.mouseStart && this.mouseCurrent)) return
 
 		if (!this.hit) {
-			const mouse = {
-				x: Math.floor(offsetX * this.view.scale),
-				y: Math.floor(offsetY * this.view.scale)
-			}
-
 			if (
 				this.mouseStart.button === 0 &&
-				mouse.x === this.mouseStart.x &&
-				mouse.y === this.mouseStart.y
+				this.mouseCurrent.x === this.mouseStart.x &&
+				this.mouseCurrent.y === this.mouseStart.y
 			) {
 				// Hit the ball
 
@@ -320,10 +322,10 @@ export default class Scene extends EventDispatcher<Events> {
 					this.canvas,
 					this.center
 				)
-				const distanceFactor = distance(mouse, normalizedBall)
+				const distanceFactor = distance(this.mouseCurrent, normalizedBall)
 
 				const { x, y } = splitHypotenuse(
-					mouse,
+					this.mouseCurrent,
 					normalizedBall,
 					distanceFactor,
 					Math.min(distanceFactor / MAX_DISTANCE, 1) * MAX_VELOCITY
@@ -334,7 +336,7 @@ export default class Scene extends EventDispatcher<Events> {
 			} else if (
 				this.mouseStart.button === 2 &&
 				this.mouseCurrent?.force &&
-				this.mouseOnForce(mouse, this.mouseCurrent.force)
+				this.mouseOnForce(this.mouseCurrent, this.mouseCurrent.force)
 			) {
 				// Remove force
 
@@ -344,7 +346,7 @@ export default class Scene extends EventDispatcher<Events> {
 					this.forces.splice(index, 1)
 					this.dispatchForces()
 
-					this.updateCursor(mouse)
+					this.updateCursor(this.mouseCurrent)
 				}
 			}
 		}
@@ -455,9 +457,15 @@ export default class Scene extends EventDispatcher<Events> {
 		this.unsubscribeView()
 		document.removeEventListener('keydown', this.key)
 
-		this.canvas.removeEventListener('mousedown', this.down)
-		this.canvas.removeEventListener('mousemove', this.move)
-		this.canvas.removeEventListener('mouseup', this.up)
+		if (this.view.mobile) {
+			this.canvas.removeEventListener('touchstart', this.down)
+			this.canvas.removeEventListener('touchmove', this.move)
+			this.canvas.removeEventListener('touchend', this.up)
+		} else {
+			this.canvas.removeEventListener('mousedown', this.down)
+			this.canvas.removeEventListener('mousemove', this.move)
+			this.canvas.removeEventListener('mouseup', this.up)
+		}
 
 		if (this.frame) cancelAnimationFrame(this.frame)
 	}

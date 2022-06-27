@@ -1,9 +1,15 @@
+import { get } from 'svelte/store'
+
 import type Position from './position'
+import mobile from './mobile'
+import cursorHandler from './cursor/handler'
 
 const draggable = (
 	element: HTMLElement,
 	onDrop: ((position: Position) => void) | null
 ): SvelteActionReturnType => {
+	const $mobile = get(mobile)
+
 	let elementStart: Position | null = null
 
 	let start: Position | null = null
@@ -11,7 +17,7 @@ const draggable = (
 
 	let copy: typeof element | null = null
 
-	const down = ({ clientX: x, clientY: y }: MouseEvent) => {
+	const down = cursorHandler(({ x, y }) => {
 		if (!onDrop) return
 
 		elementStart = element.getBoundingClientRect()
@@ -27,16 +33,16 @@ const draggable = (
 		copy.style.top = `${elementStart.y}px`
 
 		document.body.append(copy)
-	}
+	})
 
-	const move = ({ clientX: x, clientY: y }: MouseEvent) => {
+	const move = cursorHandler(({ x, y }) => {
 		if (!(onDrop && elementStart && start && copy)) return
 
 		current = { x, y }
 
 		copy.style.left = `${elementStart.x + (current.x - start.x)}px`
 		copy.style.top = `${elementStart.y + (current.y - start.y)}px`
-	}
+	})
 
 	const up = () => {
 		if (!(onDrop && elementStart && start && current && copy)) return
@@ -50,18 +56,30 @@ const draggable = (
 		copy.remove()
 	}
 
-	element.addEventListener('mousedown', down)
-	document.addEventListener('mousemove', move)
-	document.addEventListener('mouseup', up)
+	if ($mobile) {
+		element.addEventListener('touchstart', down)
+		document.addEventListener('touchmove', move)
+		document.addEventListener('touchend', up)
+	} else {
+		element.addEventListener('mousedown', down)
+		document.addEventListener('mousemove', move)
+		document.addEventListener('mouseup', up)
+	}
 
 	return {
 		update: (newOnDrop: typeof onDrop) => {
 			onDrop = newOnDrop
 		},
 		destroy: () => {
-			element.removeEventListener('mousedown', down)
-			document.removeEventListener('mousemove', move)
-			document.removeEventListener('mouseup', up)
+			if ($mobile) {
+				element.removeEventListener('touchstart', down)
+				document.removeEventListener('touchmove', move)
+				document.removeEventListener('touchend', up)
+			} else {
+				element.removeEventListener('mousedown', down)
+				document.removeEventListener('mousemove', move)
+				document.removeEventListener('mouseup', up)
+			}
 		}
 	}
 }
