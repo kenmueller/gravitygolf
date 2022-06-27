@@ -1,5 +1,8 @@
+import type { Unsubscriber } from 'svelte/store'
+
 import { goto } from '$app/navigation'
 
+import type View from '$lib/view'
 import type Position from '$lib/position'
 import type Level from '$lib/level'
 import type Force from './force'
@@ -11,6 +14,7 @@ import EventDispatcher from '$lib/event/dispatcher'
 import FORCE_RADIUS from './force/radius'
 import MAX_STARS from './star/max'
 import levels from '$lib/level/levels'
+import view from '$lib/view/store'
 import distance from './distance'
 import clear from './clear'
 import normalizePoint from './normalize/point'
@@ -39,6 +43,9 @@ interface Events {
 }
 
 export default class Scene extends EventDispatcher<Events> {
+	private view: View = undefined as never
+	private unsubscribeView: Unsubscriber
+
 	private previousTime: number | null = null
 	private frame: number | null = null
 
@@ -62,6 +69,14 @@ export default class Scene extends EventDispatcher<Events> {
 	) {
 		super()
 
+		this.unsubscribeView = view.subscribe($view => {
+			const initial = !this.view
+			this.view = $view as View
+
+			if (initial) this.scale()
+			this.resize()
+		})
+
 		this.hole = { ...level.hole, image: useImage(holeImage) }
 
 		this.stars = level.stars.map(star => ({
@@ -74,11 +89,6 @@ export default class Scene extends EventDispatcher<Events> {
 
 		this.clear(true)
 
-		this.scale()
-
-		this.resize()
-		window.addEventListener('resize', this.resize)
-
 		document.addEventListener('keydown', this.key)
 
 		this.canvas.addEventListener('mousedown', this.down)
@@ -90,8 +100,8 @@ export default class Scene extends EventDispatcher<Events> {
 		this.frame = requestAnimationFrame(this.tick)
 	}
 
-	private readonly scale = () => scale(this.context)
-	private readonly resize = () => resize(this.canvas)
+	private readonly scale = () => scale(this.context, this.view)
+	private readonly resize = () => resize(this.canvas, this.view)
 
 	private readonly tick = (currentTime: number) => {
 		this.frame = null
@@ -247,11 +257,9 @@ export default class Scene extends EventDispatcher<Events> {
 	}
 
 	private readonly down = ({ offsetX, offsetY, button }: MouseEvent) => {
-		const scale = window.devicePixelRatio
-
 		const mouse = {
-			x: Math.floor(offsetX * scale),
-			y: Math.floor(offsetY * scale)
+			x: Math.floor(offsetX * this.view.scale),
+			y: Math.floor(offsetY * this.view.scale)
 		}
 
 		this.mouseStart = { x: mouse.x, y: mouse.y, button }
@@ -264,11 +272,9 @@ export default class Scene extends EventDispatcher<Events> {
 	}
 
 	private readonly move = ({ offsetX, offsetY }: MouseEvent) => {
-		const scale = window.devicePixelRatio
-
 		const mouse = {
-			x: Math.floor(offsetX * scale),
-			y: Math.floor(offsetY * scale)
+			x: Math.floor(offsetX * this.view.scale),
+			y: Math.floor(offsetY * this.view.scale)
 		}
 
 		if (this.mouseStart?.button === 0 && this.mouseCurrent) {
@@ -295,11 +301,9 @@ export default class Scene extends EventDispatcher<Events> {
 		if (!this.mouseStart) return
 
 		if (!this.hit) {
-			const scale = window.devicePixelRatio
-
 			const mouse = {
-				x: Math.floor(offsetX * scale),
-				y: Math.floor(offsetY * scale)
+				x: Math.floor(offsetX * this.view.scale),
+				y: Math.floor(offsetY * this.view.scale)
 			}
 
 			if (
@@ -393,11 +397,17 @@ export default class Scene extends EventDispatcher<Events> {
 	}
 
 	readonly addForce = ({ x, y }: Position, direction: 1 | -1) => {
-		const scale = window.devicePixelRatio
-
 		this.forces.push({
-			x: x * scale + FORCE_RADIUS - this.canvas.width / 2 - this.center.x,
-			y: -y * scale - FORCE_RADIUS + this.canvas.height / 2 - this.center.y,
+			x:
+				x * this.view.scale +
+				FORCE_RADIUS -
+				this.canvas.width / 2 -
+				this.center.x,
+			y:
+				-y * this.view.scale -
+				FORCE_RADIUS +
+				this.canvas.height / 2 -
+				this.center.y,
 			direction,
 			image: useImage(direction === 1 ? gravityImage : antigravityImage)
 		})
@@ -442,7 +452,7 @@ export default class Scene extends EventDispatcher<Events> {
 	readonly destroy = () => {
 		this.removeAllEventListeners()
 
-		window.removeEventListener('resize', this.resize)
+		this.unsubscribeView()
 		document.removeEventListener('keydown', this.key)
 
 		this.canvas.removeEventListener('mousedown', this.down)

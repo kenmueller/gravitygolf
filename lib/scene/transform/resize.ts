@@ -1,10 +1,10 @@
-const resize = (canvas: HTMLCanvasElement) => {
-	const scale = window.devicePixelRatio
+import type View from '$lib/view'
 
-	canvas.width = Math.floor(window.innerWidth * scale)
-	canvas.height = Math.floor(window.innerHeight * scale)
-	canvas.style.width = `${window.innerWidth}px`
-	canvas.style.height = `${window.innerHeight}px`
+const resize = (canvas: HTMLCanvasElement, view: View) => {
+	canvas.width = Math.floor(view.width * view.scale)
+	canvas.height = Math.floor(view.height * view.scale)
+	canvas.style.width = `${view.width}px`
+	canvas.style.height = `${view.height}px`
 }
 
 export default resize

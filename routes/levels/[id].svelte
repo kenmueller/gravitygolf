@@ -20,7 +20,10 @@
 
 	import levels from '$lib/level/levels'
 	import stars from '$lib/level/stars/store'
+	import mobile from '$lib/mobile'
+	import landscape from '$lib/landscape'
 	import LevelScene from '../../components/Level/Scene.svelte'
+	import BackLink from '../../components/Link/Back.svelte'
 
 	export let id: number
 
@@ -29,5 +32,35 @@
 </script>
 
 {#if enabled}
-	<LevelScene {id} />
+	{#if !$mobile || ($mobile && $landscape)}
+		<LevelScene {id} />
+	{:else}
+		<main>
+			<BackLink href="/levels">Level {id}</BackLink>
+			<h1>Rotate your device to play</h1>
+		</main>
+	{/if}
 {/if}
+
+<style lang="scss">
+	main {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		height: 100%;
+		padding: 2rem;
+
+		> :global(a) {
+			position: absolute;
+			top: 1.5rem;
+			left: 1.7rem;
+		}
+	}
+
+	h1 {
+		text-align: center;
+		color: white;
+	}
+</style>

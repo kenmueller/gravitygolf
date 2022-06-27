@@ -9,6 +9,8 @@
 	import levelFromRaw from '$lib/level/raw/from'
 	import levels from '$lib/level/levels'
 	import draggable from '$lib/draggable'
+	import mobile from '$lib/mobile'
+	import view from '$lib/view/store'
 	import BackLink from '../../components/Link/Back.svelte'
 	import Reset from '../../images/Reset.svelte'
 	import Trash from '../../images/Trash.svelte'
@@ -45,18 +47,10 @@
 		scene?.addForce(position, direction)
 	}
 
-	$: scale = window.devicePixelRatio
-
-	const setScale = () => {
-		scale = window.devicePixelRatio
-	}
-
 	onDestroy(() => {
 		scene?.destroy()
 	})
 </script>
-
-<svelte:window on:resize={setScale} />
 
 <svelte:head>
 	<title>Level {id} | Gravity Golf</title>
@@ -65,18 +59,19 @@
 <main>
 	<header>
 		<BackLink href="/levels">
-			Level {id} | Gravity Golf
+			Level {id}
+			{#if !$mobile}| Gravity Golf{/if}
 		</BackLink>
 		<div class="forces">
-			{#if scale}
+			{#if $view}
 				<span
-					style="--radius: {FORCE_RADIUS}; --scale: {scale};"
+					style="--radius: {FORCE_RADIUS}; --scale: {$view.scale};"
 					data-force="gravity"
 					data-remaining={forcesRemaining.gravity}
 					use:draggable={scene && forcesRemaining.gravity ? addForce(1) : null}
 				/>
 				<span
-					style="--radius: {FORCE_RADIUS}; --scale: {scale};"
+					style="--radius: {FORCE_RADIUS}; --scale: {$view.scale};"
 					data-force="antigravity"
 					data-remaining={forcesRemaining.antigravity}
 					use:draggable={scene && forcesRemaining.antigravity
@@ -86,20 +81,20 @@
 			{/if}
 		</div>
 		<div class="stars">
-			{#if scale}
+			{#if $view}
 				{#each { length: MAX_STARS } as _star, index}
 					<img
 						class="star"
 						src={starImage}
 						alt="Star"
-						style="--radius: {FORCE_RADIUS}; --scale: {scale};"
+						style="--radius: {FORCE_RADIUS}; --scale: {$view.scale};"
 						data-hit={index < stars ? '' : undefined}
 					/>
 				{/each}
 			{/if}
 		</div>
 		<button class="reset" disabled={!scene} on:click={() => scene?.reset()}>
-			Press SPACE BAR to restart
+			{#if !$mobile}Press SPACE BAR to restart{/if}
 			<Reset />
 		</button>
 		<button class="clear" disabled={!scene} on:click={() => scene?.clear()}>
