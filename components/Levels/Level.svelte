@@ -57,7 +57,7 @@
 	}
 
 	img {
-		$size: 1.4rem;
+		$size: 1.3rem;
 
 		pointer-events: none;
 		width: $size;
