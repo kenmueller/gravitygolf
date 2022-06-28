@@ -1,8 +1,11 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte'
+	import { fade } from 'svelte/transition'
 
 	import type Position from '$lib/position'
+	import type Force from '$lib/scene/force'
 	import forceRadius from '$lib/scene/force/radius'
+	import FORCE_DELETE_DIMENSIONS from '$lib/scene/force/delete/dimensions'
 	import MAX_STARS from '$lib/scene/star/max'
 	import Scene from '$lib/scene'
 	import type RawLevel from '$lib/level/raw'
@@ -17,22 +20,18 @@
 
 	import starImage from '../../images/star.png'
 
-	$: radius = forceRadius($mobile)
-
 	export let id: number
 	$: level = levelFromRaw(levels[id - 1] as RawLevel)
-
-	$: forcesRemaining = {
-		gravity: level.maxGravity - level.defaultGravity.length,
-		antigravity: level.maxAntigravity - level.defaultAntigravity.length
-	}
-
-	$: stars = MAX_STARS - level.stars.length
 
 	let canvas: HTMLCanvasElement | null = null
 	$: context = canvas?.getContext('2d')
 
 	$: scene = canvas && context && new Scene(canvas, context, { id, ...level })
+
+	$: forcesRemaining = {
+		gravity: level.maxGravity - level.defaultGravity.length,
+		antigravity: level.maxAntigravity - level.defaultAntigravity.length
+	}
 
 	$: scene?.addEventListener('forces', (gravity, antigravity) => {
 		forcesRemaining = {
@@ -41,13 +40,23 @@
 		}
 	})
 
+	const addForce = (direction: 1 | -1) => (position: Position) => {
+		scene?.addForce(position, direction)
+	}
+
+	$: stars = MAX_STARS - level.stars.length
+
 	$: scene?.addEventListener('stars', newStars => {
 		stars = newStars
 	})
 
-	const addForce = (direction: 1 | -1) => (position: Position) => {
-		scene?.addForce(position, direction)
-	}
+	let currentForce: Force | null = null
+
+	$: scene?.addEventListener('force', force => {
+		currentForce = force
+	})
+
+	$: radius = forceRadius($mobile)
 
 	onDestroy(() => {
 		scene?.destroy()
@@ -104,6 +113,19 @@
 		</button>
 	</header>
 	<canvas bind:this={canvas} />
+	{#if currentForce}
+		<p
+			class="delete-force"
+			style="
+				width: {FORCE_DELETE_DIMENSIONS.width}px;
+				height: {FORCE_DELETE_DIMENSIONS.height}px;
+			"
+			transition:fade={{ duration: 300 }}
+		>
+			<Trash />
+			Drag to delete {currentForce.direction === 1 ? '' : 'anti'}gravity
+		</p>
+	{/if}
 </main>
 
 <style lang="scss">
@@ -225,5 +247,29 @@
 
 	.clear {
 		margin-left: 1rem;
+	}
+
+	.delete-force {
+		pointer-events: none;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		position: absolute;
+		right: 0;
+		bottom: 0;
+		color: white;
+		background: transparentize(white, 0.9);
+		border: 0.25rem dashed white;
+		z-index: 0;
+
+		> :global(svg) {
+			height: 2rem;
+			margin-right: 0.5rem;
+		}
+	}
+
+	canvas {
+		position: relative;
+		z-index: 50;
 	}
 </style>

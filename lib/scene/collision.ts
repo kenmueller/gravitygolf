@@ -1,5 +1,5 @@
 import type Position from '$lib/position'
-import distance from './distance'
+import distance from '../distance'
 
 const likelyDirection = (
 	left: number,

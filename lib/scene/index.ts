@@ -2,6 +2,7 @@ import type { Unsubscriber } from 'svelte/store'
 
 import { goto } from '$app/navigation'
 
+import type SceneEvents from './events'
 import type View from '$lib/view'
 import type Position from '$lib/position'
 import type Level from '$lib/level'
@@ -12,18 +13,19 @@ import type Star from './star'
 import type Wall from './wall'
 import EventDispatcher from '$lib/event/dispatcher'
 import forceRadius from './force/radius'
+import FORCE_DELETE_DIMENSIONS from './force/delete/dimensions'
 import MAX_STARS from './star/max'
 import levels from '$lib/level/levels'
 import view from '$lib/view/store'
-import distance from './distance'
+import distance from '../distance'
 import clear from './clear'
-import normalizePoint from './normalize/point'
-import normalizeShape from './normalize/shape'
+import normalizePoint from '../normalize/point'
+import normalizeShape from '../normalize/shape'
 import collision from './collision'
 import scale from './transform/scale'
 import resize from './transform/resize'
-import distanceSquared from './distance/squared'
-import splitHypotenuse from './split/hypotenuse'
+import distanceSquared from '../distance/squared'
+import splitHypotenuse from '../split/hypotenuse'
 import clamp from './clamp'
 import useImage from '$lib/image/use'
 import setStars from '$lib/level/stars/set'
@@ -38,12 +40,7 @@ import starImage from '../../images/star.png'
 const MAX_DISTANCE = 800
 const MAX_VELOCITY = 500
 
-interface Events {
-	forces: [number, number]
-	stars: [number]
-}
-
-export default class Scene extends EventDispatcher<Events> {
+export default class Scene extends EventDispatcher<SceneEvents> {
 	private view: View = undefined as never
 	private unsubscribeView: Unsubscriber
 
@@ -276,6 +273,9 @@ export default class Scene extends EventDispatcher<Events> {
 			: this.forces.find(force => this.mouseOnForce(mouse, force)) ?? null
 
 		this.mouseCurrent = { ...mouse, force }
+
+		if (this.mouseStart.button === 0 && force)
+			this.dispatchEvent('force', force)
 	})
 
 	private readonly move = cursorHandler(cursor => {
@@ -284,17 +284,19 @@ export default class Scene extends EventDispatcher<Events> {
 			y: Math.floor(cursor.y * this.view.scale)
 		}
 
-		if (this.mouseStart?.button === 0 && this.mouseCurrent) {
-			if (this.mouseCurrent.force) {
-				// Dragging force
+		if (this.mouseCurrent) {
+			if (this.mouseStart?.button === 0) {
+				if (this.mouseCurrent.force) {
+					// Dragging force
 
-				this.mouseCurrent.force.x += mouse.x - this.mouseCurrent.x
-				this.mouseCurrent.force.y -= mouse.y - this.mouseCurrent.y
-			} else {
-				// Panning
+					this.mouseCurrent.force.x += mouse.x - this.mouseCurrent.x
+					this.mouseCurrent.force.y -= mouse.y - this.mouseCurrent.y
+				} else {
+					// Panning
 
-				this.center.x += mouse.x - this.mouseCurrent.x
-				this.center.y -= mouse.y - this.mouseCurrent.y
+					this.center.x += mouse.x - this.mouseCurrent.x
+					this.center.y -= mouse.y - this.mouseCurrent.y
+				}
 			}
 
 			this.mouseCurrent.x = mouse.x
@@ -333,19 +335,38 @@ export default class Scene extends EventDispatcher<Events> {
 
 				this.ball.vx = x
 				this.ball.vy = y
+			} else if (this.mouseStart.button === 0 && this.mouseCurrent?.force) {
+				// End dragging force
+
+				const force = normalizePoint(
+					this.mouseCurrent.force,
+					this.canvas,
+					this.center
+				)
+
+				if (
+					force.x >
+						this.canvas.width -
+							FORCE_DELETE_DIMENSIONS.width * this.view.scale &&
+					force.y >
+						this.canvas.height -
+							FORCE_DELETE_DIMENSIONS.height * this.view.scale &&
+					this.deleteForce(this.mouseCurrent.force)
+				) {
+					this.dispatchForces()
+					this.updateCursor(this.mouseCurrent)
+				}
+
+				this.dispatchEvent('force', null)
 			} else if (
 				this.mouseStart.button === 2 &&
 				this.mouseCurrent?.force &&
 				this.mouseOnForce(this.mouseCurrent, this.mouseCurrent.force)
 			) {
-				// Remove force
+				// Delete force
 
-				const index = this.forces.indexOf(this.mouseCurrent.force)
-
-				if (index >= 0) {
-					this.forces.splice(index, 1)
+				if (this.deleteForce(this.mouseCurrent.force)) {
 					this.dispatchForces()
-
 					this.updateCursor(this.mouseCurrent)
 				}
 			}
@@ -371,6 +392,14 @@ export default class Scene extends EventDispatcher<Events> {
 
 	private readonly key = ({ key }: KeyboardEvent) => {
 		if (key === ' ') this.reset()
+	}
+
+	private readonly deleteForce = (force: Force) => {
+		const index = this.forces.indexOf(force)
+		const found = index >= 0
+
+		if (found) this.forces.splice(index, 1)
+		return found
 	}
 
 	private readonly dispatchForces = () => {
