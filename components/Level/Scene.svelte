@@ -181,7 +181,7 @@
 			border-radius: calc(0.03rem * var(--scale));
 			transform: translate(
 				calc(0.07rem * var(--scale)),
-				calc(-0.07rem * var(--scale))
+				calc(-0.06rem * var(--scale))
 			);
 		}
 
