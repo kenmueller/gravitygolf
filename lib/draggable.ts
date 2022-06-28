@@ -17,7 +17,9 @@ const draggable = (
 
 	let copy: typeof element | null = null
 
-	const down = cursorHandler(({ x, y }) => {
+	const down = cursorHandler(({ x, y }, event) => {
+		event.preventDefault()
+
 		if (!onDrop) return
 
 		elementStart = element.getBoundingClientRect()

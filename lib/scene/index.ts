@@ -258,7 +258,9 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 		this.frame = requestAnimationFrame(this.tick)
 	}
 
-	private readonly down = cursorHandler(cursor => {
+	private readonly down = cursorHandler((cursor, event) => {
+		event.preventDefault()
+
 		const mouse = {
 			x: Math.floor(cursor.x * this.view.scale),
 			y: Math.floor(cursor.y * this.view.scale)
