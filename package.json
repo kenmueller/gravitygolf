@@ -15,6 +15,7 @@
 		"@types/web-app-manifest": "^1.0.2",
 		"@typescript-eslint/eslint-plugin": "^5.30.0",
 		"@typescript-eslint/parser": "^5.30.0",
+		"autoprefixer": "^10.4.7",
 		"eslint": "^8.18.0",
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-svelte3": "^4.0.0",

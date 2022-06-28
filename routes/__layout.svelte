@@ -48,7 +48,6 @@
 	}
 
 	body {
-		-webkit-user-select: none;
 		user-select: none;
 		touch-action: none;
 		overflow: hidden;
