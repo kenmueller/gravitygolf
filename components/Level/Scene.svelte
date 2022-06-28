@@ -100,11 +100,21 @@
 				{/each}
 			{/if}
 		</div>
-		<button class="reset" disabled={!scene} on:click={() => scene?.reset()}>
+		<button
+			class="reset"
+			disabled={!scene}
+			aria-label="Restart"
+			on:click={() => scene?.reset()}
+		>
 			{#if !$mobile}Press SPACE BAR to restart{/if}
 			<Reset />
 		</button>
-		<button class="clear" disabled={!scene} on:click={() => scene?.clear()}>
+		<button
+			class="clear"
+			disabled={!scene}
+			aria-label="Clear"
+			on:click={() => scene?.clear()}
+		>
 			<Trash />
 		</button>
 	</header>

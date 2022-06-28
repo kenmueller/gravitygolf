@@ -11,7 +11,7 @@
 
 <main>
 	<h1>Gravity Golf</h1>
-	<a href="/levels">
+	<a href="/levels" aria-label="Levels">
 		<Play />
 	</a>
 </main>

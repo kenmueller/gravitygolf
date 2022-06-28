@@ -4,7 +4,7 @@
 	export let href: string
 </script>
 
-<a {href}>
+<a {href} aria-label="Back">
 	<Back />
 	<slot />
 </a>
