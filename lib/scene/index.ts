@@ -11,7 +11,7 @@ import type Hole from './hole'
 import type Star from './star'
 import type Wall from './wall'
 import EventDispatcher from '$lib/event/dispatcher'
-import FORCE_RADIUS from './force/radius'
+import forceRadius from './force/radius'
 import MAX_STARS from './star/max'
 import levels from '$lib/level/levels'
 import view from '$lib/view/store'
@@ -241,7 +241,7 @@ export default class Scene extends EventDispatcher<Events> {
 			if (!force.image.current) continue
 
 			const { x, y, radius } = normalizeShape(
-				{ ...force, radius: FORCE_RADIUS },
+				{ ...force, radius: forceRadius(this.view.mobile) },
 				this.canvas,
 				this.center
 			)
@@ -360,7 +360,7 @@ export default class Scene extends EventDispatcher<Events> {
 
 	private readonly mouseOnForce = (mouse: Position, force: Force) =>
 		distance(normalizePoint(force, this.canvas, this.center), mouse) <=
-		FORCE_RADIUS
+		forceRadius(this.view.mobile)
 
 	private readonly updateCursor = (mouse: Position) => {
 		this.canvas.style.cursor =
@@ -402,12 +402,12 @@ export default class Scene extends EventDispatcher<Events> {
 		this.forces.push({
 			x:
 				x * this.view.scale +
-				FORCE_RADIUS -
+				forceRadius(this.view.mobile) -
 				this.canvas.width / 2 -
 				this.center.x,
 			y:
 				-y * this.view.scale -
-				FORCE_RADIUS +
+				forceRadius(this.view.mobile) +
 				this.canvas.height / 2 -
 				this.center.y,
 			direction,

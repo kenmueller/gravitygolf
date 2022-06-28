@@ -45,6 +45,7 @@
 	}
 
 	body {
+		user-select: none;
 		overflow: hidden;
 		background: colors.$gray;
 	}

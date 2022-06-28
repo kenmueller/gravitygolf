@@ -46,7 +46,6 @@
 
 	[aria-disabled] {
 		pointer-events: none;
-		user-select: none;
 		opacity: 0.5;
 	}
 

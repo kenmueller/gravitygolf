@@ -2,7 +2,7 @@
 	import { onDestroy } from 'svelte'
 
 	import type Position from '$lib/position'
-	import FORCE_RADIUS from '$lib/scene/force/radius'
+	import forceRadius from '$lib/scene/force/radius'
 	import MAX_STARS from '$lib/scene/star/max'
 	import Scene from '$lib/scene'
 	import type RawLevel from '$lib/level/raw'
@@ -16,6 +16,8 @@
 	import Trash from '../../images/Trash.svelte'
 
 	import starImage from '../../images/star.png'
+
+	$: radius = forceRadius($mobile)
 
 	export let id: number
 	$: level = levelFromRaw(levels[id - 1] as RawLevel)
@@ -65,13 +67,13 @@
 		<div class="forces">
 			{#if $view}
 				<span
-					style="--radius: {FORCE_RADIUS}; --scale: {$view.scale};"
+					style="--radius: {radius}; --scale: {radius / $view.scale};"
 					data-force="gravity"
 					data-remaining={forcesRemaining.gravity}
 					use:draggable={scene && forcesRemaining.gravity ? addForce(1) : null}
 				/>
 				<span
-					style="--radius: {FORCE_RADIUS}; --scale: {$view.scale};"
+					style="--radius: {radius}; --scale: {radius / $view.scale};"
 					data-force="antigravity"
 					data-remaining={forcesRemaining.antigravity}
 					use:draggable={scene && forcesRemaining.antigravity
@@ -87,7 +89,7 @@
 						class="star"
 						src={starImage}
 						alt="Star"
-						style="--radius: {FORCE_RADIUS}; --scale: {$view.scale};"
+						style="--radius: {radius}; --scale: {radius / $view.scale};"
 						data-hit={index < stars ? '' : undefined}
 					/>
 				{/each}
@@ -108,7 +110,6 @@
 	main {
 		position: relative;
 		height: 100%;
-		user-select: none;
 	}
 
 	header {
@@ -116,8 +117,8 @@
 		align-items: center;
 		position: absolute;
 		top: 1.5rem;
-		left: 1.7rem;
-		right: 1.7rem;
+		left: 2rem;
+		right: 2rem;
 		z-index: 100;
 		pointer-events: none;
 
@@ -139,8 +140,8 @@
 	[data-force] {
 		cursor: move;
 		position: relative;
-		width: calc((var(--radius) / var(--scale)) * 2px);
-		height: calc((var(--radius) / var(--scale)) * 2px);
+		width: calc(2px * var(--scale));
+		height: calc(2px * var(--scale));
 		background-size: contain;
 		border-radius: 50%;
 		transition: opacity 0.3s;
@@ -151,19 +152,19 @@
 			position: absolute;
 			top: 0;
 			right: 0;
-			padding: 0 calc(1rem / var(--scale));
-			font-size: calc(1.6rem / var(--scale));
+			padding: 0 calc(0.03rem * var(--scale));
+			font-size: calc(0.05rem * var(--scale));
 			color: transparentize(black, 0.5);
 			background: transparentize(white, 0.4);
-			border-radius: calc(1rem / var(--scale));
+			border-radius: calc(0.03rem * var(--scale));
 			transform: translate(
-				calc(2.4rem / var(--scale)),
-				calc(-1.6rem / var(--scale))
+				calc(0.07rem * var(--scale)),
+				calc(-0.07rem * var(--scale))
 			);
 		}
 
 		& + & {
-			margin-left: calc(4rem / var(--scale));
+			margin-left: calc(0.1rem * var(--scale));
 		}
 	}
 
@@ -186,13 +187,13 @@
 
 	.star {
 		pointer-events: none;
-		width: calc((var(--radius) / var(--scale)) * 2px);
-		height: calc((var(--radius) / var(--scale)) * 2px);
+		width: calc(2px * var(--scale));
+		height: calc(2px * var(--scale));
 		opacity: 0.5;
 		transition: opacity 0.3s;
 
 		& + & {
-			margin-left: calc(1rem / var(--scale));
+			margin-left: calc(0.03rem * var(--scale));
 		}
 	}
 

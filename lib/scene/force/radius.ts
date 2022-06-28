@@ -1,3 +1,3 @@
-const FORCE_RADIUS = 30
+const forceRadius = (mobile: boolean) => (mobile ? 50 : 35)
 
-export default FORCE_RADIUS
+export default forceRadius
