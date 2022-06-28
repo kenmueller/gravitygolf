@@ -1,0 +1,2 @@
+export const MAX_FORCE_HIT_DISTANCE = 300
+export const MAX_FORCE_HIT_VELOCITY = 500

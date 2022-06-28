@@ -13,6 +13,7 @@ import type Star from './star'
 import type Wall from './wall'
 import EventDispatcher from '$lib/event/dispatcher'
 import forceRadius from './force/radius'
+import { MAX_FORCE_HIT_DISTANCE, MAX_FORCE_HIT_VELOCITY } from './force/hit'
 import FORCE_DELETE_DIMENSIONS from './force/delete/dimensions'
 import MAX_STARS from './star/max'
 import levels from '$lib/level/levels'
@@ -36,9 +37,6 @@ import antigravityImage from '../../images/antigravity.png'
 import ballImage from '../../images/ball.png'
 import holeImage from '../../images/hole.png'
 import starImage from '../../images/star.png'
-
-const MAX_DISTANCE = 800
-const MAX_VELOCITY = 500
 
 export default class Scene extends EventDispatcher<SceneEvents> {
 	private view: View = undefined as never
@@ -330,7 +328,8 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 					this.mouseCurrent,
 					normalizedBall,
 					distanceFactor,
-					Math.min(distanceFactor / MAX_DISTANCE, 1) * MAX_VELOCITY
+					Math.min(distanceFactor / MAX_FORCE_HIT_DISTANCE, 1) *
+						MAX_FORCE_HIT_VELOCITY
 				)
 
 				this.ball.vx = x
