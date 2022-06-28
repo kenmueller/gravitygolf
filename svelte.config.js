@@ -24,6 +24,13 @@ const config = {
 			serviceWorker: 'lib/worker',
 			template: 'lib/index.html'
 		},
+		csp: {
+			directives: {
+				'default-src': ['self'],
+				'style-src': ['self', 'https://fonts.googleapis.com'],
+				'font-src': ['self', 'https://fonts.gstatic.com']
+			}
+		},
 		vite: {
 			server: {
 				fs: {
