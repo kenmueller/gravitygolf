@@ -63,10 +63,6 @@
 	})
 </script>
 
-<svelte:head>
-	<title>Level {id} | Gravity Golf</title>
-</svelte:head>
-
 <main>
 	<header>
 		<BackLink href="/levels">

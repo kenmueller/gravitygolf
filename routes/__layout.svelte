@@ -7,6 +7,7 @@
 <script lang="ts">
 	import type { Load } from '@sveltejs/kit'
 
+	import MetaBase from '../components/Meta/Base.svelte'
 	import PageTransition from '../components/Transition/Page.svelte'
 
 	export let url: URL
@@ -20,6 +21,8 @@
 		href="https://fonts.googleapis.com/css2?family=Kdam+Thmor+Pro&display=swap"
 	/>
 </svelte:head>
+
+<MetaBase />
 
 <PageTransition {url}>
 	<slot />

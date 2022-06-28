@@ -22,6 +22,9 @@
 	import stars from '$lib/level/stars/store'
 	import mobile from '$lib/mobile'
 	import landscape from '$lib/landscape'
+	import MetaImage from '../../components/Meta/Image.svelte'
+	import MetaTitle from '../../components/Meta/Title.svelte'
+	import MetaDescription from '../../components/Meta/Description.svelte'
 	import LevelScene from '../../components/Level/Scene.svelte'
 	import BackLink from '../../components/Link/Back.svelte'
 
@@ -30,6 +33,10 @@
 	$: enabled = $stars && id - 1 <= $stars.length
 	$: if (enabled === false) goto('/levels').catch(console.error)
 </script>
+
+<MetaImage />
+<MetaTitle value="Level {id} | Gravity Golf" />
+<MetaDescription />
 
 {#if enabled}
 	{#if !$mobile || ($mobile && $landscape)}

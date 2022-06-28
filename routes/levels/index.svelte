@@ -1,13 +1,16 @@
 <script lang="ts">
 	import levels from '$lib/level/levels'
 	import mobile from '$lib/mobile'
+	import MetaImage from '../../components/Meta/Image.svelte'
+	import MetaTitle from '../../components/Meta/Title.svelte'
+	import MetaDescription from '../../components/Meta/Description.svelte'
 	import Level from '../../components/Levels/Level.svelte'
 	import BackLink from '../../components/Link/Back.svelte'
 </script>
 
-<svelte:head>
-	<title>Levels | Gravity Golf</title>
-</svelte:head>
+<MetaImage />
+<MetaTitle value="Levels | Gravity Golf" />
+<MetaDescription />
 
 <main>
 	<header>

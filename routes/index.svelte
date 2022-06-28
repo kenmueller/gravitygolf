@@ -1,10 +1,13 @@
 <script lang="ts">
+	import MetaImage from '../components/Meta/Image.svelte'
+	import MetaTitle from '../components/Meta/Title.svelte'
+	import MetaDescription from '../components/Meta/Description.svelte'
 	import Play from '../images/Play.svelte'
 </script>
 
-<svelte:head>
-	<title>Gravity Golf</title>
-</svelte:head>
+<MetaImage />
+<MetaTitle />
+<MetaDescription />
 
 <main>
 	<h1>Gravity Golf</h1>
