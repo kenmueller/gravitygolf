@@ -3,7 +3,7 @@ import type { WebAppManifest } from 'web-app-manifest'
 
 import errorFromValue from '$lib/error/from/value'
 
-import mask from '../images/mask.png'
+import touch from '../images/touch.png'
 
 const manifest: WebAppManifest = {
 	dir: 'ltr',
@@ -17,7 +17,7 @@ const manifest: WebAppManifest = {
 	theme_color: '#24292e',
 	background_color: '#24292e',
 	categories: ['games', 'entertainment', 'education'],
-	icons: [{ src: mask, sizes: '512x512', purpose: 'monochrome maskable' }]
+	icons: [{ src: touch, sizes: '180x180' }]
 }
 
 let data: string | null = null
