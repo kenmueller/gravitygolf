@@ -338,17 +338,11 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 			} else if (this.mouseStart.button === 0 && this.mouseCurrent?.force) {
 				// End dragging force
 
-				const force = normalizePoint(
-					this.mouseCurrent.force,
-					this.canvas,
-					this.center
-				)
-
 				if (
-					force.x >
+					this.mouseCurrent.x >
 						this.canvas.width -
 							FORCE_DELETE_DIMENSIONS.width * this.view.scale &&
-					force.y >
+					this.mouseCurrent.y >
 						this.canvas.height -
 							FORCE_DELETE_DIMENSIONS.height * this.view.scale &&
 					this.deleteForce(this.mouseCurrent.force)
