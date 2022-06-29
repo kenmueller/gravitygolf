@@ -1,6 +1,6 @@
 <script lang="ts">
 	import MAX_STARS from '$lib/scene/star/max'
-	import stars from '$lib/level/stars/store'
+	import stars from '$lib/level/stars'
 
 	import starImage from '../../images/star.png'
 

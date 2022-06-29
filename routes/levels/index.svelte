@@ -1,5 +1,6 @@
 <script lang="ts">
 	import levels from '$lib/level/levels'
+	import totalStars from '$lib/level/stars/total'
 	import mobile from '$lib/mobile'
 	import MetaImage from '../../components/Meta/Image.svelte'
 	import MetaTitle from '../../components/Meta/Title.svelte'
@@ -18,6 +19,7 @@
 			Levels
 			{#if !$mobile}| Gravity Golf{/if}
 		</BackLink>
+		<span class="stars" data-stars={$totalStars} />
 	</header>
 	<div>
 		{#each levels as _level, index}
@@ -45,7 +47,32 @@
 
 	header {
 		display: flex;
+		justify-content: space-between;
 		align-items: center;
+	}
+
+	.stars {
+		$radius: 1rem;
+
+		position: relative;
+		height: 2 * $radius;
+		width: 2 * $radius;
+		margin-right: 1.3rem;
+		background-image: url('../../images/star.png');
+		background-size: contain;
+		background-repeat: no-repeat;
+
+		&::after {
+			content: attr(data-stars);
+			position: absolute;
+			top: 0;
+			right: 0;
+			padding: 0 0.4rem;
+			color: transparentize(black, 0.5);
+			background: transparentize(white, 0.4);
+			border-radius: 0.5rem;
+			transform: translate(1.35rem, -1.15rem);
+		}
 	}
 
 	div {

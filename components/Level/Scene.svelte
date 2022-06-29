@@ -172,6 +172,7 @@
 		width: calc(2px * var(--scale));
 		height: calc(2px * var(--scale));
 		background-size: contain;
+		background-repeat: no-repeat;
 		border-radius: 50%;
 		transition: opacity 0.3s;
 

@@ -19,7 +19,7 @@
 	import { goto } from '$app/navigation'
 
 	import levels from '$lib/level/levels'
-	import stars from '$lib/level/stars/store'
+	import stars from '$lib/level/stars'
 	import mobile from '$lib/mobile'
 	import landscape from '$lib/landscape'
 	import MetaImage from '../../components/Meta/Image.svelte'

@@ -1,5 +1,5 @@
 import get from './get'
-import store from './store'
+import store from '.'
 
 const setStars = (level: number, stars: number) => {
 	const list = get()
