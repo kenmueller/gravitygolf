@@ -22,6 +22,7 @@
 		flex-direction: column;
 		justify-content: center;
 		align-items: center;
+		overflow: hidden;
 		height: 100%;
 	}
 

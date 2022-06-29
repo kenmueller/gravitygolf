@@ -3,19 +3,17 @@ import { readable } from 'svelte/store'
 import { browser } from '$app/env'
 
 const landscape = readable<boolean | null>(null, set => {
-	if (!browser) return set(null)
+	if (!(browser && typeof window.orientation === 'number')) return set(null)
 
-	const media = window.matchMedia('(orientation: landscape)')
-	set(media.matches)
-
-	const onMediaChange = ({ matches }: MediaQueryListEvent) => {
-		set(matches)
+	const setLandscape = () => {
+		set(Math.abs(window.orientation) === 90)
 	}
 
-	media.addEventListener('change', onMediaChange)
+	setLandscape()
+	window.addEventListener('orientationchange', setLandscape)
 
 	return () => {
-		media.removeEventListener('change', onMediaChange)
+		window.removeEventListener('orientationchange', setLandscape)
 	}
 })
 

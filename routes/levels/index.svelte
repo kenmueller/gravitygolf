@@ -31,6 +31,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
+		overflow: hidden;
 		height: 100%;
 		overflow-y: auto;
 		padding: 2rem 0;

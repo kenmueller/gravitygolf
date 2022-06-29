@@ -137,6 +137,7 @@
 <style lang="scss">
 	main {
 		position: relative;
+		overflow: hidden;
 		height: 100%;
 	}
 

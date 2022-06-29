@@ -3,4 +3,5 @@ export default interface View {
 	height: number
 	scale: number
 	mobile: boolean
+	landscape: boolean | null
 }

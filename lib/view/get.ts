@@ -1,10 +1,7 @@
-import type View from '.'
-
-const getView = (mobile: boolean): View => ({
+const getView = () => ({
 	width: window.innerWidth,
 	height: window.innerHeight,
-	scale: window.devicePixelRatio,
-	mobile
+	scale: window.devicePixelRatio
 })
 
 export default getView
