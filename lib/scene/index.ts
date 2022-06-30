@@ -324,6 +324,7 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 					this.canvas,
 					this.center
 				)
+
 				const distanceFactor = distance(this.mouseCurrent, normalizedBall)
 
 				const { x, y } = splitHypotenuse(
@@ -351,8 +352,6 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 					this.dispatchForces()
 					this.updateCursor(this.mouseCurrent)
 				}
-
-				this.dispatchEvent('force', null)
 			} else if (
 				this.mouseStart.button === 2 &&
 				this.mouseCurrent?.force &&
@@ -365,6 +364,9 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 					this.updateCursor(this.mouseCurrent)
 				}
 			}
+
+			if (this.mouseStart.button === 0 && this.mouseCurrent?.force)
+				this.dispatchEvent('force', null)
 		}
 
 		this.mouseStart = this.mouseCurrent = null
