@@ -3,12 +3,18 @@
 	import MetaTitle from '../components/Meta/Title.svelte'
 	import MetaDescription from '../components/Meta/Description.svelte'
 	import Play from '../images/Play.svelte'
+	import Community from '../images/Community.svelte'
 	import Edit from '../images/Edit.svelte'
 	import GitHub from '../images/GitHub.svelte'
 
 	const links = [
 		{
-			href: '/editor',
+			href: '/levels/community',
+			icon: Community,
+			text: 'Community Levels'
+		},
+		{
+			href: '/levels/edit',
 			icon: Edit,
 			text: 'Level Editor'
 		},
@@ -79,7 +85,7 @@
 	.link {
 		display: flex;
 		align-items: center;
-		min-width: 14rem;
+		min-width: 16rem;
 		margin-top: 1rem;
 		padding: 0.5rem;
 		color: rgba(white, 0.7);
