@@ -13,6 +13,7 @@
 			text: 'Level Editor'
 		},
 		{
+			external: true,
 			href: 'https://github.com/kenmueller/gravitygolf',
 			icon: GitHub,
 			text: 'GitHub'
@@ -30,7 +31,12 @@
 		<Play />
 	</a>
 	{#each links as link (link)}
-		<a class="link" href={link.href}>
+		<a
+			class="link"
+			href={link.href}
+			target={link.external ? '_blank' : undefined}
+			rel={link.external ? 'noopener noreferrer' : undefined}
+		>
 			<svelte:component this={link.icon} />
 			<span>{link.text}</span>
 		</a>
