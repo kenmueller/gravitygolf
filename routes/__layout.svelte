@@ -54,6 +54,10 @@
 		background: colors.$gray;
 	}
 
+	a {
+		text-decoration: none;
+	}
+
 	button {
 		cursor: pointer;
 		background: none;

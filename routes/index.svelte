@@ -3,6 +3,21 @@
 	import MetaTitle from '../components/Meta/Title.svelte'
 	import MetaDescription from '../components/Meta/Description.svelte'
 	import Play from '../images/Play.svelte'
+	import Edit from '../images/Edit.svelte'
+	import GitHub from '../images/GitHub.svelte'
+
+	const links = [
+		{
+			href: '/editor',
+			icon: Edit,
+			text: 'Level Editor'
+		},
+		{
+			href: 'https://github.com/kenmueller/gravitygolf',
+			icon: GitHub,
+			text: 'GitHub'
+		}
+	]
 </script>
 
 <MetaImage />
@@ -11,9 +26,15 @@
 
 <main>
 	<h1>Gravity Golf</h1>
-	<a href="/levels" aria-label="Levels">
+	<a class="levels" href="/levels" aria-label="Levels">
 		<Play />
 	</a>
+	{#each links as link (link)}
+		<a class="link" href={link.href}>
+			<svelte:component this={link.icon} />
+			<span>{link.text}</span>
+		</a>
+	{/each}
 </main>
 
 <style lang="scss">
@@ -31,8 +52,8 @@
 		color: white;
 	}
 
-	a {
-		margin-top: 4rem;
+	.levels {
+		margin: 4rem 0 1rem;
 		padding: 1.5rem;
 		color: rgba(white, 0.7);
 		background: rgba(white, 0.1);
@@ -47,5 +68,29 @@
 			width: 4rem;
 			transform: translateX(0.1rem);
 		}
+	}
+
+	.link {
+		display: flex;
+		align-items: center;
+		min-width: 14rem;
+		margin-top: 1rem;
+		padding: 0.5rem;
+		color: rgba(white, 0.7);
+		background: rgba(white, 0.1);
+		border-radius: 0.5rem;
+		transition: color 0.3s;
+
+		&:hover {
+			color: white;
+		}
+
+		> :global(svg) {
+			width: 2rem;
+		}
+	}
+
+	span {
+		margin: 0 auto;
 	}
 </style>
