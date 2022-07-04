@@ -13,7 +13,6 @@
 	a {
 		display: flex;
 		align-items: center;
-		text-decoration: none;
 		color: rgba(white, 0.7);
 		transition: color 0.3s;
 

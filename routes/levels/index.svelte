@@ -22,7 +22,7 @@
 		<span class="stars" data-stars={$totalStars} />
 	</header>
 	<div>
-		{#each levels as _level, index}
+		{#each levels as level, index (level)}
 			<Level id={index + 1} />
 		{/each}
 	</div>

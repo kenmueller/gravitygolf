@@ -89,7 +89,7 @@
 		</div>
 		<div class="stars">
 			{#if $view}
-				{#each { length: MAX_STARS } as _star, index}
+				{#each { length: MAX_STARS } as _star, index (index)}
 					<img
 						class="star"
 						src={starImage}

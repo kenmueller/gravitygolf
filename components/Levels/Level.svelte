@@ -16,7 +16,7 @@
 	Level {id}
 	{#if starCount !== null}
 		<span>
-			{#each { length: MAX_STARS } as _star, index}
+			{#each { length: MAX_STARS } as _star, index (index)}
 				<img
 					src={starImage}
 					alt="Star"
@@ -33,7 +33,6 @@
 		position: relative;
 		justify-content: center;
 		align-items: center;
-		text-decoration: none;
 		color: rgba(white, 0.7);
 		background: rgba(white, 0.1);
 		border-radius: 0.5rem;
