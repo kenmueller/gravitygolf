@@ -1,11 +1,8 @@
 <script lang="ts" context="module">
 	export const load: Load = async ({ fetch }) => {
 		try {
-			initialCommunityLevels.set(
-				await getCommunityLevels(fetch, get(communityLevelsQuery))
-			)
-
-			return { props: {} }
+			initialLevels.set(await getLevels(fetch, get(query)))
+			return {}
 		} catch (value) {
 			const { code, message } = errorFromValue(value)
 			return { status: code, error: message }
@@ -17,9 +14,9 @@
 	import type { Load } from '@sveltejs/kit'
 	import { get } from 'svelte/store'
 
-	import communityLevelsQuery from '$lib/level/community/query'
-	import initialCommunityLevels from '$lib/level/community/levels/initial'
-	import getCommunityLevels from '$lib/level/community/levels/get'
+	import query from '$lib/level/community/query'
+	import initialLevels from '$lib/level/community/levels/initial'
+	import getLevels from '$lib/level/community/levels/get'
 	import errorFromValue from '$lib/error/from/value'
 	import mobile from '$lib/mobile'
 	import totalStars from '$lib/level/community/stars/total'
@@ -28,6 +25,7 @@
 	import MetaTitle from '../../../components/Meta/Title.svelte'
 	import MetaDescription from '../../../components/Meta/Description.svelte'
 	import BackLink from '../../../components/Link/Back.svelte'
+	import Search from '../../../components/Search.svelte'
 	import Level from '../../../components/Level/Cell/Community.svelte'
 </script>
 
@@ -44,6 +42,9 @@
 		<span class="stars" data-stars={$totalStars} />
 	</header>
 	<div>
+		<Search placeholder="Community Levels" bind:value={$query} />
+	</div>
+	<div class="levels">
 		{#each $levels as level (level.id)}
 			<Level {level} />
 		{/each}
@@ -98,11 +99,14 @@
 	}
 
 	div {
+		margin-top: 1.5rem;
+	}
+
+	.levels {
 		display: grid;
 		grid-auto-rows: 5rem;
 		grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
 		gap: 1.5rem;
-		margin-top: 1.5rem;
 
 		@media (min-width: 58rem) {
 			gap: 2rem;
