@@ -2,21 +2,21 @@
 	import mobile from '$lib/mobile'
 	import totalStars from '$lib/level/stars/total'
 	import levels from '$lib/level/levels'
-	import MetaImage from '../../components/Meta/Image.svelte'
-	import MetaTitle from '../../components/Meta/Title.svelte'
-	import MetaDescription from '../../components/Meta/Description.svelte'
-	import BackLink from '../../components/Link/Back.svelte'
-	import Level from '../../components/Levels/Level.svelte'
+	import MetaImage from '../../../components/Meta/Image.svelte'
+	import MetaTitle from '../../../components/Meta/Title.svelte'
+	import MetaDescription from '../../../components/Meta/Description.svelte'
+	import BackLink from '../../../components/Link/Back.svelte'
+	import Level from '../../../components/Levels/Level.svelte'
 </script>
 
 <MetaImage />
-<MetaTitle value="Levels | Gravity Golf" />
+<MetaTitle value="Community Levels | Gravity Golf" />
 <MetaDescription />
 
 <main>
 	<header>
 		<BackLink href="/">
-			Levels
+			Community Levels
 			{#if !$mobile}| Gravity Golf{/if}
 		</BackLink>
 		<span class="stars" data-stars={$totalStars} />
@@ -58,7 +58,7 @@
 		height: 2 * $radius;
 		width: 2 * $radius;
 		margin-right: 1.3rem;
-		background-image: url('../../images/star.png');
+		background-image: url('../../../images/star.png');
 		background-size: contain;
 		background-repeat: no-repeat;
 
