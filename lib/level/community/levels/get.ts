@@ -7,7 +7,7 @@ const getCommunityLevels = async (
 	query: string
 ) => {
 	const response = await fetch(
-		`/community_levels?query=${encodeURIComponent(query)}`
+		`/communityLevels?query=${encodeURIComponent(query)}`
 	)
 	if (!response.ok) throw new Error(await response.text())
 

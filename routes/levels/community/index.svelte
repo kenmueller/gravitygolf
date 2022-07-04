@@ -22,7 +22,7 @@
 	import getCommunityLevels from '$lib/level/community/levels/get'
 	import errorFromValue from '$lib/error/from/value'
 	import mobile from '$lib/mobile'
-	import totalStars from '$lib/level/stars/total'
+	import totalStars from '$lib/level/community/stars/total'
 	import levels from '$lib/level/community/levels'
 	import MetaImage from '../../../components/Meta/Image.svelte'
 	import MetaTitle from '../../../components/Meta/Title.svelte'
