@@ -1,12 +1,34 @@
+<script lang="ts" context="module">
+	export const load: Load = async ({ fetch }) => {
+		try {
+			initialCommunityLevels.set(
+				await getCommunityLevels(fetch, get(communityLevelsQuery))
+			)
+
+			return { props: {} }
+		} catch (value) {
+			const { code, message } = errorFromValue(value)
+			return { status: code, error: message }
+		}
+	}
+</script>
+
 <script lang="ts">
+	import type { Load } from '@sveltejs/kit'
+	import { get } from 'svelte/store'
+
+	import communityLevelsQuery from '$lib/level/community/query'
+	import initialCommunityLevels from '$lib/level/community/levels/initial'
+	import getCommunityLevels from '$lib/level/community/levels/get'
+	import errorFromValue from '$lib/error/from/value'
 	import mobile from '$lib/mobile'
 	import totalStars from '$lib/level/stars/total'
-	import levels from '$lib/level/levels'
+	import levels from '$lib/level/community/levels'
 	import MetaImage from '../../../components/Meta/Image.svelte'
 	import MetaTitle from '../../../components/Meta/Title.svelte'
 	import MetaDescription from '../../../components/Meta/Description.svelte'
 	import BackLink from '../../../components/Link/Back.svelte'
-	import Level from '../../../components/Levels/Level.svelte'
+	import Level from '../../../components/Level/Cell/Community.svelte'
 </script>
 
 <MetaImage />
@@ -22,8 +44,8 @@
 		<span class="stars" data-stars={$totalStars} />
 	</header>
 	<div>
-		{#each levels as level, index (level)}
-			<Level id={index + 1} />
+		{#each $levels as level (level.id)}
+			<Level {level} />
 		{/each}
 	</div>
 </main>

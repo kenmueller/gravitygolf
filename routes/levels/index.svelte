@@ -6,7 +6,7 @@
 	import MetaTitle from '../../components/Meta/Title.svelte'
 	import MetaDescription from '../../components/Meta/Description.svelte'
 	import BackLink from '../../components/Link/Back.svelte'
-	import Level from '../../components/Levels/Level.svelte'
+	import Level from '../../components/Level/Cell/Main.svelte'
 </script>
 
 <MetaImage />
@@ -22,7 +22,7 @@
 		<span class="stars" data-stars={$totalStars} />
 	</header>
 	<div>
-		{#each levels as level, index (level)}
+		{#each levels as _level, index (index)}
 			<Level id={index + 1} />
 		{/each}
 	</div>

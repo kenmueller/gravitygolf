@@ -20,7 +20,7 @@
 		},
 		{
 			external: true,
-			href: 'https://github.com/kenmueller/gravitygolf',
+			href: import.meta.env.VITE_GITHUB_URL,
 			icon: GitHub,
 			text: 'GitHub'
 		}
@@ -36,7 +36,7 @@
 	<a class="levels" href="/levels" aria-label="Levels">
 		<Play />
 	</a>
-	{#each links as link (link)}
+	{#each links as link (link.href)}
 		<a
 			class="link"
 			href={link.href}

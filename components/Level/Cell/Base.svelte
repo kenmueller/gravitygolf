@@ -1,26 +1,22 @@
 <script lang="ts">
 	import MAX_STARS from '$lib/scene/star/max'
-	import stars from '$lib/level/stars'
 
-	import starImage from '../../images/star.png'
+	import starImage from '../../../images/star.png'
 
-	export let id: number
-
-	$: starCount = $stars?.[id - 1] ?? null
+	export let href: string
+	export let disabled = false
+	export let stars: number | null
 </script>
 
-<a
-	href="/levels/{id}"
-	aria-disabled={id - 1 > ($stars?.length ?? 0) || undefined}
->
-	Level {id}
-	{#if starCount !== null}
+<a {href} aria-disabled={disabled || undefined}>
+	<slot />
+	{#if stars !== null}
 		<span>
 			{#each { length: MAX_STARS } as _star, index (index)}
 				<img
 					src={starImage}
 					alt="Star"
-					data-hit={index < starCount ? '' : undefined}
+					data-hit={index < stars ? '' : undefined}
 				/>
 			{/each}
 		</span>
