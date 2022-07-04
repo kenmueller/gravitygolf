@@ -14,7 +14,7 @@
 			text: 'Community Levels'
 		},
 		{
-			href: '/levels/edit',
+			href: '/levels/editor',
 			icon: Edit,
 			text: 'Level Editor'
 		},
