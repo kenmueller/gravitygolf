@@ -1,7 +1,9 @@
 <script lang="ts" context="module">
 	export const load: Load = async ({ fetch }) => {
 		try {
+			isInitial.set(true)
 			initialLevels.set(await getLevels(fetch, get(query)))
+
 			return {}
 		} catch (value) {
 			const { code, message } = errorFromValue(value)
@@ -14,6 +16,7 @@
 	import type { Load } from '@sveltejs/kit'
 	import { get } from 'svelte/store'
 
+	import isInitial from '$lib/level/community/initial'
 	import query from '$lib/level/community/query'
 	import initialLevels from '$lib/level/community/levels/initial'
 	import getLevels from '$lib/level/community/levels/get'

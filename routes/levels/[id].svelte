@@ -2,10 +2,14 @@
 	export const load: Load = ({ params }) => {
 		const id = Number.parseInt(params.id)
 
-		if (Number.isNaN(id)) return { status: 301, redirect: '/levels' }
+		if (Number.isNaN(id))
+			return { status: ErrorCode.PermanentRedirect, redirect: '/levels' }
 
-		if (id - 1 < 0) return { status: 301, redirect: '/levels' }
-		if (id - 1 >= levels.length) return { status: 307, redirect: '/levels' }
+		if (id - 1 < 0)
+			return { status: ErrorCode.PermanentRedirect, redirect: '/levels' }
+
+		if (id - 1 >= levels.length)
+			return { status: ErrorCode.TemporaryRedirect, redirect: '/levels' }
 
 		return {
 			props: { id }
@@ -18,6 +22,7 @@
 
 	import { goto } from '$app/navigation'
 
+	import ErrorCode from '$lib/error/code'
 	import levels from '$lib/level/levels'
 	import stars from '$lib/level/stars'
 	import mobile from '$lib/mobile'
