@@ -1,12 +1,21 @@
 /// <reference lib="webworker" />
 
-import { version, files } from '$service-worker'
+import { version, files as _files } from '$service-worker'
+import levels from './level/levels'
 
 type MaybePromise<Value> = Value | Promise<Value>
 
 const CACHE = `cache/${version}`
 
 const worker = self as unknown as ServiceWorkerGlobalScope
+
+const files = [
+	..._files,
+	'/',
+	'/levels',
+	...levels.map((_level, index) => `/levels/${index + 1}`),
+	'/levels/editor'
+]
 
 worker.addEventListener('install', event => {
 	event.waitUntil(
