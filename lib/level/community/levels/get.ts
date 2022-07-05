@@ -1,11 +1,7 @@
+import type Fetch from '$lib/fetch'
 import type CommunityLevelRecord from '../record'
 
-type Fetch = (info: RequestInfo, init?: RequestInit) => Promise<Response>
-
-const getCommunityLevels = async (
-	fetch: Fetch = window.fetch,
-	query: string
-) => {
+const getCommunityLevels = async (fetch: Fetch, query: string) => {
 	const response = await fetch(
 		`/communityLevels?query=${encodeURIComponent(query)}`
 	)

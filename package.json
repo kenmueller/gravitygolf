@@ -20,6 +20,7 @@
 		"eslint": "^8.19.0",
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-svelte3": "^4.0.0",
+		"firebase-admin": "^11.0.0",
 		"is-mobile": "^3.1.1",
 		"prettier": "^2.7.1",
 		"prettier-plugin-svelte": "^2.7.0",
