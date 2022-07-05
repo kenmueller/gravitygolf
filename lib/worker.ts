@@ -1,6 +1,11 @@
 /// <reference lib="webworker" />
 
-import { version, files as _files } from '$service-worker'
+import {
+	version,
+	build as buildFiles,
+	files as staticFiles
+} from '$service-worker'
+
 import levels from './level/levels'
 
 type MaybePromise<Value> = Value | Promise<Value>
@@ -10,7 +15,8 @@ const CACHE = `cache/${version}`
 const worker = self as unknown as ServiceWorkerGlobalScope
 
 const files = [
-	..._files,
+	...buildFiles,
+	...staticFiles,
 	'/',
 	'/levels',
 	...levels.map((_level, index) => `/levels/${index + 1}`),
