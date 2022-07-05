@@ -43,9 +43,9 @@
 		scene?.addForce(position, direction)
 	}
 
-	$: defaultStars = 0
+	let defaultStars = 0
 
-	$: stars = MAX_STARS
+	let stars = MAX_STARS
 
 	$: scene?.addEventListener('stars', newStars => {
 		stars = newStars
