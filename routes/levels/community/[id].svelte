@@ -24,6 +24,8 @@
 
 	import type CommunityLevel from '$lib/level/community'
 	import getCommunityLevel from '$lib/level/community/get'
+	import levelFromRaw from '$lib/level/raw/from'
+	import setCommunityStars from '$lib/level/community/stars/set'
 	import ErrorCode from '$lib/error/code'
 	import errorFromValue from '$lib/error/from/value'
 	import mobile from '$lib/mobile'
@@ -35,6 +37,7 @@
 	import BackLink from '../../../components/Link/Back.svelte'
 
 	export let level: CommunityLevel
+	$: data = levelFromRaw(level.data)
 </script>
 
 <MetaImage />
@@ -42,7 +45,13 @@
 <MetaDescription />
 
 {#if !$mobile || ($mobile && $landscape)}
-	<!-- <LevelScene {level} /> -->
+	<LevelScene
+		name={level.name}
+		level={data}
+		setStars={stars => setCommunityStars(level.id, stars)}
+		back="/levels/community"
+		next="/levels/community"
+	/>
 {:else}
 	<main>
 		<BackLink href="/levels/community">{level.name}</BackLink>

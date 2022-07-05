@@ -1,3 +1,5 @@
+import type RawLevel from '../raw'
+
 export default interface CommunityLevel {
 	id: string
 	name: string
@@ -6,5 +8,5 @@ export default interface CommunityLevel {
 	stars: number
 	attempts: number
 	completions: number
-	data: unknown
+	data: RawLevel
 }

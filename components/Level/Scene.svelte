@@ -2,15 +2,13 @@
 	import { onDestroy } from 'svelte'
 	import { fade } from 'svelte/transition'
 
+	import type Level from '$lib/level'
 	import type Position from '$lib/position'
 	import type Force from '$lib/scene/force'
 	import forceRadius from '$lib/scene/force/radius'
 	import FORCE_DELETE_DIMENSIONS from '$lib/scene/force/delete/dimensions'
 	import MAX_STARS from '$lib/scene/star/max'
 	import Scene from '$lib/scene'
-	import type RawLevel from '$lib/level/raw'
-	import levelFromRaw from '$lib/level/raw/from'
-	import levels from '$lib/level/levels'
 	import draggable from '$lib/draggable'
 	import mobile from '$lib/mobile'
 	import view from '$lib/view/store'
@@ -20,13 +18,17 @@
 
 	import starImage from '../../images/star.png'
 
-	export let id: number
-	$: level = levelFromRaw(levels[id - 1] as RawLevel)
+	export let name: string
+	export let level: Level
+	export let setStars: (stars: number) => void
+	export let back: string
+	export let next: string
 
 	let canvas: HTMLCanvasElement | null = null
 	$: context = canvas?.getContext('2d')
 
-	$: scene = canvas && context && new Scene(canvas, context, { id, ...level })
+	$: scene =
+		canvas && context && new Scene(canvas, context, level, { setStars, next })
 
 	$: forcesRemaining = {
 		gravity: level.maxGravity - level.defaultGravity.length,
@@ -44,7 +46,7 @@
 		scene?.addForce(position, direction)
 	}
 
-	$: stars = MAX_STARS - level.stars.length
+	let stars = MAX_STARS - level.stars.length
 
 	$: scene?.addEventListener('stars', newStars => {
 		stars = newStars
@@ -65,8 +67,8 @@
 
 <main>
 	<header>
-		<BackLink href="/levels">
-			Level {id}
+		<BackLink href={back}>
+			{name}
 			{#if !$mobile}| Gravity Golf{/if}
 		</BackLink>
 		<div class="forces">

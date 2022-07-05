@@ -22,11 +22,14 @@
 
 	import { goto } from '$app/navigation'
 
+	import type RawLevel from '$lib/level/raw'
+	import levelFromRaw from '$lib/level/raw/from'
 	import ErrorCode from '$lib/error/code'
 	import levels from '$lib/level/levels'
 	import stars from '$lib/level/stars'
 	import mobile from '$lib/mobile'
 	import landscape from '$lib/landscape'
+	import setStars from '$lib/level/stars/set'
 	import MetaImage from '../../components/Meta/Image.svelte'
 	import MetaTitle from '../../components/Meta/Title.svelte'
 	import MetaDescription from '../../components/Meta/Description.svelte'
@@ -37,18 +40,27 @@
 
 	$: enabled = $stars && id - 1 <= $stars.length
 	$: if (enabled === false) goto('/levels').catch(console.error)
+
+	$: name = `Level ${id}`
+	$: level = levelFromRaw(levels[id - 1] as RawLevel)
 </script>
 
 <MetaImage />
-<MetaTitle value="Level {id} | Gravity Golf" />
+<MetaTitle value="{name} | Gravity Golf" />
 <MetaDescription />
 
 {#if enabled}
 	{#if !$mobile || ($mobile && $landscape)}
-		<LevelScene {id} />
+		<LevelScene
+			{name}
+			{level}
+			setStars={stars => setStars(id, stars)}
+			back="/levels"
+			next="/levels{id === levels.length ? '' : `/${id + 1}`}"
+		/>
 	{:else}
 		<main>
-			<BackLink href="/levels">Level {id}</BackLink>
+			<BackLink href="/levels">{name}</BackLink>
 			<h1>Rotate your device to play</h1>
 		</main>
 	{/if}

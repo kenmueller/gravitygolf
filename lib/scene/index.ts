@@ -11,12 +11,12 @@ import type Ball from './ball'
 import type Hole from './hole'
 import type Star from './star'
 import type Wall from './wall'
+import type LevelDone from './done'
 import EventDispatcher from '$lib/event/dispatcher'
 import forceRadius from './force/radius'
 import { MAX_FORCE_HIT_DISTANCE, MAX_FORCE_HIT_VELOCITY } from './force/hit'
 import FORCE_DELETE_DIMENSIONS from './force/delete/dimensions'
 import MAX_STARS from './star/max'
-import levels from '$lib/level/levels'
 import view from '$lib/view/store'
 import distance from '../distance'
 import clear from './clear'
@@ -29,7 +29,6 @@ import distanceSquared from '../distance/squared'
 import splitHypotenuse from '../split/hypotenuse'
 import clamp from './clamp'
 import useImage from '$lib/image/use'
-import setStars from '$lib/level/stars/set'
 import cursorHandler from '$lib/cursor/handler'
 
 import gravityImage from '../../images/gravity.png'
@@ -61,7 +60,8 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 	constructor(
 		private readonly canvas: HTMLCanvasElement,
 		private readonly context: CanvasRenderingContext2D,
-		private readonly level: Level & { id: number }
+		private readonly level: Level,
+		private readonly done: LevelDone
 	) {
 		super()
 
@@ -122,14 +122,10 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 				this.hole.radius - this.ball.radius
 			) {
 				const stars = this.starCount
-				setStars(this.level.id, stars)
+				this.done.setStars(stars)
 
 				alert(`Congratulations! You got ${stars} star${stars === 1 ? '' : 's'}`)
-
-				const lastLevel = this.level.id === levels.length
-				const suffix = lastLevel ? '' : `/${this.level.id + 1}`
-
-				goto(`/levels${suffix}`).catch(({ message }) => alert(message))
+				goto(this.done.next).catch(({ message }) => alert(message))
 
 				return
 			}
