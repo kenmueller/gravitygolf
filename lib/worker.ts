@@ -2,6 +2,7 @@
 
 import {
 	version,
+	prerendered as staticPages,
 	build as buildFiles,
 	files as staticFiles
 } from '$service-worker'
@@ -12,9 +13,8 @@ type MaybePromise<Value> = Value | Promise<Value>
 
 const CACHE = `cache/${version}`
 
-const worker = self as unknown as ServiceWorkerGlobalScope
-
 const files = [
+	...staticPages,
 	...buildFiles,
 	...staticFiles,
 	'/',
@@ -22,6 +22,8 @@ const files = [
 	...levels.map((_level, index) => `/levels/${index + 1}`),
 	'/levels/editor'
 ]
+
+const worker = self as unknown as ServiceWorkerGlobalScope
 
 worker.addEventListener('install', event => {
 	event.waitUntil(
