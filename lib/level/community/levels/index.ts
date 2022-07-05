@@ -4,35 +4,25 @@ import { derived } from 'svelte/store'
 
 import { browser } from '$app/env'
 
-import type CommunityLevelRecord from '../record'
+import type Record from '../record'
 import query from '../query'
-import initial from './initial'
-import getCommunityLevels from './get'
 import isInitial from '../initial'
+import load from './load'
 
-const communityLevels = derived<Writable<string>, CommunityLevelRecord[]>(
+const communityLevels = derived<Writable<string>, Record[] | null>(
 	query,
 	($query, set) => {
-		set(get(initial))
+		set(null)
 
 		if (!browser) return
 		if (get(isInitial)) return isInitial.set(false)
 
-		let cancel = false
+		const cancel = { current: false }
 
-		getCommunityLevels(fetch, $query)
-			.then(levels => {
-				if (cancel) return
-
-				console.log(levels)
-
-				initial.set(levels)
-				set(levels)
-			})
-			.catch(console.error)
+		void load($query, set, cancel)
 
 		return () => {
-			cancel = true
+			cancel.current = true
 		}
 	}
 )

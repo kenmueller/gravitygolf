@@ -48,7 +48,7 @@
 		<Search placeholder="Community Levels" bind:value={$query} />
 	</div>
 	<div class="levels">
-		{#each $levels as level (level.id)}
+		{#each $levels ?? $initialLevels as level (level.id)}
 			<Level {level} />
 		{/each}
 	</div>
