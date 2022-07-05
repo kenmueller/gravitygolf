@@ -8,4 +8,15 @@
 
 <Base href="/levels/community/{level.id}" stars={$stars?.[level.id] ?? null}>
 	{level.name}
+	<span>
+		{level.attempts} attempt{level.attempts === 1 ? '' : 's'} •
+		{level.wins} win{level.wins === 1 ? '' : 's'}
+	</span>
 </Base>
+
+<style lang="scss">
+	span {
+		margin-top: 0.2rem;
+		font-size: 0.9rem;
+	}
+</style>

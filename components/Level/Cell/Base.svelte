@@ -25,8 +25,9 @@
 
 <style lang="scss">
 	a {
-		display: flex;
 		position: relative;
+		display: flex;
+		flex-direction: column;
 		justify-content: center;
 		align-items: center;
 		color: rgba(white, 0.7);

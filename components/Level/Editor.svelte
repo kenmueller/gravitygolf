@@ -73,7 +73,7 @@
 		<div class="forces">
 			{#if $view}
 				<span
-					style="--radius: {radius}; --scale: {radius / $view.scale};"
+					style="--scale: {radius / $view.scale};"
 					data-force="gravity"
 					data-remaining={forcesRemaining.gravity}
 					use:draggable={scene && forcesRemaining.gravity ? addForce(1) : null}
@@ -86,7 +86,7 @@
 					bind:value={totalGravity}
 				/>
 				<span
-					style="--radius: {radius}; --scale: {radius / $view.scale};"
+					style="--scale: {radius / $view.scale};"
 					data-force="antigravity"
 					data-remaining={forcesRemaining.antigravity}
 					use:draggable={scene && forcesRemaining.antigravity
@@ -120,7 +120,7 @@
 							: 'star'}
 						src={starImage}
 						alt="Star"
-						style="--radius: {radius}; --scale: {radius / $view.scale};"
+						style="--scale: {radius / $view.scale};"
 						data-hit={index < stars ? '' : undefined}
 						use:draggable={scene && index < MAX_STARS - defaultStars
 							? scene.addStar

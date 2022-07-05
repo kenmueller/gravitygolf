@@ -8,7 +8,7 @@ const communityLevelFromRecord = (record: Record<string, unknown>) =>
 		antigravity: record.antigravity,
 		stars: record.stars,
 		attempts: record.attempts,
-		completions: record.completions
+		wins: record.wins
 	} as CommunityLevelRecord)
 
 export default communityLevelFromRecord
