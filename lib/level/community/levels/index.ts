@@ -1,4 +1,5 @@
-import { get, type Writable } from 'svelte/store'
+import type { Writable } from 'svelte/store'
+import { get } from 'svelte/store'
 import { derived } from 'svelte/store'
 
 import { browser } from '$app/env'
