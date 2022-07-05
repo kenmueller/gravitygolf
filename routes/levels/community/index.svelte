@@ -30,6 +30,7 @@
 	import BackLink from '../../../components/Link/Back.svelte'
 	import Search from '../../../components/Search.svelte'
 	import Level from '../../../components/Level/Cell/Community.svelte'
+	import Edit from '../../../images/Edit.svelte'
 </script>
 
 <MetaImage />
@@ -42,6 +43,10 @@
 			Community Levels
 			{#if !$mobile}| Gravity Golf{/if}
 		</BackLink>
+		<a href="/levels/editor">
+			<Edit />
+			Create Level
+		</a>
 		<span class="stars" data-stars={$totalStars} />
 	</header>
 	<div>
@@ -73,8 +78,26 @@
 
 	header {
 		display: flex;
-		justify-content: space-between;
 		align-items: center;
+	}
+
+	a {
+		display: flex;
+		align-items: center;
+		margin-left: auto;
+		white-space: nowrap;
+		color: white;
+		opacity: 0.7;
+		transition: opacity 0.3s;
+
+		&:hover {
+			opacity: 1;
+		}
+
+		> :global(svg) {
+			width: 1.8rem;
+			margin-right: 0.5rem;
+		}
 	}
 
 	.stars {
@@ -83,7 +106,7 @@
 		position: relative;
 		height: 2 * $radius;
 		width: 2 * $radius;
-		margin-right: 1.3rem;
+		margin: 0 1.3rem 0 2rem;
 		background-image: url('../../../images/star.png');
 		background-size: contain;
 		background-repeat: no-repeat;
