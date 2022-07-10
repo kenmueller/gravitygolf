@@ -314,6 +314,7 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 				// Hit the ball
 
 				this.hit = true
+				this.dispatchEvent('hit', true)
 
 				const normalizedBall = normalizePoint(
 					this.ball,
@@ -442,6 +443,7 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 
 	readonly reset = (initial = false) => {
 		this.hit = false
+		this.dispatchEvent('hit', false)
 
 		this.ball = {
 			...this.level.ball,

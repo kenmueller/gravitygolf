@@ -30,6 +30,12 @@
 	$: scene =
 		canvas && context && new Scene(canvas, context, level, { setStars, next })
 
+	let hit = false
+
+	$: scene?.addEventListener('hit', newHit => {
+		hit = newHit
+	})
+
 	$: forcesRemaining = {
 		gravity: level.maxGravity - level.defaultGravity.length,
 		antigravity: level.maxAntigravity - level.defaultAntigravity.length
@@ -46,10 +52,10 @@
 		scene?.addForce(position, direction)
 	}
 
-	let stars = MAX_STARS - level.stars.length
+	$: hitStars = MAX_STARS - level.stars.length
 
-	$: scene?.addEventListener('stars', newStars => {
-		stars = newStars
+	$: scene?.addEventListener('stars', stars => {
+		hitStars = stars
 	})
 
 	let currentForce: Force | null = null
@@ -77,13 +83,17 @@
 					style="--scale: {radius / $view.scale};"
 					data-force="gravity"
 					data-remaining={forcesRemaining.gravity}
-					use:draggable={scene && forcesRemaining.gravity ? addForce(1) : null}
+					data-hit={hit ? '' : undefined}
+					use:draggable={scene && !hit && forcesRemaining.gravity
+						? addForce(1)
+						: null}
 				/>
 				<span
 					style="--scale: {radius / $view.scale};"
 					data-force="antigravity"
 					data-remaining={forcesRemaining.antigravity}
-					use:draggable={scene && forcesRemaining.antigravity
+					data-hit={hit ? '' : undefined}
+					use:draggable={scene && !hit && forcesRemaining.antigravity
 						? addForce(-1)
 						: null}
 				/>
@@ -97,7 +107,7 @@
 						src={starImage}
 						alt="Star"
 						style="--scale: {radius / $view.scale};"
-						data-hit={index < stars ? '' : undefined}
+						data-hit={index < hitStars ? '' : undefined}
 					/>
 				{/each}
 			{/if}
@@ -195,6 +205,10 @@
 			);
 		}
 
+		&[data-hit] {
+			pointer-events: none;
+		}
+
 		& + & {
 			margin-left: calc(0.1rem * var(--scale));
 		}
@@ -224,13 +238,13 @@
 		opacity: 0.5;
 		transition: opacity 0.3s;
 
+		&[data-hit] {
+			opacity: 1;
+		}
+
 		& + & {
 			margin-left: calc(0.03rem * var(--scale));
 		}
-	}
-
-	[data-hit] {
-		opacity: 1;
 	}
 
 	button {

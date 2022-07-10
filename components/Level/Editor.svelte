@@ -22,10 +22,16 @@
 
 	$: scene = canvas && context && new Editor(canvas, context)
 
-	$: totalGravity = 1
-	$: totalAntigravity = 1
+	let hit = false
 
-	$: defaultForces = {
+	$: scene?.addEventListener('hit', newHit => {
+		hit = newHit
+	})
+
+	let totalGravity = 1
+	let totalAntigravity = 1
+
+	let defaultForces = {
 		gravity: 0,
 		antigravity: 0
 	}
@@ -51,6 +57,11 @@
 		stars = newStars
 	})
 
+	$: scene?.addEventListener('defaultStars', newDefaultStars => {
+		defaultStars = newDefaultStars
+		stars = MAX_STARS - defaultStars
+	})
+
 	let currentForce: Force | null = null
 
 	$: scene?.addEventListener('force', force => {
@@ -70,7 +81,7 @@
 			Level Editor
 			{#if !$mobile}| Gravity Golf{/if}
 		</BackLink>
-		<div class="forces">
+		<div class="objects">
 			{#if $view}
 				<span
 					style="--scale: {radius / $view.scale};"
@@ -79,10 +90,8 @@
 					use:draggable={scene && forcesRemaining.gravity ? addForce(1) : null}
 				/>
 				<input
-					style="padding-left: 5px; width: 30px; margin: 0 10px 0 2px;"
 					type="number"
 					min={defaultForces.gravity}
-					max="9"
 					bind:value={totalGravity}
 				/>
 				<span
@@ -94,18 +103,12 @@
 						: null}
 				/>
 				<input
-					style="padding-left: 5px; width: 30px;"
 					type="number"
 					min={defaultForces.antigravity}
-					max="9"
 					bind:value={totalAntigravity}
 				/>
-			{/if}
-		</div>
-		<div class="obstacles" style="margin-left: 3rem">
-			{#if $view}
-				<div
-					class="rectangle"
+				<span
+					class="wall"
 					style="background-color: white; width: 20px; height: 35px;"
 					use:draggable={scene ? scene.addObstacle : null}
 				/>
@@ -115,14 +118,14 @@
 			{#if $view}
 				{#each { length: MAX_STARS } as _star, index (index)}
 					<img
-						class={index < stars && index < MAX_STARS - defaultStars
-							? 'star on'
-							: 'star'}
+						class="star"
 						src={starImage}
 						alt="Star"
 						style="--scale: {radius / $view.scale};"
+						aria-disabled={index >= (hit ? stars : MAX_STARS - defaultStars) ||
+							undefined}
 						data-hit={index < stars ? '' : undefined}
-						use:draggable={scene && index < MAX_STARS - defaultStars
+						use:draggable={scene && !hit && index < MAX_STARS - defaultStars
 							? scene.addStar
 							: null}
 					/>
@@ -185,20 +188,16 @@
 		}
 	}
 
-	.forces,
-	.obstacles,
+	.objects,
 	.stars {
 		display: flex;
 		align-items: center;
 	}
-
-	.forces:hover,
-	.obstacles > *:hover,
-	.star.on:hover {
-		cursor: move;
+	.stars [aria-disabled] {
+		opacity: 0.5;
 	}
 
-	.forces {
+	.objects {
 		margin-left: auto;
 	}
 
@@ -247,6 +246,10 @@
 		opacity: 0.5;
 	}
 
+	.wall {
+		cursor: move;
+	}
+
 	.stars {
 		margin: 0 auto 0 3rem;
 	}
@@ -256,6 +259,10 @@
 		height: calc(2px * var(--scale));
 		opacity: 0.5;
 		transition: opacity 0.3s;
+
+		&:not([aria-disabled]):hover {
+			cursor: move;
+		}
 
 		& + & {
 			margin-left: calc(0.03rem * var(--scale));

@@ -1,39 +1,39 @@
 import type { Unsubscriber } from 'svelte/store'
 
-import type SceneEvents from './events'
+import type EditorEvents from './events'
 import type View from '$lib/view'
 import type Position from '$lib/position'
-import type Force from './force'
-import type Ball from './ball'
-import type Hole from './hole'
-import type Star from './star'
-import type Wall from './wall'
+import type Force from '../force'
+import type Ball from '../ball'
+import type Hole from '../hole'
+import type Star from '../star'
+import type Wall from '../wall'
 import EventDispatcher from '$lib/event/dispatcher'
-import forceRadius from './force/radius'
-import { MAX_FORCE_HIT_DISTANCE, MAX_FORCE_HIT_VELOCITY } from './force/hit'
-import FORCE_DELETE_DIMENSIONS from './force/delete/dimensions'
-import MAX_STARS from './star/max'
+import forceRadius from '../force/radius'
+import { MAX_FORCE_HIT_DISTANCE, MAX_FORCE_HIT_VELOCITY } from '../force/hit'
+import FORCE_DELETE_DIMENSIONS from '../force/delete/dimensions'
+import MAX_STARS from '../star/max'
 import view from '$lib/view/store'
-import distance from '../distance'
-import clear from './clear'
-import normalizePoint from '../normalize/point'
-import normalizeShape from '../normalize/shape'
-import collision from './collision'
-import scale from '../transform/scale'
-import resize from '../transform/resize'
-import distanceSquared from '../distance/squared'
-import splitHypotenuse from '../split/hypotenuse'
-import clamp from './clamp'
+import distance from '../../distance'
+import clear from '../clear'
+import normalizePoint from '../../normalize/point'
+import normalizeShape from '../../normalize/shape'
+import collision from '../collision'
+import scale from '../../transform/scale'
+import resize from '../../transform/resize'
+import distanceSquared from '../../distance/squared'
+import splitHypotenuse from '../../split/hypotenuse'
+import clamp from '../clamp'
 import useImage from '$lib/image/use'
 import cursorHandler from '$lib/cursor/handler'
 
-import gravityImage from '../../images/gravity.png'
-import antigravityImage from '../../images/antigravity.png'
-import ballImage from '../../images/ball.png'
-import holeImage from '../../images/hole.png'
-import starImage from '../../images/star.png'
+import gravityImage from '../../../images/gravity.png'
+import antigravityImage from '../../../images/antigravity.png'
+import ballImage from '../../../images/ball.png'
+import holeImage from '../../../images/hole.png'
+import starImage from '../../../images/star.png'
 
-export default class Scene extends EventDispatcher<SceneEvents> {
+export default class EditorScene extends EventDispatcher<EditorEvents> {
 	private view: View = undefined as never
 	private unsubscribeView: Unsubscriber
 
@@ -70,13 +70,6 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 		this.hole = { x: 100, y: 0, radius: 60, image: useImage(holeImage) }
 
 		this.stars = []
-		// .map(() => ({
-		// 	x: 0,
-		// 	y: 0,
-		// 	radius: 30,
-		// 	hit: false,
-		// 	image: useImage(starImage)
-		// }))
 
 		this.walls = []
 
@@ -309,6 +302,7 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 				// Hit the ball
 
 				this.hit = true
+				this.dispatchEvent('hit', true)
 
 				const normalizedBall = normalizePoint(
 					this.ball,
@@ -455,11 +449,14 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 			hit: false,
 			image: useImage(starImage)
 		})
+		this.dispatchEvent('defaultStars', this.stars.length)
+
 		this.canvas.style.cursor = 'move'
 	}
 
 	readonly reset = (initial = false) => {
 		this.hit = false
+		this.dispatchEvent('hit', false)
 
 		this.ball = {
 			x: -100,

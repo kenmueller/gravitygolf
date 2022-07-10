@@ -130,7 +130,7 @@
 
 	.levels {
 		display: grid;
-		grid-auto-rows: 5rem;
+		grid-auto-rows: 8rem;
 		grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
 		gap: 1.5rem;
 
