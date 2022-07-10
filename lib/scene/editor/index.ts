@@ -33,6 +33,9 @@ import ballImage from '../../../images/ball.png'
 import holeImage from '../../../images/hole.png'
 import starImage from '../../../images/star.png'
 
+const STAR_RADIUS = 35
+const DEFAULT_WALL_SIZE = { width: 40, height: 70 }
+
 export default class EditorScene extends EventDispatcher<EditorEvents> {
 	private view: View = undefined as never
 	private unsubscribeView: Unsubscriber
@@ -43,7 +46,9 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 	private center = { x: 0, y: 0 }
 
 	private mouseStart: (Position & { button: number }) | null = null
-	private mouseCurrent: (Position & { force: Force | null }) | null = null
+	private mouseCurrent:
+		| (Position & ({ force: Force } | { star: Star } | Record<string, never>))
+		| null = null
 
 	private hit = false
 
@@ -244,22 +249,27 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 
 	private readonly down = cursorHandler((cursor, event) => {
 		event.preventDefault()
+		if (!this.hit) {
+			const mouse = {
+				x: Math.floor(cursor.x * this.view.scale),
+				y: Math.floor(cursor.y * this.view.scale)
+			}
 
-		const mouse = {
-			x: Math.floor(cursor.x * this.view.scale),
-			y: Math.floor(cursor.y * this.view.scale)
+			this.mouseStart = { x: mouse.x, y: mouse.y, button: cursor.button }
+
+			const force = this.forces.find(force => this.mouseOnForce(mouse, force))
+			if (force) {
+				this.mouseCurrent = { ...mouse, force }
+				if (this.mouseStart.button === 0) this.dispatchEvent('force', force)
+				return
+			}
+			const star = this.stars.find(star => this.mouseOnStar(mouse, star))
+			if (star) {
+				this.mouseCurrent = { ...mouse, star }
+				if (this.mouseStart.button === 0) this.dispatchEvent('star', star)
+				return
+			}
 		}
-
-		this.mouseStart = { x: mouse.x, y: mouse.y, button: cursor.button }
-
-		const force = this.hit
-			? null
-			: this.forces.find(force => this.mouseOnForce(mouse, force)) ?? null
-
-		this.mouseCurrent = { ...mouse, force }
-
-		if (this.mouseStart.button === 0 && force)
-			this.dispatchEvent('force', force)
 	})
 
 	private readonly move = cursorHandler(cursor => {
@@ -270,11 +280,15 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 
 		if (this.mouseCurrent) {
 			if (this.mouseStart?.button === 0) {
-				if (this.mouseCurrent.force) {
+				if ('force' in this.mouseCurrent) {
 					// Dragging force
 
 					this.mouseCurrent.force.x += mouse.x - this.mouseCurrent.x
 					this.mouseCurrent.force.y -= mouse.y - this.mouseCurrent.y
+				} else if ('star' in this.mouseCurrent) {
+					// Dragging star
+					this.mouseCurrent.star.x += mouse.x - this.mouseCurrent.x
+					this.mouseCurrent.star.y -= mouse.y - this.mouseCurrent.y
 				} else {
 					// Panning
 
@@ -322,7 +336,7 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 
 				this.ball.vx = x
 				this.ball.vy = y
-			} else if (this.mouseStart.button === 0 && this.mouseCurrent?.force) {
+			} else if (this.mouseStart.button === 0 && 'force' in this.mouseCurrent) {
 				// End dragging force
 
 				if (
@@ -339,7 +353,7 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 				}
 			} else if (
 				this.mouseStart.button === 2 &&
-				this.mouseCurrent?.force &&
+				'force' in this.mouseCurrent &&
 				this.mouseOnForce(this.mouseCurrent, this.mouseCurrent.force)
 			) {
 				// Delete force
@@ -350,8 +364,10 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 				}
 			}
 
-			if (this.mouseStart.button === 0 && this.mouseCurrent?.force)
+			if (this.mouseStart.button === 0 && 'force' in this.mouseCurrent)
 				this.dispatchEvent('force', null)
+			else if (this.mouseStart.button === 0 && 'star' in this.mouseCurrent)
+				this.dispatchEvent('star', null)
 		}
 
 		this.mouseStart = this.mouseCurrent = null
@@ -365,9 +381,13 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		distance(normalizePoint(force, this.canvas, this.center), mouse) <=
 		forceRadius(this.view.mobile)
 
+	private readonly mouseOnStar = (mouse: Position, star: Star) =>
+		distance(normalizePoint(star, this.canvas, this.center), mouse) <=
+		STAR_RADIUS
+
 	private readonly updateCursor = (mouse: Position) => {
 		this.canvas.style.cursor =
-			!this.hit && this.forces.some(force => this.mouseOnForce(mouse, force))
+			!this.hit && (this.forces.some(force => this.mouseOnForce(mouse, force)) || this.stars.some(star => this.mouseOnForce(mouse, force))
 				? 'move'
 				: ''
 	}
@@ -434,8 +454,8 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		this.walls.push({
 			x: x * this.view.scale + 10 - this.canvas.width / 2 - this.center.x,
 			y: -y * this.view.scale - 17 + this.canvas.height / 2 - this.center.y,
-			width: 40 * this.view.scale,
-			height: 70 * this.view.scale
+			width: DEFAULT_WALL_SIZE.width * this.view.scale,
+			height: DEFAULT_WALL_SIZE.height * this.view.scale
 		})
 
 		this.canvas.style.cursor = 'move'
@@ -445,7 +465,7 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		this.stars.push({
 			x: x * this.view.scale + 35 - this.canvas.width / 2 - this.center.x,
 			y: -y * this.view.scale - 35 + this.canvas.height / 2 - this.center.y,
-			radius: 35,
+			radius: STAR_RADIUS,
 			hit: false,
 			image: useImage(starImage)
 		})
