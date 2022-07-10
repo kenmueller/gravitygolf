@@ -47,6 +47,7 @@
 {#if !$mobile || ($mobile && $landscape)}
 	<LevelScene
 		name={level.name}
+		communityId={level.id}
 		level={data}
 		setStars={stars => setCommunityStars(level.id, stars)}
 		back="/levels/community"

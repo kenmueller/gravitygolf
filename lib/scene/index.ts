@@ -124,6 +124,8 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 				const stars = this.starCount
 				this.done.setStars(stars)
 
+				this.dispatchEvent('win')
+
 				alert(`Congratulations! You got ${stars} star${stars === 1 ? '' : 's'}`)
 				goto(this.done.next).catch(({ message }) => alert(message))
 
@@ -315,6 +317,8 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 
 				this.hit = true
 				this.dispatchEvent('hit', true)
+
+				this.dispatchEvent('attempt')
 
 				const normalizedBall = normalizePoint(
 					this.ball,

@@ -5,4 +5,6 @@ export default interface SceneEvents {
 	forces: [number, number]
 	stars: [number]
 	force: [Force | null]
+	attempt: []
+	win: []
 }

@@ -1,6 +1,7 @@
 import type { RequestHandler } from '@sveltejs/kit'
 import { getFirestore, FieldValue } from 'firebase-admin/firestore'
 
+import type Property from './property'
 import admin from '$lib/admin'
 import ErrorCode from '$lib/error/code'
 import HttpError from '$lib/error'
@@ -8,8 +9,8 @@ import errorFromValue from '$lib/error/from/value'
 
 const firestore = getFirestore(admin)
 
-const communityLevelIncrement =
-	(property: 'attempts' | 'wins'): RequestHandler =>
+const incrementCommunityLevelPropertyHandler =
+	(property: Property): RequestHandler =>
 	async ({ params: { id } }) => {
 		try {
 			await firestore.doc(`community_levels/${id}`).update({
@@ -27,4 +28,4 @@ const communityLevelIncrement =
 		}
 	}
 
-export default communityLevelIncrement
+export default incrementCommunityLevelPropertyHandler

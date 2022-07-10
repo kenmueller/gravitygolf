@@ -6,6 +6,7 @@
 	import type Position from '$lib/position'
 	import type Force from '$lib/scene/force'
 	import forceRadius from '$lib/scene/force/radius'
+	import incrementCommunityLevelProperty from '$lib/level/community/increment'
 	import FORCE_DELETE_DIMENSIONS from '$lib/scene/force/delete/dimensions'
 	import MAX_STARS from '$lib/scene/star/max'
 	import Scene from '$lib/scene'
@@ -19,6 +20,7 @@
 	import starImage from '../../images/star.png'
 
 	export let name: string
+	export let communityId: string | null = null
 	export let level: Level
 	export let setStars: (stars: number) => void
 	export let back: string
@@ -63,6 +65,18 @@
 	$: scene?.addEventListener('force', force => {
 		currentForce = force
 	})
+
+	$: if (communityId)
+		scene?.addEventListener('attempt', () => {
+			if (!communityId) return
+			incrementCommunityLevelProperty(communityId, 'attempts')
+		})
+
+	$: if (communityId)
+		scene?.addEventListener('win', () => {
+			if (!communityId) return
+			incrementCommunityLevelProperty(communityId, 'wins')
+		})
 
 	$: radius = forceRadius($mobile)
 

@@ -1,3 +1,3 @@
-import increment from '$lib/level/community/increment'
+import incrementHandler from '$lib/level/community/increment/handler'
 
-export const patch = increment('wins')
+export const post = incrementHandler('wins')
