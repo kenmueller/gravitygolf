@@ -43,6 +43,8 @@
 
 	$: name = `Level ${id}`
 	$: level = levelFromRaw(levels[id - 1] as RawLevel)
+
+	$: hasNext = id !== levels.length
 </script>
 
 <MetaImage />
@@ -56,7 +58,8 @@
 			{level}
 			setStars={stars => setStars(id, stars)}
 			back="/levels"
-			next="/levels{id === levels.length ? '' : `/${id + 1}`}"
+			{hasNext}
+			next="/levels{hasNext ? `/${id + 1}` : ''}"
 		/>
 	{:else}
 		<main>

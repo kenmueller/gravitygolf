@@ -7,8 +7,10 @@
 <script lang="ts">
 	import type { Load } from '@sveltejs/kit'
 
+	import overlay from '$lib/overlay/store'
 	import MetaBase from '../components/Meta/Base.svelte'
 	import PageTransition from '../components/Transition/Page.svelte'
+	import Overlay from '../components/Overlay.svelte'
 
 	export let url: URL
 </script>
@@ -24,9 +26,11 @@
 
 <MetaBase />
 
-<PageTransition {url}>
+<PageTransition {url} hidden={$overlay !== null}>
 	<slot />
 </PageTransition>
+
+<Overlay />
 
 <style lang="scss" global>
 	*,

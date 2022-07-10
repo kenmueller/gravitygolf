@@ -24,13 +24,16 @@
 	export let level: Level
 	export let setStars: (stars: number) => void
 	export let back: string
+	export let hasNext: boolean
 	export let next: string
 
 	let canvas: HTMLCanvasElement | null = null
 	$: context = canvas?.getContext('2d')
 
 	$: scene =
-		canvas && context && new Scene(canvas, context, level, { setStars, next })
+		canvas &&
+		context &&
+		new Scene(canvas, context, level, { setStars, hasNext, next })
 
 	let hit = false
 

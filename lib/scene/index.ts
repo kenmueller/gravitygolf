@@ -1,7 +1,5 @@
 import type { Unsubscriber } from 'svelte/store'
 
-import { goto } from '$app/navigation'
-
 import type SceneEvents from './events'
 import type View from '$lib/view'
 import type Position from '$lib/position'
@@ -30,6 +28,8 @@ import splitHypotenuse from '../split/hypotenuse'
 import clamp from './clamp'
 import useImage from '$lib/image/use'
 import cursorHandler from '$lib/cursor/handler'
+import showOverlay from '$lib/overlay/show'
+import Win from '../../components/Win.svelte'
 
 import gravityImage from '../../images/gravity.png'
 import antigravityImage from '../../images/antigravity.png'
@@ -126,8 +126,11 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 
 				this.dispatchEvent('win')
 
-				alert(`Congratulations! You got ${stars} star${stars === 1 ? '' : 's'}`)
-				goto(this.done.next).catch(({ message }) => alert(message))
+				showOverlay(Win, {
+					stars,
+					hasNext: this.done.hasNext,
+					next: this.done.next
+				})
 
 				return
 			}

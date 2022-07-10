@@ -51,6 +51,7 @@
 		level={data}
 		setStars={stars => setCommunityStars(level.id, stars)}
 		back="/levels/community"
+		hasNext={false}
 		next="/levels/community"
 	/>
 {:else}
