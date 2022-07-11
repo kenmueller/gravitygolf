@@ -70,6 +70,16 @@
 
 	$: radius = forceRadius($mobile)
 
+	$: scene?.addEventListener('clear', () => {
+		totalGravity = totalAntigravity = 1
+		defaultForces = {
+			gravity: 0,
+			antigravity: 0
+		}
+		defaultStars = 0
+		stars = MAX_STARS
+	})
+
 	onDestroy(() => {
 		scene?.destroy()
 	})
@@ -193,12 +203,15 @@
 		display: flex;
 		align-items: center;
 	}
-	.stars [aria-disabled] {
-		opacity: 0.5;
-	}
 
 	.objects {
 		margin-left: auto;
+	}
+
+	[data-force],
+	.wall,
+	.star {
+		z-index: 200;
 	}
 
 	[data-force] {
@@ -259,6 +272,10 @@
 		height: calc(2px * var(--scale));
 		opacity: 0.5;
 		transition: opacity 0.3s;
+
+		&[aria-disabled] {
+			opacity: 0.5;
+		}
 
 		&:not([aria-disabled]):hover {
 			cursor: move;

@@ -203,6 +203,7 @@
 		background-size: contain;
 		background-repeat: no-repeat;
 		border-radius: 50%;
+		z-index: 200;
 		transition: opacity 0.3s;
 
 		&:not([data-copy])::after {

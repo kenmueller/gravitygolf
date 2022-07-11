@@ -33,6 +33,8 @@ import ballImage from '../../../images/ball.png'
 import holeImage from '../../../images/hole.png'
 import starImage from '../../../images/star.png'
 
+const BALL_RADIUS = 30
+const HOLE_RADIUS = 60
 const STAR_RADIUS = 35
 const DEFAULT_WALL_SIZE = { width: 40, height: 70 }
 
@@ -47,7 +49,12 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 
 	private mouseStart: (Position & { button: number }) | null = null
 	private mouseCurrent:
-		| (Position & ({ force: Force } | { star: Star } | Record<string, never>))
+		| (Position & { force: Force })
+		| (Position & { star: Star })
+		| (Position & { ball: true })
+		| (Position & { hole: true })
+		| (Position & { wall: Wall })
+		| Position
 		| null = null
 
 	private hit = false
@@ -72,7 +79,12 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 			this.resize()
 		})
 
-		this.hole = { x: 100, y: 0, radius: 60, image: useImage(holeImage) }
+		this.hole = {
+			x: 100,
+			y: 0,
+			radius: HOLE_RADIUS,
+			image: useImage(holeImage)
+		}
 
 		this.stars = []
 
@@ -120,7 +132,7 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 
 				alert(`Congratulations! You got ${stars} star${stars === 1 ? '' : 's'}`)
 
-				return
+				this.reset()
 			}
 
 			for (const wall of this.walls) {
@@ -269,6 +281,21 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 				if (this.mouseStart.button === 0) this.dispatchEvent('star', star)
 				return
 			}
+			const wall = this.walls.find(wall => this.mouseOnWall(mouse, wall))
+			if (wall) {
+				this.mouseCurrent = { ...mouse, wall }
+				if (this.mouseStart.button === 0) this.dispatchEvent('wall', wall)
+				return
+			}
+			if (this.mouseOnBall(mouse)) {
+				this.mouseCurrent = { ...mouse, ball: true }
+				return
+			}
+			if (this.mouseOnHole(mouse)) {
+				this.mouseCurrent = { ...mouse, hole: true }
+				return
+			}
+			this.mouseCurrent = mouse
 		}
 	})
 
@@ -289,6 +316,18 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 					// Dragging star
 					this.mouseCurrent.star.x += mouse.x - this.mouseCurrent.x
 					this.mouseCurrent.star.y -= mouse.y - this.mouseCurrent.y
+				} else if ('wall' in this.mouseCurrent) {
+					// Dragging star
+					this.mouseCurrent.wall.x += mouse.x - this.mouseCurrent.x
+					this.mouseCurrent.wall.y -= mouse.y - this.mouseCurrent.y
+				} else if ('ball' in this.mouseCurrent) {
+					// Dragging star
+					this.ball.x += mouse.x - this.mouseCurrent.x
+					this.ball.y -= mouse.y - this.mouseCurrent.y
+				} else if ('hole' in this.mouseCurrent) {
+					// Dragging star
+					this.hole.x += mouse.x - this.mouseCurrent.x
+					this.hole.y -= mouse.y - this.mouseCurrent.y
 				} else {
 					// Panning
 
@@ -385,9 +424,26 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		distance(normalizePoint(star, this.canvas, this.center), mouse) <=
 		STAR_RADIUS
 
+	private readonly mouseOnWall = (mouse: Position, wall: Wall) =>
+		distance(normalizePoint(wall, this.canvas, this.center), mouse) <=
+		STAR_RADIUS
+
+	private readonly mouseOnBall = (mouse: Position) =>
+		distance(normalizePoint(this.ball, this.canvas, this.center), mouse) <=
+		BALL_RADIUS
+
+	private readonly mouseOnHole = (mouse: Position) =>
+		distance(normalizePoint(this.hole, this.canvas, this.center), mouse) <=
+		HOLE_RADIUS
+
 	private readonly updateCursor = (mouse: Position) => {
 		this.canvas.style.cursor =
-			!this.hit && (this.forces.some(force => this.mouseOnForce(mouse, force)) || this.stars.some(star => this.mouseOnForce(mouse, force))
+			!this.hit &&
+			(this.forces.some(force => this.mouseOnForce(mouse, force)) ||
+				this.stars.some(star => this.mouseOnStar(mouse, star)) ||
+				this.walls.some(wall => this.mouseOnWall(mouse, wall)) ||
+				this.mouseOnBall(mouse) ||
+				this.mouseOnHole(mouse))
 				? 'move'
 				: ''
 	}
@@ -450,7 +506,6 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 	}
 
 	readonly addObstacle = ({ x, y }: Position) => {
-		// console.log('obs', x, y)
 		this.walls.push({
 			x: x * this.view.scale + 10 - this.canvas.width / 2 - this.center.x,
 			y: -y * this.view.scale - 17 + this.canvas.height / 2 - this.center.y,
@@ -481,7 +536,7 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		this.ball = {
 			x: -100,
 			y: 0,
-			radius: 30,
+			radius: BALL_RADIUS,
 			vx: 0,
 			vy: 0,
 			image: useImage(ballImage)
@@ -495,8 +550,18 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		this.reset(initial)
 
 		this.forces = []
-
 		this.dispatchForces()
+
+		this.stars = []
+		this.dispatchStars()
+
+		this.walls = []
+		this.ball.x = -100
+		this.ball.y = this.ball.vx = this.ball.vy = 0
+		this.hole.x = 100
+		this.hole.y = 0
+
+		this.dispatchEvent('clear')
 	}
 
 	readonly destroy = () => {

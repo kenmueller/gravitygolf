@@ -14,8 +14,6 @@ const loadCommunityLevels = debounce(
 			const levels = await get(fetch, query)
 			if (cancel.current) return
 
-			console.log(levels)
-
 			initial.set(levels)
 			set(levels)
 		} catch (error) {
