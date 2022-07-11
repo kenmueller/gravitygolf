@@ -6,7 +6,6 @@ import { browser } from '$app/env'
 import type View from '.'
 import mobile from '$lib/mobile'
 import landscape from '$lib/landscape'
-import getView from './get'
 
 const view = derived<
 	[Readable<boolean>, Readable<boolean | null>],
@@ -16,7 +15,11 @@ const view = derived<
 
 	const setView = () => {
 		set({
-			...getView(),
+			width: window.innerWidth,
+			height: window.innerHeight,
+			scale: $mobile
+				? Math.max(3, window.devicePixelRatio)
+				: window.devicePixelRatio,
 			mobile: $mobile,
 			landscape: $landscape
 		})
