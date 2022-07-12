@@ -6,6 +6,7 @@
 	import Community from '../images/Community.svelte'
 	import Edit from '../images/Edit.svelte'
 	import GitHub from '../images/GitHub.svelte'
+	import Settings from '../images/Settings.svelte'
 
 	const links = [
 		{
@@ -47,10 +48,14 @@
 			<span>{link.text}</span>
 		</a>
 	{/each}
+	<a class="settings" href="/settings" aria-label="Settings">
+		<Settings />
+	</a>
 </main>
 
 <style lang="scss">
 	main {
+		position: relative;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
@@ -104,5 +109,24 @@
 
 	span {
 		margin: 0 auto;
+	}
+
+	.settings {
+		position: absolute;
+		top: calc(1.2rem + env(safe-area-inset-top));
+		right: calc(1.2rem + env(safe-area-inset-right));
+		padding: 0.5rem;
+		color: rgba(white, 0.7);
+		background: rgba(white, 0.1);
+		border-radius: 0.5rem;
+		transition: color 0.3s;
+
+		&:hover {
+			color: white;
+		}
+
+		> :global(svg) {
+			width: 2rem;
+		}
 	}
 </style>
