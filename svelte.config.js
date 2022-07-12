@@ -32,8 +32,26 @@ const config = {
 			directives: {
 				'base-uri': ['self'],
 				'default-src': ['self'],
+				'connect-src': [
+					'self',
+					'https://pagead2.googlesyndication.com/getconfig/sodar'
+				],
+				'script-src': [
+					'self',
+					'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js'
+				],
 				'style-src': ['self', 'unsafe-inline', 'https://fonts.googleapis.com'],
-				'font-src': ['self', 'https://fonts.gstatic.com']
+				'img-src': [
+					'self',
+					'https://pagead2.googlesyndication.com/pagead/sodar'
+				],
+				'font-src': ['self', 'https://fonts.gstatic.com'],
+				'frame-src': [
+					'self',
+					'https://googleads.g.doubleclick.net',
+					'https://tpc.googlesyndication.com',
+					'https://www.google.com'
+				]
 			}
 		},
 		vite: {

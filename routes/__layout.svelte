@@ -16,12 +16,27 @@
 </script>
 
 <svelte:head>
-	<link rel="preconnect" href="https://fonts.googleapis.com" />
-	<link rel="preconnect" href="https://fonts.gstatic.com" />
+	<link
+		rel="preconnect"
+		href="https://fonts.googleapis.com"
+		crossorigin="anonymous"
+	/>
+	<link
+		rel="preconnect"
+		href="https://fonts.gstatic.com"
+		crossorigin="anonymous"
+	/>
 	<link
 		rel="stylesheet"
 		href="https://fonts.googleapis.com/css2?family=Kdam+Thmor+Pro&display=swap"
+		crossorigin="anonymous"
 	/>
+	<script
+		async
+		src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={encodeURIComponent(
+			import.meta.env.VITE_ADSENSE_CLIENT
+		)}"
+		crossorigin="anonymous"></script>
 </svelte:head>
 
 <MetaBase />
