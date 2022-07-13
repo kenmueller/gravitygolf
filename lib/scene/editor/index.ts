@@ -1,5 +1,6 @@
 import type { Unsubscriber } from 'svelte/store'
 
+import type RawLevel from '$lib/level/raw'
 import type EditorEvents from './events'
 import type View from '$lib/view'
 import type Position from '$lib/position'
@@ -52,6 +53,8 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 	private frame: number | null = null
 
 	private center = { x: 0, y: 0 }
+
+	private defaultBallPosition: Position = { x: -100, y: 0 }
 
 	private mouseStart: (Position & { button: number }) | null = null
 	private mouseCurrent:
@@ -141,6 +144,7 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 			) {
 				showOverlay(EditorWin, {
 					stars: this.starCount,
+					data: () => this.data,
 					reset: () => {
 						this.reset()
 						this.frame = requestAnimationFrame(this.tick)
@@ -303,7 +307,44 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 				normalizedBall.radius * 2
 			)
 
+		// center
+
+		const center = normalizePoint({ x: 0, y: 0 }, this.canvas, this.center)
+
+		this.context.lineWidth = 1
+		this.context.strokeStyle = 'gray'
+		this.context.globalAlpha = 0.5
+
+		this.context.beginPath()
+		this.context.moveTo(center.x, 0)
+		this.context.lineTo(center.x, this.canvas.height)
+		this.context.stroke()
+
+		this.context.beginPath()
+		this.context.moveTo(0, center.y)
+		this.context.lineTo(this.canvas.width, center.y)
+		this.context.stroke()
+
+		this.context.globalAlpha = 1
+
 		this.frame = requestAnimationFrame(this.tick)
+	}
+
+	private get data(): RawLevel {
+		const forces = this.forceCounts
+
+		return {
+			gravity: forces[0],
+			antigravity: forces[1],
+			ball: [
+				this.defaultBallPosition.x,
+				this.defaultBallPosition.y,
+				this.ball.radius
+			],
+			hole: [this.hole.x, this.hole.y, this.hole.radius],
+			stars: this.stars.map(({ x, y, radius }) => [x, y, radius]),
+			walls: this.walls.map(({ x, y, width, height }) => [x, y, width, height])
+		}
 	}
 
 	private readonly down = cursorHandler((cursor, event) => {
@@ -521,8 +562,14 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 				if (wall.width < 0) wall.width *= -1
 				if (wall.height < 0) wall.height *= -1
 				this.positionWallCorners(wall)
+			} else if (this.mouseStart.button === 0 && 'ball' in this.mouseCurrent) {
+				// normalizePoint(corner, this.canvas, this.center)
+				this.defaultBallPosition.x = this.mouseCurrent.x
+				this.defaultBallPosition.y = this.mouseCurrent.y
+				console.log(this.mouseCurrent.x, this.mouseCurrent.y)
 			}
 		}
+		console.log('hi')
 
 		this.mouseStart = this.mouseCurrent = null
 	}
@@ -608,17 +655,18 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		return found
 	}
 
-	private readonly dispatchForces = () => {
-		this.dispatchEvent(
-			'forces',
-			...this.forces.reduce<[number, number]>(
-				(remaining, force) => {
-					remaining[force.direction === 1 ? 0 : 1]++
-					return remaining
-				},
-				[0, 0]
-			)
+	private get forceCounts() {
+		return this.forces.reduce<[number, number]>(
+			(remaining, force) => {
+				remaining[force.direction === 1 ? 0 : 1]++
+				return remaining
+			},
+			[0, 0]
 		)
+	}
+
+	private readonly dispatchForces = () => {
+		this.dispatchEvent('forces', ...this.forceCounts)
 	}
 
 	private get starCount() {
@@ -736,8 +784,8 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		this.dispatchEvent('hit', false)
 
 		this.ball = {
-			x: -100,
-			y: 0,
+			x: this.defaultBallPosition.x,
+			y: this.defaultBallPosition.y,
 			radius: BALL_RADIUS,
 			vx: 0,
 			vy: 0,
@@ -761,8 +809,10 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		this.neswWallCorners = []
 		this.nwseWallCorners = []
 
-		this.ball.x = -100
-		this.ball.y = this.ball.vx = this.ball.vy = 0
+		this.defaultBallPosition = { x: -100, y: 0 }
+		this.ball.x = this.defaultBallPosition.x
+		this.ball.y = this.defaultBallPosition.y
+		this.ball.vx = this.ball.vy = 0
 		this.hole.x = 100
 		this.hole.y = 0
 

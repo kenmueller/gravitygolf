@@ -7,10 +7,14 @@
 	import Reset from '../../images/Reset.svelte'
 	import errorFromValue from '$lib/error/from/value'
 	import HttpError from '$lib/error'
+	import { goto } from '$app/navigation'
 
 	export let stars: number
-	export let reset: () => void
 	export let data: () => RawLevel
+	export let reset: () => void
+
+	let input: HTMLInputElement | null = null
+	$: input?.focus()
 
 	let name = ''
 	let loading = false
@@ -35,7 +39,9 @@
 			if (!response.ok)
 				throw new HttpError(response.status, await response.text())
 
-			console.log(await response.text())
+			hideOverlay()
+
+			await goto('/levels/community')
 		} catch (value) {
 			console.error(value)
 			alert(errorFromValue(value).message)
@@ -47,7 +53,7 @@
 
 <Win {stars}>
 	<form on:submit|preventDefault={publish}>
-		<input placeholder="Name your level" bind:value={name} />
+		<input placeholder="Name your level" bind:this={input} bind:value={name} />
 		<button class="publish" disabled={!name} aria-busy={loading || undefined}>
 			<Save />
 			Publish
