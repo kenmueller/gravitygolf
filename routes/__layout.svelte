@@ -31,12 +31,12 @@
 		href="https://fonts.googleapis.com/css2?family=Kdam+Thmor+Pro&display=swap"
 		crossorigin="anonymous"
 	/>
-	<script
+	<!-- <script
 		async
 		src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={encodeURIComponent(
 			import.meta.env.VITE_ADSENSE_CLIENT
 		)}"
-		crossorigin="anonymous"></script>
+		crossorigin="anonymous"></script> -->
 </svelte:head>
 
 <MetaBase />
