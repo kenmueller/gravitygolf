@@ -7,7 +7,8 @@ import type Force from '../force'
 import type Ball from '../ball'
 import type Hole from '../hole'
 import type Star from '../star'
-import type Wall from '../wall'
+import type ResizableWall from '../wall/resizable'
+import type WallCorner from '../wall/corner'
 import EventDispatcher from '$lib/event/dispatcher'
 import forceRadius from '../force/radius'
 import { MAX_FORCE_HIT_DISTANCE, MAX_FORCE_HIT_VELOCITY } from '../force/hit'
@@ -26,6 +27,8 @@ import splitHypotenuse from '../../split/hypotenuse'
 import clamp from '../clamp'
 import useImage from '$lib/image/use'
 import cursorHandler from '$lib/cursor/handler'
+import showOverlay from '$lib/overlay/show'
+import EditorWin from '../../../components/Overlay/EditorWin.svelte'
 
 import gravityImage from '../../../images/gravity.png'
 import antigravityImage from '../../../images/antigravity.png'
@@ -36,6 +39,9 @@ import starImage from '../../../images/star.png'
 const BALL_RADIUS = 30
 const HOLE_RADIUS = 60
 const STAR_RADIUS = 35
+const WALL_CORNER_RADIUS = 10
+const WALL_CORNER_EXTRA = WALL_CORNER_RADIUS / 3
+const WALL_CORNER_COLOR = 'rgb(127, 127, 255)'
 const DEFAULT_WALL_SIZE = { width: 40, height: 70 }
 
 export default class EditorScene extends EventDispatcher<EditorEvents> {
@@ -53,7 +59,8 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		| (Position & { star: Star })
 		| (Position & { ball: true })
 		| (Position & { hole: true })
-		| (Position & { wall: Wall })
+		| (Position & { wall: ResizableWall })
+		| (Position & { wallCorner: WallCorner })
 		| Position
 		| null = null
 
@@ -63,7 +70,9 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 	private ball: Ball = undefined as never
 	private hole: Hole = undefined as never
 	private stars: Star[] = undefined as never
-	private walls: Wall[] = undefined as never
+	private walls: ResizableWall[] = undefined as never
+	private neswWallCorners: WallCorner[] = undefined as never
+	private nwseWallCorners: WallCorner[] = undefined as never
 
 	constructor(
 		private readonly canvas: HTMLCanvasElement,
@@ -89,6 +98,8 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		this.stars = []
 
 		this.walls = []
+		this.neswWallCorners = []
+		this.nwseWallCorners = []
 
 		this.clear(true)
 
@@ -128,11 +139,18 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 				) <=
 				this.hole.radius - this.ball.radius
 			) {
-				const stars = this.starCount
+				showOverlay(EditorWin, {
+					stars: this.starCount,
+					reset: () => {
+						this.reset()
+						this.frame = requestAnimationFrame(this.tick)
+					}
+				})
 
-				alert(`Congratulations! You got ${stars} star${stars === 1 ? '' : 's'}`)
+				if (this.frame) cancelAnimationFrame(this.frame)
+				this.frame = null
 
-				this.reset()
+				return
 			}
 
 			for (const wall of this.walls) {
@@ -190,6 +208,35 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 			this.context.fillStyle = 'white'
 			this.context.fillRect(x, y, width, height)
 		}
+		if (!this.hit)
+			for (const corner of [...this.neswWallCorners, ...this.nwseWallCorners]) {
+				const shape = normalizeShape(
+					{ ...corner, radius: WALL_CORNER_RADIUS },
+					this.canvas,
+					this.center
+				)
+
+				shape.x += shape.radius
+				shape.y += shape.radius
+
+				this.context.beginPath()
+
+				this.context.fillStyle = WALL_CORNER_COLOR
+				this.context.globalAlpha = 0.5
+
+				this.context.arc(shape.x, shape.y, shape.radius, 0, 2 * Math.PI)
+				this.context.fill()
+
+				this.context.globalAlpha = 1
+
+				this.context.beginPath()
+
+				this.context.lineWidth = 2
+				this.context.strokeStyle = WALL_CORNER_COLOR
+
+				this.context.arc(shape.x, shape.y, shape.radius, 0, 2 * Math.PI)
+				this.context.stroke()
+			}
 
 		// hole
 
@@ -281,7 +328,15 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 				if (this.mouseStart.button === 0) this.dispatchEvent('star', star)
 				return
 			}
-			const wall = this.walls.find(wall => this.mouseOnWall(mouse, wall))
+			const wallCorner = [
+				...this.neswWallCorners,
+				...this.nwseWallCorners
+			].find(this.mouseOnWallCorner(mouse))
+			if (wallCorner) {
+				this.mouseCurrent = { ...mouse, wallCorner }
+				return
+			}
+			const wall = this.walls.find(this.mouseOnWall(mouse))
 			if (wall) {
 				this.mouseCurrent = { ...mouse, wall }
 				if (this.mouseStart.button === 0) this.dispatchEvent('wall', wall)
@@ -320,6 +375,36 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 					// Dragging star
 					this.mouseCurrent.wall.x += mouse.x - this.mouseCurrent.x
 					this.mouseCurrent.wall.y -= mouse.y - this.mouseCurrent.y
+					for (const corner of this.mouseCurrent.wall.corners) {
+						corner.x += mouse.x - this.mouseCurrent.x
+						corner.y -= mouse.y - this.mouseCurrent.y
+					}
+				} else if ('wallCorner' in this.mouseCurrent) {
+					const corner = this.mouseCurrent.wallCorner
+					const diffX = mouse.x - this.mouseCurrent.x
+					const diffY = mouse.y - this.mouseCurrent.y
+					const wall = corner.wall
+					wall.x += diffX / 2
+					wall.y -= diffY / 2
+					switch (corner.position) {
+						case 'NE':
+							wall.width += diffX
+							wall.height -= diffY
+							break
+						case 'NW':
+							wall.width -= diffX
+							wall.height -= diffY
+							break
+						case 'SE':
+							wall.width += diffX
+							wall.height += diffY
+							break
+						case 'SW':
+							wall.width -= diffX
+							wall.height += diffY
+							break
+					}
+					this.positionWallCorners(wall)
 				} else if ('ball' in this.mouseCurrent) {
 					// Dragging star
 					this.ball.x += mouse.x - this.mouseCurrent.x
@@ -377,7 +462,7 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 				this.ball.vy = y
 			} else if (this.mouseStart.button === 0 && 'force' in this.mouseCurrent) {
 				// End dragging force
-
+				this.dispatchEvent('force', null)
 				if (
 					this.mouseCurrent.x >
 						this.canvas.width -
@@ -401,12 +486,42 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 					this.dispatchForces()
 					this.updateCursor(this.mouseCurrent)
 				}
-			}
-
-			if (this.mouseStart.button === 0 && 'force' in this.mouseCurrent)
-				this.dispatchEvent('force', null)
-			else if (this.mouseStart.button === 0 && 'star' in this.mouseCurrent)
+			} else if (this.mouseStart.button === 0 && 'star' in this.mouseCurrent) {
 				this.dispatchEvent('star', null)
+				if (
+					this.mouseCurrent.x >
+						this.canvas.width -
+							FORCE_DELETE_DIMENSIONS.width * this.view.scale &&
+					this.mouseCurrent.y >
+						this.canvas.height -
+							FORCE_DELETE_DIMENSIONS.height * this.view.scale &&
+					this.deleteStar(this.mouseCurrent.star)
+				) {
+					this.dispatchStars()
+					this.updateCursor(this.mouseCurrent)
+				}
+			} else if (this.mouseStart.button === 0 && 'wall' in this.mouseCurrent) {
+				this.dispatchEvent('wall', null)
+				if (
+					this.mouseCurrent.x >
+						this.canvas.width -
+							FORCE_DELETE_DIMENSIONS.width * this.view.scale &&
+					this.mouseCurrent.y >
+						this.canvas.height -
+							FORCE_DELETE_DIMENSIONS.height * this.view.scale &&
+					this.deleteWall(this.mouseCurrent.wall)
+				) {
+					this.updateCursor(this.mouseCurrent)
+				}
+			} else if (
+				this.mouseStart.button === 0 &&
+				'wallCorner' in this.mouseCurrent
+			) {
+				const wall = this.mouseCurrent.wallCorner.wall
+				if (wall.width < 0) wall.width *= -1
+				if (wall.height < 0) wall.height *= -1
+				this.positionWallCorners(wall)
+			}
 		}
 
 		this.mouseStart = this.mouseCurrent = null
@@ -424,9 +539,20 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		distance(normalizePoint(star, this.canvas, this.center), mouse) <=
 		STAR_RADIUS
 
-	private readonly mouseOnWall = (mouse: Position, wall: Wall) =>
-		distance(normalizePoint(wall, this.canvas, this.center), mouse) <=
-		STAR_RADIUS
+	private readonly mouseOnWall = (mouse: Position) => (wall: ResizableWall) => {
+		const point = normalizePoint(wall, this.canvas, this.center)
+		return (
+			mouse.x >= point.x - wall.width / 2 &&
+			mouse.x <= point.x + wall.width / 2 &&
+			mouse.y >= point.y - wall.height / 2 &&
+			mouse.y <= point.y + wall.height / 2
+		)
+	}
+
+	private readonly mouseOnWallCorner =
+		(mouse: Position) => (corner: WallCorner) =>
+			distance(normalizePoint(corner, this.canvas, this.center), mouse) <=
+			WALL_CORNER_RADIUS
 
 	private readonly mouseOnBall = (mouse: Position) =>
 		distance(normalizePoint(this.ball, this.canvas, this.center), mouse) <=
@@ -437,15 +563,21 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		HOLE_RADIUS
 
 	private readonly updateCursor = (mouse: Position) => {
-		this.canvas.style.cursor =
-			!this.hit &&
-			(this.forces.some(force => this.mouseOnForce(mouse, force)) ||
+		if (!this.hit) {
+			if (this.neswWallCorners.some(this.mouseOnWallCorner(mouse)))
+				this.canvas.style.cursor = 'nesw-resize'
+			else if (this.nwseWallCorners.some(this.mouseOnWallCorner(mouse)))
+				this.canvas.style.cursor = 'nwse-resize'
+			else if (
+				this.forces.some(force => this.mouseOnForce(mouse, force)) ||
 				this.stars.some(star => this.mouseOnStar(mouse, star)) ||
-				this.walls.some(wall => this.mouseOnWall(mouse, wall)) ||
+				this.walls.some(this.mouseOnWall(mouse)) ||
 				this.mouseOnBall(mouse) ||
-				this.mouseOnHole(mouse))
-				? 'move'
-				: ''
+				this.mouseOnHole(mouse)
+			)
+				this.canvas.style.cursor = 'move'
+			else this.canvas.style.cursor = ''
+		}
 	}
 
 	private readonly key = ({ key }: KeyboardEvent) => {
@@ -457,6 +589,22 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		const found = index >= 0
 
 		if (found) this.forces.splice(index, 1)
+		return found
+	}
+
+	private readonly deleteStar = (star: Star) => {
+		const index = this.stars.indexOf(star)
+		const found = index >= 0
+
+		if (found) this.stars.splice(index, 1)
+		return found
+	}
+
+	private readonly deleteWall = (wall: ResizableWall) => {
+		const index = this.walls.indexOf(wall)
+		const found = index >= 0
+
+		if (found) this.walls.splice(index, 1)
 		return found
 	}
 
@@ -505,13 +653,67 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		this.canvas.style.cursor = 'move'
 	}
 
+	private readonly positionWallCorners = (wall: ResizableWall) => {
+		for (const wallCorner of wall.corners) {
+			switch (wallCorner.position) {
+				case 'NE':
+					wallCorner.x = wall.x + wall.width / 2 + WALL_CORNER_EXTRA
+					wallCorner.y = wall.y + wall.height / 2 + WALL_CORNER_EXTRA
+					break
+				case 'NW':
+					wallCorner.x = wall.x - wall.width / 2 - WALL_CORNER_EXTRA
+					wallCorner.y = wall.y + wall.height / 2 + WALL_CORNER_EXTRA
+					break
+				case 'SE':
+					wallCorner.x = wall.x + wall.width / 2 + WALL_CORNER_EXTRA
+					wallCorner.y = wall.y - wall.height / 2 - WALL_CORNER_EXTRA
+					break
+				case 'SW':
+					wallCorner.x = wall.x - wall.width / 2 - WALL_CORNER_EXTRA
+					wallCorner.y = wall.y - wall.height / 2 - WALL_CORNER_EXTRA
+					break
+			}
+		}
+	}
+
 	readonly addObstacle = ({ x, y }: Position) => {
-		this.walls.push({
+		const wall: ResizableWall = {
 			x: x * this.view.scale + 10 - this.canvas.width / 2 - this.center.x,
 			y: -y * this.view.scale - 17 + this.canvas.height / 2 - this.center.y,
 			width: DEFAULT_WALL_SIZE.width * this.view.scale,
-			height: DEFAULT_WALL_SIZE.height * this.view.scale
-		})
+			height: DEFAULT_WALL_SIZE.height * this.view.scale,
+			corners: []
+		}
+		const neCorner: WallCorner = {
+			x: wall.x + wall.width / 2 + WALL_CORNER_EXTRA,
+			y: wall.y + wall.height / 2 + WALL_CORNER_EXTRA,
+			position: 'NE',
+			wall
+		}
+		const nwCorner: WallCorner = {
+			x: wall.x - wall.width / 2 - WALL_CORNER_EXTRA,
+			y: wall.y + wall.height / 2 + WALL_CORNER_EXTRA,
+			position: 'NW',
+			wall
+		}
+		const seCorner: WallCorner = {
+			x: wall.x + wall.width / 2 + WALL_CORNER_EXTRA,
+			y: wall.y - wall.height / 2 - WALL_CORNER_EXTRA,
+			position: 'SE',
+			wall
+		}
+		const swCorner: WallCorner = {
+			x: wall.x - wall.width / 2 - WALL_CORNER_EXTRA,
+			y: wall.y - wall.height / 2 - WALL_CORNER_EXTRA,
+			position: 'SW',
+			wall
+		}
+		wall.corners = [neCorner, nwCorner, seCorner, swCorner]
+		this.walls.push(wall)
+		this.neswWallCorners.push(neCorner)
+		this.neswWallCorners.push(swCorner)
+		this.nwseWallCorners.push(nwCorner)
+		this.nwseWallCorners.push(seCorner)
 
 		this.canvas.style.cursor = 'move'
 	}
@@ -556,6 +758,9 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		this.dispatchStars()
 
 		this.walls = []
+		this.neswWallCorners = []
+		this.nwseWallCorners = []
+
 		this.ball.x = -100
 		this.ball.y = this.ball.vx = this.ball.vy = 0
 		this.hole.x = 100

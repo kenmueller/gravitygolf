@@ -29,7 +29,7 @@ import clamp from './clamp'
 import useImage from '$lib/image/use'
 import cursorHandler from '$lib/cursor/handler'
 import showOverlay from '$lib/overlay/show'
-import Win from '../../components/Win.svelte'
+import LevelWin from '../../components/Overlay/LevelWin.svelte'
 
 import gravityImage from '../../images/gravity.png'
 import antigravityImage from '../../images/antigravity.png'
@@ -126,11 +126,14 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 
 				this.dispatchEvent('win')
 
-				showOverlay(Win, {
+				showOverlay(LevelWin, {
 					stars,
 					hasNext: this.done.hasNext,
 					next: this.done.next
 				})
+
+				if (this.frame) cancelAnimationFrame(this.frame)
+				this.frame = null
 
 				return
 			}

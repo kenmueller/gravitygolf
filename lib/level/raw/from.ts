@@ -14,10 +14,10 @@ const levelFromRaw = ({
 		? antigravity[0]
 		: antigravity ?? 0,
 	defaultGravity: Array.isArray(gravity)
-		? gravity[1].map(([x, y]) => ({ x, y }))
+		? (gravity.slice(1) as [number, number][]).map(([x, y]) => ({ x, y }))
 		: [],
 	defaultAntigravity: Array.isArray(antigravity)
-		? antigravity[1].map(([x, y]) => ({ x, y }))
+		? (antigravity.slice(1) as [number, number][]).map(([x, y]) => ({ x, y }))
 		: [],
 	ball: { x: ball[0], y: ball[1], radius: ball[2] },
 	hole: { x: hole[0], y: hole[1], radius: hole[2] },

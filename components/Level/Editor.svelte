@@ -4,6 +4,8 @@
 
 	import type Position from '$lib/position'
 	import type Force from '$lib/scene/force'
+	import type Star from '$lib/scene/star'
+	import type ResizableWall from '$lib/scene/wall/resizable'
 	import forceRadius from '$lib/scene/force/radius'
 	import FORCE_DELETE_DIMENSIONS from '$lib/scene/force/delete/dimensions'
 	import MAX_STARS from '$lib/scene/star/max'
@@ -62,10 +64,22 @@
 		stars = MAX_STARS - defaultStars
 	})
 
-	let currentForce: Force | null = null
+	let currentObject:
+		| ({ type: 'force' } & Force)
+		| ({ type: 'star' } & Star)
+		| ({ type: 'wall' } & ResizableWall)
+		| null = null
 
 	$: scene?.addEventListener('force', force => {
-		currentForce = force
+		currentObject = force && { ...force, type: 'force' }
+	})
+
+	$: scene?.addEventListener('star', star => {
+		currentObject = star && { ...star, type: 'star' }
+	})
+
+	$: scene?.addEventListener('wall', wall => {
+		currentObject = wall && { ...wall, type: 'wall' }
 	})
 
 	$: radius = forceRadius($mobile)
@@ -161,7 +175,7 @@
 		</button>
 	</header>
 	<canvas bind:this={canvas} />
-	{#if currentForce}
+	{#if currentObject}
 		<p
 			class="delete-force"
 			style="
@@ -171,7 +185,11 @@
 			transition:fade={{ duration: 300 }}
 		>
 			<Trash />
-			Drag to delete {currentForce.direction === 1 ? '' : 'anti'}gravity
+			Drag to delete {currentObject.type === 'force'
+				? currentObject.direction === 1
+					? 'gravity'
+					: 'antigravity'
+				: currentObject.type}
 		</p>
 	{/if}
 </main>

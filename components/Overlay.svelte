@@ -7,23 +7,33 @@
 </script>
 
 {#if $overlay}
-	<div role="dialog" transition:blur={{ duration }}>
-		<svelte:component this={$overlay.component} {...$overlay.props} />
+	<div class="outer" role="dialog" transition:blur={{ duration }}>
+		<div class="inner">
+			<svelte:component this={$overlay.component} {...$overlay.props} />
+		</div>
 	</div>
 {/if}
 
 <style lang="scss">
 	div {
-		position: absolute;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
 		align-items: center;
+	}
+
+	.outer {
+		position: absolute;
 		top: 0;
 		right: 0;
 		bottom: 0;
 		left: 0;
 		backdrop-filter: blur(4px);
 		z-index: 200;
+	}
+
+	.inner {
+		width: 95%;
+		height: 95%;
 	}
 </style>
