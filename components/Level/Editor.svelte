@@ -30,6 +30,8 @@
 		hit = newHit
 	})
 
+	$: playing = false
+
 	let totalGravity = 1
 	let totalAntigravity = 1
 
@@ -94,10 +96,20 @@
 		stars = MAX_STARS
 	})
 
+	let maxGravity: HTMLInputElement | null = null
+	let maxAntigravity: HTMLInputElement | null = null
+
+	const down = ({ target }: MouseEvent) => {
+		if (maxGravity !== target) maxGravity?.blur()
+		if (maxAntigravity !== target) maxAntigravity?.blur()
+	}
+
 	onDestroy(() => {
 		scene?.destroy()
 	})
 </script>
+
+<svelte:window on:mousedown={down} />
 
 <main>
 	<header>
@@ -114,6 +126,7 @@
 					use:draggable={scene && forcesRemaining.gravity ? addForce(1) : null}
 				/>
 				<input
+					bind:this={maxGravity}
 					type="number"
 					min={defaultForces.gravity}
 					bind:value={totalGravity}
@@ -127,15 +140,12 @@
 						: null}
 				/>
 				<input
+					bind:this={maxAntigravity}
 					type="number"
 					min={defaultForces.antigravity}
 					bind:value={totalAntigravity}
 				/>
-				<span
-					class="wall"
-					style="background-color: white; width: 20px; height: 35px;"
-					use:draggable={scene ? scene.addObstacle : null}
-				/>
+				<span class="wall" use:draggable={scene ? scene.addObstacle : null} />
 			{/if}
 		</div>
 		<div class="stars">
@@ -156,6 +166,17 @@
 				{/each}
 			{/if}
 		</div>
+		<button
+			class="play"
+			disabled={!scene || playing}
+			aria-label="Play"
+			on:click={() => {
+				playing = true
+				scene?.play()
+			}}
+		>
+			{playing ? '' : 'Play'}
+		</button>
 		<button
 			class="reset"
 			disabled={!scene}
@@ -233,6 +254,7 @@
 	}
 
 	[data-force] {
+		flex-shrink: 0;
 		cursor: move;
 		position: relative;
 		width: calc(2px * var(--scale));
@@ -258,10 +280,6 @@
 				calc(-0.06rem * var(--scale))
 			);
 		}
-
-		& + & {
-			margin-left: calc(0.1rem * var(--scale));
-		}
 	}
 
 	[data-force='gravity'] {
@@ -277,8 +295,27 @@
 		opacity: 0.5;
 	}
 
+	input {
+		overflow: hidden;
+		max-width: 5rem;
+		width: 100%;
+		margin: 0 2rem 0 0.8rem;
+		padding: 0.3rem 0.5rem;
+		color: white;
+		background: rgba(white, 0.1);
+		border-radius: 0.5rem;
+
+		&::placeholder {
+			color: rgba(white, 0.5);
+		}
+	}
+
 	.wall {
+		flex-shrink: 0;
 		cursor: move;
+		width: 20px;
+		height: 35px;
+		background: white;
 	}
 
 	.stars {
