@@ -1,13 +1,14 @@
 <script lang="ts">
+	import { goto } from '$app/navigation'
+
 	import type RawLevel from '$lib/level/raw'
 	import hideOverlay from '$lib/overlay/hide'
 	import Win from './Win.svelte'
-
+	import replaceWithRounded from '$lib/replaceWithRounded'
 	import Save from '../../images/Save.svelte'
 	import Reset from '../../images/Reset.svelte'
 	import errorFromValue from '$lib/error/from/value'
 	import HttpError from '$lib/error'
-	import { goto } from '$app/navigation'
 
 	export let stars: number
 	export let data: () => RawLevel
@@ -33,7 +34,7 @@
 			const response = await fetch('/communityLevels', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ name, data: data() })
+				body: JSON.stringify({ name, data: data() }, replaceWithRounded(2))
 			})
 
 			if (!response.ok)

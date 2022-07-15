@@ -1,5 +1,7 @@
 import type { Unsubscriber } from 'svelte/store'
 
+import { dev } from '$app/env'
+
 import type RawLevel from '$lib/level/raw'
 import type EditorEvents from './events'
 import type View from '$lib/view'
@@ -29,6 +31,7 @@ import clamp from '../clamp'
 import useImage from '$lib/image/use'
 import cursorHandler from '$lib/cursor/handler'
 import showOverlay from '$lib/overlay/show'
+import replaceWithRounded from '$lib/replaceWithRounded'
 import EditorWin from '../../../components/Overlay/EditorWin.svelte'
 
 import gravityImage from '../../../images/gravity.png'
@@ -121,6 +124,13 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		this.canvas.addEventListener('contextmenu', this.rightClick)
 
 		this.frame = requestAnimationFrame(this.tick)
+
+		if (dev)
+			Object.defineProperty(window, 'levelData', {
+				get: () => JSON.stringify(this.data, replaceWithRounded(2)),
+				enumerable: true,
+				configurable: true
+			})
 	}
 
 	private readonly scale = () => scale(this.context, this.view)
@@ -335,22 +345,30 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		const antigravity = this.forces.filter(({ direction }) => direction === -1)
 
 		return {
-			gravity: [
-				gravity.length,
-				...gravity.map<[number, number]>(({ x, y }) => [x, y])
-			],
-			antigravity: [
-				antigravity.length,
-				...antigravity.map<[number, number]>(({ x, y }) => [x, y])
-			],
+			gravity: gravity.length
+				? [
+						gravity.length,
+						...gravity.map<[number, number]>(({ x, y }) => [x, y])
+				  ]
+				: undefined,
+			antigravity: antigravity.length
+				? [
+						antigravity.length,
+						...antigravity.map<[number, number]>(({ x, y }) => [x, y])
+				  ]
+				: undefined,
 			ball: [
 				this.defaultBallPosition.x,
 				this.defaultBallPosition.y,
 				this.ball.radius
 			],
 			hole: [this.hole.x, this.hole.y, this.hole.radius],
-			stars: this.stars.map(({ x, y, radius }) => [x, y, radius]),
-			walls: this.walls.map(({ x, y, width, height }) => [x, y, width, height])
+			stars: this.stars.length
+				? this.stars.map(({ x, y, radius }) => [x, y, radius])
+				: undefined,
+			walls: this.walls.length
+				? this.walls.map(({ x, y, width, height }) => [x, y, width, height])
+				: undefined
 		}
 	}
 
@@ -857,5 +875,7 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		}
 
 		if (this.frame) cancelAnimationFrame(this.frame)
+
+		if (dev) delete (window as unknown as Record<string, unknown>).levelData
 	}
 }
