@@ -35,25 +35,26 @@
 	let totalGravity = 1
 	let totalAntigravity = 1
 
-	let defaultForces = {
+	let fixedForces = {
 		gravity: 0,
 		antigravity: 0
 	}
 
 	$: forcesRemaining = {
-		gravity: totalGravity - defaultForces.gravity,
-		antigravity: totalAntigravity - defaultForces.antigravity
+		gravity: totalGravity - fixedForces.gravity,
+		antigravity: totalAntigravity - fixedForces.antigravity
 	}
 
 	$: scene?.addEventListener('forces', (gravity, antigravity) => {
-		defaultForces = { gravity, antigravity }
+		fixedForces = { gravity, antigravity }
 	})
 
-	const addForce = (direction: 1 | -1) => (position: Position) => {
-		scene?.addForce(position, direction)
-	}
+	const addForce =
+		(direction: 1 | -1, fixed: boolean) => (position: Position) => {
+			scene?.addForce(position, direction, fixed)
+		}
 
-	let defaultStars = 0
+	let fixedStars = 0
 
 	let stars = MAX_STARS
 
@@ -61,9 +62,9 @@
 		stars = newStars
 	})
 
-	$: scene?.addEventListener('defaultStars', newDefaultStars => {
-		defaultStars = newDefaultStars
-		stars = MAX_STARS - defaultStars
+	$: scene?.addEventListener('fixedStars', newFixedStars => {
+		fixedStars = newFixedStars
+		stars = MAX_STARS - fixedStars
 	})
 
 	let currentObject:
@@ -88,8 +89,8 @@
 
 	$: scene?.addEventListener('clear', () => {
 		totalGravity = totalAntigravity = 1
-		defaultForces = { gravity: 0, antigravity: 0 }
-		defaultStars = 0
+		fixedForces = { gravity: 0, antigravity: 0 }
+		fixedStars = 0
 		stars = MAX_STARS
 	})
 
@@ -120,12 +121,14 @@
 					style="--scale: {radius / $view.scale};"
 					data-force="gravity"
 					data-remaining={forcesRemaining.gravity}
-					use:draggable={scene && forcesRemaining.gravity ? addForce(1) : null}
+					use:draggable={scene && forcesRemaining.gravity
+						? addForce(1, !playing)
+						: null}
 				/>
 				<input
 					bind:this={maxGravity}
 					type="number"
-					min={defaultForces.gravity}
+					min={fixedForces.gravity}
 					bind:value={totalGravity}
 				/>
 				<span
@@ -133,13 +136,13 @@
 					data-force="antigravity"
 					data-remaining={forcesRemaining.antigravity}
 					use:draggable={scene && forcesRemaining.antigravity
-						? addForce(-1)
+						? addForce(-1, !playing)
 						: null}
 				/>
 				<input
 					bind:this={maxAntigravity}
 					type="number"
-					min={defaultForces.antigravity}
+					min={fixedForces.antigravity}
 					bind:value={totalAntigravity}
 				/>
 				<span class="wall" use:draggable={scene ? scene.addObstacle : null} />
@@ -153,10 +156,10 @@
 						src={starImage}
 						alt="Star"
 						style="--scale: {radius / $view.scale};"
-						aria-disabled={index >= (hit ? stars : MAX_STARS - defaultStars) ||
+						aria-disabled={index >= (hit ? stars : MAX_STARS - fixedStars) ||
 							undefined}
 						data-hit={index < stars ? '' : undefined}
-						use:draggable={scene && !hit && index < MAX_STARS - defaultStars
+						use:draggable={scene && !hit && index < MAX_STARS - fixedStars
 							? scene.addStar
 							: null}
 					/>

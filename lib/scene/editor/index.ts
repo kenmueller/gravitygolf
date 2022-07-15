@@ -374,14 +374,12 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 
 	private readonly down = cursorHandler((cursor, event) => {
 		event.preventDefault()
+		const mouse = {
+			x: Math.floor(cursor.x * this.view.scale),
+			y: Math.floor(cursor.y * this.view.scale)
+		}
+		this.mouseStart = { x: mouse.x, y: mouse.y, button: cursor.button }
 		if (!this.hit) {
-			const mouse = {
-				x: Math.floor(cursor.x * this.view.scale),
-				y: Math.floor(cursor.y * this.view.scale)
-			}
-
-			this.mouseStart = { x: mouse.x, y: mouse.y, button: cursor.button }
-
 			const force = this.forces.find(force => this.mouseOnForce(mouse, force))
 			if (force) {
 				this.mouseCurrent = { ...mouse, force }
@@ -416,8 +414,8 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 				this.mouseCurrent = { ...mouse, hole: true }
 				return
 			}
-			this.mouseCurrent = mouse
 		}
+		this.mouseCurrent = mouse
 	})
 
 	private readonly move = cursorHandler(cursor => {
