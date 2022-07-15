@@ -32,7 +32,9 @@ import showOverlay from '$lib/overlay/show'
 import LevelWin from '../../components/Overlay/LevelWin.svelte'
 
 import gravityImage from '../../images/gravity.png'
+import fixedGravityImage from '../../images/fixed-gravity.png'
 import antigravityImage from '../../images/antigravity.png'
+import fixedAntigravityImage from '../../images/fixed-antigravity.png'
 import ballImage from '../../images/ball.png'
 import holeImage from '../../images/hole.png'
 import starImage from '../../images/star.png'
@@ -478,13 +480,13 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 				...force,
 				direction: 1,
 				fixed: true,
-				image: useImage(gravityImage)
+				image: useImage(fixedGravityImage)
 			})),
 			...this.level.fixedAntigravity.map<Force>(force => ({
 				...force,
 				direction: 1,
 				fixed: true,
-				image: useImage(antigravityImage)
+				image: useImage(fixedAntigravityImage)
 			}))
 		]
 
