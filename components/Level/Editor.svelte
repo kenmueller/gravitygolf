@@ -88,10 +88,7 @@
 
 	$: scene?.addEventListener('clear', () => {
 		totalGravity = totalAntigravity = 1
-		defaultForces = {
-			gravity: 0,
-			antigravity: 0
-		}
+		defaultForces = { gravity: 0, antigravity: 0 }
 		defaultStars = 0
 		stars = MAX_STARS
 	})

@@ -331,11 +331,18 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 	}
 
 	private get data(): RawLevel {
-		const forces = this.forceCounts
+		const gravity = this.forces.filter(({ direction }) => direction === 1)
+		const antigravity = this.forces.filter(({ direction }) => direction === -1)
 
 		return {
-			gravity: forces[0],
-			antigravity: forces[1],
+			gravity: [
+				gravity.length,
+				...gravity.map<[number, number]>(({ x, y }) => [x, y])
+			],
+			antigravity: [
+				antigravity.length,
+				...antigravity.map<[number, number]>(({ x, y }) => [x, y])
+			],
 			ball: [
 				this.defaultBallPosition.x,
 				this.defaultBallPosition.y,
@@ -563,13 +570,12 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 				if (wall.height < 0) wall.height *= -1
 				this.positionWallCorners(wall)
 			} else if (this.mouseStart.button === 0 && 'ball' in this.mouseCurrent) {
-				// normalizePoint(corner, this.canvas, this.center)
-				this.defaultBallPosition.x = this.mouseCurrent.x
-				this.defaultBallPosition.y = this.mouseCurrent.y
-				console.log(this.mouseCurrent.x, this.mouseCurrent.y)
+				this.defaultBallPosition.x =
+					this.mouseCurrent.x - this.canvas.width / 2 - this.center.x
+				this.defaultBallPosition.y =
+					-this.mouseCurrent.y + this.canvas.height / 2 - this.center.y
 			}
 		}
-		console.log('hi')
 
 		this.mouseStart = this.mouseCurrent = null
 	}
@@ -652,21 +658,37 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		const found = index >= 0
 
 		if (found) this.walls.splice(index, 1)
+
+		for (const corner of wall.corners)
+			switch (corner.position) {
+				case 'NE':
+				case 'SW': {
+					const index = this.neswWallCorners.indexOf(corner)
+					if (index >= 0) this.neswWallCorners.splice(index, 1)
+					break
+				}
+				case 'NW':
+				case 'SE': {
+					const index = this.nwseWallCorners.indexOf(corner)
+					if (index >= 0) this.nwseWallCorners.splice(index, 1)
+					break
+				}
+			}
+
 		return found
 	}
 
-	private get forceCounts() {
-		return this.forces.reduce<[number, number]>(
-			(remaining, force) => {
-				remaining[force.direction === 1 ? 0 : 1]++
-				return remaining
-			},
-			[0, 0]
-		)
-	}
-
 	private readonly dispatchForces = () => {
-		this.dispatchEvent('forces', ...this.forceCounts)
+		this.dispatchEvent(
+			'forces',
+			...this.forces.reduce<[number, number]>(
+				(remaining, force) => {
+					remaining[force.direction === 1 ? 0 : 1]++
+					return remaining
+				},
+				[0, 0]
+			)
+		)
 	}
 
 	private get starCount() {
@@ -680,6 +702,8 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 	private readonly dispatchStars = () => {
 		this.dispatchEvent('stars', this.starCount)
 	}
+
+	readonly play = () => {}
 
 	readonly addForce = ({ x, y }: Position, direction: 1 | -1) => {
 		this.forces.push({
@@ -702,26 +726,25 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 	}
 
 	private readonly positionWallCorners = (wall: ResizableWall) => {
-		for (const wallCorner of wall.corners) {
-			switch (wallCorner.position) {
+		for (const corner of wall.corners)
+			switch (corner.position) {
 				case 'NE':
-					wallCorner.x = wall.x + wall.width / 2 + WALL_CORNER_EXTRA
-					wallCorner.y = wall.y + wall.height / 2 + WALL_CORNER_EXTRA
+					corner.x = wall.x + wall.width / 2 + WALL_CORNER_EXTRA
+					corner.y = wall.y + wall.height / 2 + WALL_CORNER_EXTRA
 					break
 				case 'NW':
-					wallCorner.x = wall.x - wall.width / 2 - WALL_CORNER_EXTRA
-					wallCorner.y = wall.y + wall.height / 2 + WALL_CORNER_EXTRA
+					corner.x = wall.x - wall.width / 2 - WALL_CORNER_EXTRA
+					corner.y = wall.y + wall.height / 2 + WALL_CORNER_EXTRA
 					break
 				case 'SE':
-					wallCorner.x = wall.x + wall.width / 2 + WALL_CORNER_EXTRA
-					wallCorner.y = wall.y - wall.height / 2 - WALL_CORNER_EXTRA
+					corner.x = wall.x + wall.width / 2 + WALL_CORNER_EXTRA
+					corner.y = wall.y - wall.height / 2 - WALL_CORNER_EXTRA
 					break
 				case 'SW':
-					wallCorner.x = wall.x - wall.width / 2 - WALL_CORNER_EXTRA
-					wallCorner.y = wall.y - wall.height / 2 - WALL_CORNER_EXTRA
+					corner.x = wall.x - wall.width / 2 - WALL_CORNER_EXTRA
+					corner.y = wall.y - wall.height / 2 - WALL_CORNER_EXTRA
 					break
 			}
-		}
 	}
 
 	readonly addObstacle = ({ x, y }: Position) => {
@@ -758,10 +781,8 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		}
 		wall.corners = [neCorner, nwCorner, seCorner, swCorner]
 		this.walls.push(wall)
-		this.neswWallCorners.push(neCorner)
-		this.neswWallCorners.push(swCorner)
-		this.nwseWallCorners.push(nwCorner)
-		this.nwseWallCorners.push(seCorner)
+		this.neswWallCorners.push(neCorner, swCorner)
+		this.nwseWallCorners.push(nwCorner, seCorner)
 
 		this.canvas.style.cursor = 'move'
 	}
