@@ -57,7 +57,7 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 
 	private center = { x: 0, y: 0 }
 
-	private defaultBallPosition: Position = { x: -100, y: 0 }
+	private initialBallPosition: Position = { x: -100, y: 0 }
 
 	private mouseStart: (Position & { button: number }) | null = null
 	private mouseCurrent:
@@ -358,8 +358,8 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 				  ]
 				: undefined,
 			ball: [
-				this.defaultBallPosition.x,
-				this.defaultBallPosition.y,
+				this.initialBallPosition.x,
+				this.initialBallPosition.y,
 				this.ball.radius
 			],
 			hole: [this.hole.x, this.hole.y, this.hole.radius],
@@ -588,9 +588,9 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 				if (wall.height < 0) wall.height *= -1
 				this.positionWallCorners(wall)
 			} else if (this.mouseStart.button === 0 && 'ball' in this.mouseCurrent) {
-				this.defaultBallPosition.x =
+				this.initialBallPosition.x =
 					this.mouseCurrent.x - this.canvas.width / 2 - this.center.x
-				this.defaultBallPosition.y =
+				this.initialBallPosition.y =
 					-this.mouseCurrent.y + this.canvas.height / 2 - this.center.y
 			}
 		}
@@ -723,7 +723,11 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 
 	readonly play = () => {}
 
-	readonly addForce = ({ x, y }: Position, direction: 1 | -1) => {
+	readonly addForce = (
+		{ x, y }: Position,
+		direction: 1 | -1,
+		fixed: boolean
+	) => {
 		this.forces.push({
 			x:
 				x * this.view.scale +
@@ -736,6 +740,7 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 				this.canvas.height / 2 -
 				this.center.y,
 			direction,
+			fixed,
 			image: useImage(direction === 1 ? gravityImage : antigravityImage)
 		})
 
@@ -813,7 +818,7 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 			hit: false,
 			image: useImage(starImage)
 		})
-		this.dispatchEvent('defaultStars', this.stars.length)
+		this.dispatchEvent('fixedStars', this.stars.length)
 
 		this.canvas.style.cursor = 'move'
 	}
@@ -823,8 +828,8 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		this.dispatchEvent('hit', false)
 
 		this.ball = {
-			x: this.defaultBallPosition.x,
-			y: this.defaultBallPosition.y,
+			x: this.initialBallPosition.x,
+			y: this.initialBallPosition.y,
 			radius: BALL_RADIUS,
 			vx: 0,
 			vy: 0,
@@ -848,9 +853,9 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		this.neswWallCorners = []
 		this.nwseWallCorners = []
 
-		this.defaultBallPosition = { x: -100, y: 0 }
-		this.ball.x = this.defaultBallPosition.x
-		this.ball.y = this.defaultBallPosition.y
+		this.initialBallPosition = { x: -100, y: 0 }
+		this.ball.x = this.initialBallPosition.x
+		this.ball.y = this.initialBallPosition.y
 		this.ball.vx = this.ball.vy = 0
 		this.hole.x = 100
 		this.hole.y = 0

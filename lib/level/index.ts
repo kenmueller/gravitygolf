@@ -3,8 +3,8 @@ import type Position from '$lib/position'
 export default interface Level {
 	maxGravity: number
 	maxAntigravity: number
-	defaultGravity: Position[]
-	defaultAntigravity: Position[]
+	fixedGravity: Position[]
+	fixedAntigravity: Position[]
 	ball: Position & { radius: number }
 	hole: Position & { radius: number }
 	stars: (Position & { radius: number })[]

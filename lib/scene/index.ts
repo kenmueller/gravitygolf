@@ -274,7 +274,9 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 
 		const force = this.hit
 			? null
-			: this.forces.find(force => this.mouseOnForce(mouse, force)) ?? null
+			: this.forces.find(
+					force => !force.fixed && this.mouseOnForce(mouse, force)
+			  ) ?? null
 
 		this.mouseCurrent = { ...mouse, force }
 
@@ -389,7 +391,8 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 
 	private readonly updateCursor = (mouse: Position) => {
 		this.canvas.style.cursor =
-			!this.hit && this.forces.some(force => this.mouseOnForce(mouse, force))
+			!this.hit &&
+			this.forces.some(force => !force.fixed && this.mouseOnForce(mouse, force))
 				? 'move'
 				: ''
 	}
@@ -411,7 +414,7 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 			'forces',
 			...this.forces.reduce<[number, number]>(
 				(remaining, force) => {
-					remaining[force.direction === 1 ? 0 : 1]++
+					if (!force.fixed) remaining[force.direction === 1 ? 0 : 1]++
 					return remaining
 				},
 				[0, 0]
@@ -444,6 +447,7 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 				this.canvas.height / 2 -
 				this.center.y,
 			direction,
+			fixed: false,
 			image: useImage(direction === 1 ? gravityImage : antigravityImage)
 		})
 
@@ -470,14 +474,16 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 		this.reset(initial)
 
 		this.forces = [
-			...this.level.defaultGravity.map(force => ({
+			...this.level.fixedGravity.map<Force>(force => ({
 				...force,
-				direction: 1 as const,
+				direction: 1,
+				fixed: true,
 				image: useImage(gravityImage)
 			})),
-			...this.level.defaultAntigravity.map(force => ({
+			...this.level.fixedAntigravity.map<Force>(force => ({
 				...force,
-				direction: 1 as const,
+				direction: 1,
+				fixed: true,
 				image: useImage(antigravityImage)
 			}))
 		]

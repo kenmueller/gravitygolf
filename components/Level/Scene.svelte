@@ -42,8 +42,8 @@
 	})
 
 	$: forcesRemaining = {
-		gravity: level.maxGravity - level.defaultGravity.length,
-		antigravity: level.maxAntigravity - level.defaultAntigravity.length
+		gravity: level.maxGravity,
+		antigravity: level.maxAntigravity
 	}
 
 	$: scene?.addEventListener('forces', (gravity, antigravity) => {

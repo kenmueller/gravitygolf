@@ -3,5 +3,6 @@ import type ImageRef from '$lib/image/ref'
 
 export default interface Force extends Position {
 	direction: 1 | -1
+	fixed: boolean
 	image: ImageRef
 }

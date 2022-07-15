@@ -3,6 +3,6 @@ import type ResizableWall from '../wall/resizable'
 
 export default interface EditorEvents extends SceneEvents {
 	clear: []
-	defaultStars: [number]
+	fixedStars: [number]
 	wall: [ResizableWall | null]
 }
