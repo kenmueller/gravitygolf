@@ -47,10 +47,10 @@ export const post: RequestHandler = async ({ request }) => {
 		await document.create({
 			name,
 			gravity: Array.isArray(data.gravity)
-				? data.gravity[0]
+				? data.gravity[0] + (data.gravity.length - 1)
 				: data.gravity ?? 0,
 			antigravity: Array.isArray(data.antigravity)
-				? data.antigravity[0]
+				? data.antigravity[0] + (data.antigravity.length - 1)
 				: data.antigravity ?? 0,
 			stars: data.stars?.length ?? 0,
 			attempts: 0,
