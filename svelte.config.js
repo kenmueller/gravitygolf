@@ -34,17 +34,18 @@ const config = {
 				'default-src': ['self'],
 				'connect-src': [
 					'self',
-					'https://pagead2.googlesyndication.com/getconfig/sodar'
+					'https://pagead2.googlesyndication.com',
+					'https://firebase.googleapis.com',
+					'https://firebaseinstallations.googleapis.com',
+					'https://www.google-analytics.com'
 				],
 				'script-src': [
 					'self',
-					'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js'
+					'https://pagead2.googlesyndication.com',
+					'https://www.googletagmanager.com'
 				],
 				'style-src': ['self', 'unsafe-inline', 'https://fonts.googleapis.com'],
-				'img-src': [
-					'self',
-					'https://pagead2.googlesyndication.com/pagead/sodar'
-				],
+				'img-src': ['self', 'https://pagead2.googlesyndication.com'],
 				'font-src': ['self', 'https://fonts.gstatic.com'],
 				'frame-src': [
 					'self',
