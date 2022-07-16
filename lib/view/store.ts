@@ -17,9 +17,7 @@ const view = derived<
 		set({
 			width: window.innerWidth,
 			height: window.innerHeight,
-			scale: $mobile
-				? Math.max(3, window.devicePixelRatio)
-				: window.devicePixelRatio,
+			scale: Math.max($mobile ? 3 : 2, window.devicePixelRatio),
 			mobile: $mobile,
 			landscape: $landscape
 		})
