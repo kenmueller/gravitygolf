@@ -355,22 +355,23 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 	}
 
 	private get data(): RawLevel {
-		const gravity = this.forces.filter(force => force.direction === 1)
-		// const fixedGravity = gravity.filter(force => force.fixed)
-
-		const antigravity = this.forces.filter(force => force.direction === -1)
-		// const fixedAntigravity = antigravity.filter(force => force.fixed)
+		const gravity = this.forces.filter(
+			force => force.fixed && force.direction === 1
+		)
+		const antigravity = this.forces.filter(
+			force => force.fixed && force.direction === -1
+		)
 
 		return {
-			gravity: gravity.length
+			gravity: this.maxGravities
 				? [
-						gravity.length,
+						this.maxGravities - gravity.length,
 						...gravity.map<[number, number]>(({ x, y }) => [x, y])
 				  ]
 				: undefined,
-			antigravity: antigravity.length
+			antigravity: this.maxAntigravities
 				? [
-						antigravity.length,
+						this.maxAntigravities - antigravity.length,
 						...antigravity.map<[number, number]>(({ x, y }) => [x, y])
 				  ]
 				: undefined,
