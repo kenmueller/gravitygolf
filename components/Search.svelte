@@ -3,10 +3,14 @@
 
 	export let placeholder: string
 	export let value: string
+	export let focus = false
+
+	let input: HTMLInputElement | null = null
+	$: if (focus) input?.focus()
 </script>
 
 <div>
-	<input {placeholder} bind:value />
+	<input {placeholder} bind:this={input} bind:value />
 	<Search />
 </div>
 

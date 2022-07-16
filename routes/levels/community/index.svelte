@@ -50,7 +50,7 @@
 		<span class="stars" data-stars={$totalStars} />
 	</header>
 	<div>
-		<Search placeholder="Community Levels" bind:value={$query} />
+		<Search placeholder="Community Levels" focus bind:value={$query} />
 	</div>
 	<div class="levels">
 		{#each $levels ?? $initialLevels as level (level.id)}
