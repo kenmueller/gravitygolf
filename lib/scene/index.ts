@@ -484,7 +484,7 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 			})),
 			...this.level.fixedAntigravity.map<Force>(force => ({
 				...force,
-				direction: 1,
+				direction: -1,
 				fixed: true,
 				image: useImage(fixedAntigravityImage)
 			}))

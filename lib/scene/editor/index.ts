@@ -35,7 +35,9 @@ import replaceWithRounded from '$lib/replaceWithRounded'
 import EditorWin from '../../../components/Overlay/EditorWin.svelte'
 
 import gravityImage from '../../../images/gravity.png'
+import fixedGravityImage from '../../../images/fixed-gravity.png'
 import antigravityImage from '../../../images/antigravity.png'
+import fixedAntigravityImage from '../../../images/fixed-antigravity.png'
 import ballImage from '../../../images/ball.png'
 import holeImage from '../../../images/hole.png'
 import starImage from '../../../images/star.png'
@@ -719,8 +721,6 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		this.dispatchEvent('stars', this.starCount)
 	}
 
-	readonly play = () => {}
-
 	readonly addForce = (
 		{ x, y }: Position,
 		direction: 1 | -1,
@@ -739,7 +739,15 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 				this.center.y,
 			direction,
 			fixed,
-			image: useImage(direction === 1 ? gravityImage : antigravityImage)
+			image: useImage(
+				direction === 1
+					? fixed
+						? fixedGravityImage
+						: gravityImage
+					: fixed
+					? fixedAntigravityImage
+					: antigravityImage
+			)
 		})
 
 		this.dispatchForces()
@@ -824,6 +832,7 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 	readonly reset = (initial = false) => {
 		this.hit = false
 		this.dispatchEvent('hit', false)
+		this.dispatchEvent('reset')
 
 		this.ball = {
 			x: this.initialBallPosition.x,

@@ -92,14 +92,19 @@
 		fixedForces = { gravity: 0, antigravity: 0 }
 		fixedStars = 0
 		stars = MAX_STARS
+		playing = false
+	})
+
+	$: scene?.addEventListener('reset', () => {
+		playing = false
 	})
 
 	let maxGravity: HTMLInputElement | null = null
 	let maxAntigravity: HTMLInputElement | null = null
 
 	const down = ({ target }: MouseEvent) => {
-		if (maxGravity !== target) maxGravity?.blur()
-		if (maxAntigravity !== target) maxAntigravity?.blur()
+		for (const input of [maxGravity, maxAntigravity])
+			if (input && input !== target) input?.blur()
 	}
 
 	onDestroy(() => {
@@ -118,6 +123,7 @@
 		<div class="objects">
 			{#if $view}
 				<span
+					class:playing
 					style="--scale: {radius / $view.scale};"
 					data-force="gravity"
 					data-remaining={forcesRemaining.gravity}
@@ -132,6 +138,7 @@
 					bind:value={totalGravity}
 				/>
 				<span
+					class:playing
 					style="--scale: {radius / $view.scale};"
 					data-force="antigravity"
 					data-remaining={forcesRemaining.antigravity}
@@ -168,14 +175,10 @@
 		</div>
 		<button
 			class="play"
-			disabled={!scene || playing}
-			aria-label="Play"
-			on:click={() => {
-				playing = true
-				scene?.play()
-			}}
+			disabled={!scene}
+			on:click={() => (playing = !playing)}
 		>
-			{playing ? '' : 'Play'}
+			{playing ? 'Edit' : 'Play'}
 		</button>
 		<button
 			class="reset"
@@ -282,12 +285,20 @@
 		}
 	}
 
-	[data-force='gravity'] {
+	.playing[data-force='gravity'] {
 		background-image: url('../../images/gravity.png');
 	}
 
-	[data-force='antigravity'] {
+	[data-force='gravity'] {
+		background-image: url('../../images/fixed-gravity.png');
+	}
+
+	.playing[data-force='antigravity'] {
 		background-image: url('../../images/antigravity.png');
+	}
+
+	[data-force='antigravity'] {
+		background-image: url('../../images/fixed-antigravity.png');
 	}
 
 	[data-remaining='0'] {
