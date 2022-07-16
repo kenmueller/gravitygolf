@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation'
 
 	import type RawLevel from '$lib/level/raw'
+	import MAX_STARS from '$lib/scene/star/max'
 	import hideOverlay from '$lib/overlay/hide'
 	import Win from './Win.svelte'
 	import replaceWithRounded from '$lib/replaceWithRounded'
@@ -14,8 +15,10 @@
 	export let data: () => RawLevel
 	export let reset: () => void
 
+	$: hitAllStars = stars === MAX_STARS
+
 	let input: HTMLInputElement | null = null
-	$: input?.focus()
+	$: if (hitAllStars) input?.focus()
 
 	let name = ''
 	let loading = false
@@ -54,12 +57,24 @@
 
 <Win {stars}>
 	<form on:submit|preventDefault={publish}>
-		<input placeholder="Name your level" bind:this={input} bind:value={name} />
-		<button class="publish" disabled={!name} aria-busy={loading || undefined}>
+		<input
+			placeholder="Name your level"
+			disabled={!hitAllStars}
+			bind:this={input}
+			bind:value={name}
+		/>
+		<button
+			class="publish"
+			disabled={!(name && hitAllStars)}
+			aria-busy={loading || undefined}
+		>
 			<Save />
 			Publish
 		</button>
 	</form>
+	{#if !hitAllStars}
+		<p class="error">You must collect all stars to publish your level</p>
+	{/if}
 	<button class="restart" on:click={restart}>
 		<Reset />
 		Restart
@@ -81,9 +96,14 @@
 		color: white;
 		background: rgba(white, 0.1);
 		border-radius: 0.5rem;
+		transition: opacity 0.3s;
 
 		&::placeholder {
 			color: rgba(white, 0.5);
+		}
+
+		&:disabled {
+			opacity: 0.7;
 		}
 	}
 
@@ -110,6 +130,12 @@
 		&:not(:disabled):not([aria-busy]):hover {
 			opacity: 0.7;
 		}
+	}
+
+	.error {
+		margin-top: 0.5rem;
+		text-align: center;
+		color: colors.$red;
 	}
 
 	.publish {
