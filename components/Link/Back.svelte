@@ -2,9 +2,10 @@
 	import Back from '../../images/Back.svelte'
 
 	export let href: string
+	export let focusable = true
 </script>
 
-<a {href} aria-label="Back">
+<a {href} tabindex={focusable ? undefined : -1} aria-label="Back">
 	<Back />
 	<slot />
 </a>

@@ -112,11 +112,11 @@
 	})
 </script>
 
-<svelte:window on:mousedown={down} />
+<svelte:body on:mousedown={down} />
 
 <main>
 	<header>
-		<BackLink href="/">
+		<BackLink href="/" focusable={false}>
 			Level Editor
 			{#if !$mobile}| Gravity Golf{/if}
 		</BackLink>
@@ -136,6 +136,7 @@
 					type="number"
 					min={fixedForces.gravity}
 					bind:value={totalGravity}
+					on:input={() => scene?.updateMaxGravities(totalGravity)}
 				/>
 				<span
 					class:playing
@@ -151,6 +152,7 @@
 					type="number"
 					min={fixedForces.antigravity}
 					bind:value={totalAntigravity}
+					on:input={() => scene?.updateMaxAntigravities(totalAntigravity)}
 				/>
 				<span class="wall" use:draggable={scene ? scene.addObstacle : null} />
 			{/if}
@@ -176,6 +178,7 @@
 		<button
 			class="play"
 			disabled={!scene}
+			tabindex={-1}
 			on:click={() => (playing = !playing)}
 		>
 			{playing ? 'Edit' : 'Play'}
@@ -183,6 +186,7 @@
 		<button
 			class="reset"
 			disabled={!scene}
+			tabindex={-1}
 			aria-label="Restart"
 			on:click={() => scene?.reset()}
 		>
@@ -192,6 +196,7 @@
 		<button
 			class="clear"
 			disabled={!scene}
+			tabindex={-1}
 			aria-label="Clear"
 			on:click={() => scene?.clear()}
 		>

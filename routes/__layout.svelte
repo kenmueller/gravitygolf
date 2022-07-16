@@ -13,7 +13,13 @@
 	import Overlay from '../components/Overlay.svelte'
 
 	export let url: URL
+
+	const down = (event: MouseEvent) => {
+		event.preventDefault()
+	}
 </script>
+
+<svelte:body on:mousedown={down} />
 
 <svelte:head>
 	<link

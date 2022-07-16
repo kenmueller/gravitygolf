@@ -6,9 +6,14 @@
 	export let href: string
 	export let disabled = false
 	export let stars: number | null
+	export let focusable = true
 </script>
 
-<a {href} aria-disabled={disabled || undefined}>
+<a
+	{href}
+	tabindex={focusable ? undefined : -1}
+	aria-disabled={disabled || undefined}
+>
 	<slot />
 	{#if stars !== null}
 		<span>

@@ -90,7 +90,7 @@
 
 <main>
 	<header>
-		<BackLink href={back}>
+		<BackLink href={back} focusable={false}>
 			{name}
 			{#if !$mobile}| Gravity Golf{/if}
 		</BackLink>
@@ -132,6 +132,7 @@
 		<button
 			class="reset"
 			disabled={!scene}
+			tabindex={-1}
 			aria-label="Restart"
 			on:click={() => scene?.reset()}
 		>
@@ -141,6 +142,7 @@
 		<button
 			class="clear"
 			disabled={!scene}
+			tabindex={-1}
 			aria-label="Clear"
 			on:click={() => scene?.clear()}
 		>
