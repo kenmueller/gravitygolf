@@ -1,7 +1,9 @@
+import { remove } from '$lib/storage'
+
 const deleteLevelProgress = () => {
 	try {
-		localStorage.removeItem('stars')
-		localStorage.removeItem('communityStars')
+		remove('stars')
+		remove('communityStars')
 	} catch (error) {
 		console.error(error)
 	}

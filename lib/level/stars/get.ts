@@ -1,8 +1,9 @@
+import { get } from '$lib/storage'
 import levels from '../levels'
 
 const getStars = () => {
 	try {
-		const value = localStorage.getItem('stars')
+		const value = get('stars')
 		if (!value) return []
 
 		const stars: unknown = JSON.parse(value)

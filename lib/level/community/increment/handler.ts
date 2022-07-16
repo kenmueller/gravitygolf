@@ -2,7 +2,7 @@ import type { RequestHandler } from '@sveltejs/kit'
 import { getFirestore, FieldValue } from 'firebase-admin/firestore'
 
 import type Property from './property'
-import admin from '$lib/admin'
+import admin from '$lib/firebase/admin'
 import ErrorCode from '$lib/error/code'
 import HttpError from '$lib/error'
 import errorFromValue from '$lib/error/from/value'

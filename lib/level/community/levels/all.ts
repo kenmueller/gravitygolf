@@ -1,7 +1,7 @@
 import { getFirestore } from 'firebase-admin/firestore'
 
 import type CommunityLevel from '..'
-import admin from '$lib/admin'
+import admin from '$lib/firebase/admin'
 
 const firestore = getFirestore(admin)
 

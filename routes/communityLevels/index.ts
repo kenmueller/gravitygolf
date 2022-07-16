@@ -1,7 +1,7 @@
 import type { RequestHandler } from '@sveltejs/kit'
 import { getFirestore } from 'firebase-admin/firestore'
 
-import admin from '$lib/admin'
+import admin from '$lib/firebase/admin'
 import client from '$lib/level/community/client'
 import fromRecord from '$lib/level/community/record/from'
 import validateRawLevel from '$lib/level/raw/validate'

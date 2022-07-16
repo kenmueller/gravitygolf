@@ -1,6 +1,8 @@
+import { get } from '$lib/storage'
+
 const getCommunityStars = () => {
 	try {
-		const value = localStorage.getItem('communityStars')
+		const value = get('communityStars')
 		if (!value) return {}
 
 		const stars: unknown = JSON.parse(value)
