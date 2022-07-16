@@ -34,8 +34,8 @@
 
 	$: playing = false
 
-	let totalGravity = 1
-	let totalAntigravity = 1
+	let totalGravity = 0
+	let totalAntigravity = 0
 
 	let fixedForces = {
 		gravity: 0,
@@ -90,7 +90,12 @@
 	$: radius = forceRadius($mobile)
 
 	$: scene?.addEventListener('clear', () => {
-		totalGravity = totalAntigravity = 1
+		totalGravity = 0
+		scene?.updateMaxGravities(0)
+
+		totalAntigravity = 0
+		scene?.updateMaxAntigravities(0)
+
 		fixedForces = { gravity: 0, antigravity: 0 }
 		fixedStars = 0
 		stars = MAX_STARS

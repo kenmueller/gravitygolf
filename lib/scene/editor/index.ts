@@ -105,7 +105,7 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 			image: useImage(holeImage)
 		}
 
-		this.maxGravities = this.maxAntigravities = 1
+		this.maxGravities = this.maxAntigravities = 0
 
 		this.stars = []
 
