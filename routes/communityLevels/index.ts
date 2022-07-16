@@ -5,6 +5,7 @@ import admin from '$lib/admin'
 import client from '$lib/level/community/client'
 import fromRecord from '$lib/level/community/record/from'
 import validateRawLevel from '$lib/level/raw/validate'
+import replaceWithRounded from '$lib/replaceWithRounded'
 import HttpError from '$lib/error'
 import ErrorCode from '$lib/error/code'
 import errorFromValue from '$lib/error/from/value'
@@ -55,7 +56,7 @@ export const post: RequestHandler = async ({ request }) => {
 			stars: data.stars?.length ?? 0,
 			attempts: 0,
 			wins: 0,
-			data
+			data: JSON.stringify(data, replaceWithRounded(2))
 		})
 
 		return { body: document.id }
