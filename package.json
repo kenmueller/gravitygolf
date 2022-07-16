@@ -17,6 +17,7 @@
 		"@typescript-eslint/parser": "^5.30.5",
 		"algoliasearch": "^4.13.1",
 		"autoprefixer": "^10.4.7",
+		"balloon-css": "^1.2.0",
 		"eslint": "^8.19.0",
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-svelte3": "^4.0.0",

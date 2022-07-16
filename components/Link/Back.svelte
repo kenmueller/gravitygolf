@@ -2,10 +2,30 @@
 	import Back from '../../images/Back.svelte'
 
 	export let href: string
+	export let message: string | null = null
 	export let focusable = true
+
+	const unload = (event: BeforeUnloadEvent) => {
+		if (!message) return
+
+		event.preventDefault()
+		return (event.returnValue = message)
+	}
+
+	const click = (event: MouseEvent) => {
+		if (!message) return
+		if (!confirm(message)) event.preventDefault()
+	}
 </script>
 
-<a {href} tabindex={focusable ? undefined : -1} aria-label="Back">
+<svelte:window on:beforeunload={message ? unload : undefined} />
+
+<a
+	{href}
+	tabindex={focusable ? undefined : -1}
+	aria-label="Back"
+	on:click={message ? click : undefined}
+>
 	<Back />
 	<slot />
 </a>

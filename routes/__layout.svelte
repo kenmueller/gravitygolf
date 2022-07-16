@@ -15,7 +15,11 @@
 	export let url: URL
 
 	const down = (event: MouseEvent) => {
-		event.preventDefault()
+		if (
+			event.target instanceof HTMLAnchorElement ||
+			event.target instanceof HTMLButtonElement
+		)
+			event.preventDefault()
 	}
 </script>
 
@@ -54,6 +58,19 @@
 <Overlay />
 
 <style lang="scss" global>
+	@use 'balloon-css/src/balloon' as *;
+
+	:root {
+		--balloon-color: white;
+		--balloon-text-color: colors.$gray;
+	}
+
+	[aria-label][data-balloon-pos]::after {
+		font-family: 'Kdam Thmor Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+			Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
+			sans-serif !important;
+	}
+
 	*,
 	::before,
 	::after {

@@ -75,6 +75,8 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 	private hit = false
 
 	private forces: Force[] = undefined as never
+	private maxGravities: number
+	private maxAntigravities: number
 	private ball: Ball = undefined as never
 	private hole: Hole = undefined as never
 	private stars: Star[] = undefined as never
@@ -102,6 +104,8 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 			radius: HOLE_RADIUS,
 			image: useImage(holeImage)
 		}
+
+		this.maxGravities = this.maxAntigravities = 1
 
 		this.stars = []
 
@@ -133,6 +137,14 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 				enumerable: true,
 				configurable: true
 			})
+	}
+
+	readonly updateMaxGravities = (maxGravities: number) => {
+		this.maxGravities = maxGravities
+	}
+
+	readonly updateMaxAntigravities = (maxAntigravities: number) => {
+		this.maxAntigravities = maxAntigravities
 	}
 
 	private readonly scale = () => scale(this.context, this.view)
@@ -343,8 +355,11 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 	}
 
 	private get data(): RawLevel {
-		const gravity = this.forces.filter(({ direction }) => direction === 1)
-		const antigravity = this.forces.filter(({ direction }) => direction === -1)
+		const gravity = this.forces.filter(force => force.direction === 1)
+		// const fixedGravity = gravity.filter(force => force.fixed)
+
+		const antigravity = this.forces.filter(force => force.direction === -1)
+		// const fixedAntigravity = antigravity.filter(force => force.fixed)
 
 		return {
 			gravity: gravity.length
@@ -566,6 +581,14 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 					this.dispatchStars()
 					this.updateCursor(this.mouseCurrent)
 				}
+			} else if (
+				this.mouseStart.button === 2 &&
+				'star' in this.mouseCurrent &&
+				this.mouseOnStar(this.mouseCurrent, this.mouseCurrent.star) &&
+				this.deleteStar(this.mouseCurrent.star)
+			) {
+				this.dispatchStars()
+				this.updateCursor(this.mouseCurrent)
 			} else if (this.mouseStart.button === 0 && 'wall' in this.mouseCurrent) {
 				this.dispatchEvent('wall', null)
 				if (
@@ -587,6 +610,13 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 				if (wall.width < 0) wall.width *= -1
 				if (wall.height < 0) wall.height *= -1
 				this.positionWallCorners(wall)
+			} else if (
+				this.mouseStart.button === 2 &&
+				'wall' in this.mouseCurrent &&
+				this.mouseOnWall(this.mouseCurrent)(this.mouseCurrent.wall) &&
+				this.deleteWall(this.mouseCurrent.wall)
+			) {
+				this.updateCursor(this.mouseCurrent)
 			} else if (this.mouseStart.button === 0 && 'ball' in this.mouseCurrent) {
 				this.initialBallPosition.x =
 					this.mouseCurrent.x - this.canvas.width / 2 - this.center.x
@@ -718,6 +748,7 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 	}
 
 	private readonly dispatchStars = () => {
+		this.dispatchEvent('fixedStars', this.stars.length)
 		this.dispatchEvent('stars', this.starCount)
 	}
 

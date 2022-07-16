@@ -16,6 +16,8 @@
 	import BackLink from '../../components/Link/Back.svelte'
 	import Reset from '../../images/Reset.svelte'
 	import Trash from '../../images/Trash.svelte'
+	import Play from '../../images/Play.svelte'
+	import Edit from '../../images/Edit.svelte'
 
 	import starImage from '../../images/star.png'
 
@@ -116,21 +118,31 @@
 
 <main>
 	<header>
-		<BackLink href="/" focusable={false}>
+		<BackLink
+			href="/"
+			message="All progress will be lost. Are you sure?"
+			focusable={false}
+		>
 			Level Editor
 			{#if !$mobile}| Gravity Golf{/if}
 		</BackLink>
 		<div class="objects">
 			{#if $view}
 				<span
-					class:playing
-					style="--scale: {radius / $view.scale};"
-					data-force="gravity"
-					data-remaining={forcesRemaining.gravity}
-					use:draggable={scene && forcesRemaining.gravity
-						? addForce(1, !playing)
-						: null}
-				/>
+					class="force-container"
+					aria-label={playing ? 'Gravity force' : 'Unmovable gravity force'}
+					data-balloon-pos={playing ? undefined : 'down'}
+				>
+					<span
+						class:playing
+						style="--scale: {radius / $view.scale};"
+						data-force="gravity"
+						data-remaining={forcesRemaining.gravity}
+						use:draggable={scene && forcesRemaining.gravity
+							? addForce(1, !playing)
+							: null}
+					/>
+				</span>
 				<input
 					bind:this={maxGravity}
 					type="number"
@@ -139,14 +151,22 @@
 					on:input={() => scene?.updateMaxGravities(totalGravity)}
 				/>
 				<span
-					class:playing
-					style="--scale: {radius / $view.scale};"
-					data-force="antigravity"
-					data-remaining={forcesRemaining.antigravity}
-					use:draggable={scene && forcesRemaining.antigravity
-						? addForce(-1, !playing)
-						: null}
-				/>
+					class="force-container"
+					aria-label={playing
+						? 'Antigravity force'
+						: 'Unmovable antigravity force'}
+					data-balloon-pos={playing ? undefined : 'down'}
+				>
+					<span
+						class:playing
+						style="--scale: {radius / $view.scale};"
+						data-force="antigravity"
+						data-remaining={forcesRemaining.antigravity}
+						use:draggable={scene && forcesRemaining.antigravity
+							? addForce(-1, !playing)
+							: null}
+					/>
+				</span>
 				<input
 					bind:this={maxAntigravity}
 					type="number"
@@ -176,12 +196,18 @@
 			{/if}
 		</div>
 		<button
-			class="play"
+			class="mode"
 			disabled={!scene}
 			tabindex={-1}
 			on:click={() => (playing = !playing)}
 		>
-			{playing ? 'Edit' : 'Play'}
+			{#if playing}
+				<Edit />
+				Edit
+			{:else}
+				<Play />
+				Play
+			{/if}
 		</button>
 		<button
 			class="reset"
@@ -261,9 +287,13 @@
 		z-index: 200;
 	}
 
-	[data-force] {
+	.force-container {
 		flex-shrink: 0;
+	}
+
+	[data-force] {
 		cursor: move;
+		display: block;
 		position: relative;
 		width: calc(2px * var(--scale));
 		height: calc(2px * var(--scale));
@@ -371,6 +401,18 @@
 
 		> :global(svg) {
 			width: 1.5rem;
+		}
+	}
+
+	.mode {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		min-width: 3.75rem;
+		margin-right: auto;
+
+		> :global(svg) {
+			margin-right: 0.5rem;
 		}
 	}
 
