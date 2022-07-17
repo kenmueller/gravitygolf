@@ -18,13 +18,11 @@
 
 	export let url: URL
 
-	$: if (browser) {
-		console.log('screen_view', url.pathname)
+	$: if (browser)
 		logEvent(getAnalytics(app), 'screen_view', {
 			firebase_screen: url.pathname,
 			firebase_screen_class: 'layout'
 		})
-	}
 
 	const down = (event: MouseEvent) => {
 		if (
