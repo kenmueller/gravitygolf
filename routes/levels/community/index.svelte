@@ -117,8 +117,8 @@
 			top: 0;
 			right: 0;
 			padding: 0 0.4rem;
-			color: transparentize(black, 0.5);
-			background: transparentize(white, 0.4);
+			color: rgba(black, 0.5);
+			background: rgba(white, 0.6);
 			border-radius: 0.5rem;
 			transform: translate(1.35rem, -1.15rem);
 		}

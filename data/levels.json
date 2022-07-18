@@ -1,7 +1,8 @@
 [
 	{
 		"ball": [-600, 0, 30],
-		"hole": [600, 0, 60]
+		"hole": [600, 0, 60],
+		"message": "Click where you want the ball to go"
 	},
 	{
 		"ball": [-600, 0, 30],
@@ -11,13 +12,15 @@
 			[0, 400, 300, 50],
 			[0, -400, 300, 50],
 			[200, 0, 50, 200]
-		]
+		],
+		"message": "The ball bounces!"
 	},
 	{
 		"gravity": [0, [0, 0]],
 		"ball": [-600, 0, 30],
 		"hole": [600, -300, 60],
-		"walls": [[300, 300, 50, 500]]
+		"walls": [[300, 300, 50, 500]],
+		"message": "Be careful: a gravity force. This will pull the ball towards it."
 	},
 	{
 		"gravity": [0, [0, 0]],
@@ -30,7 +33,8 @@
 		"ball": [-600, 0, 30],
 		"hole": [600, 0, 60],
 		"stars": [[0, 300, 30]],
-		"walls": [[200, 0, 50, 300]]
+		"walls": [[200, 0, 50, 300]],
+		"message": "Drag the gravity at the top to place it. You can move it around as much as you want."
 	},
 	{
 		"antigravity": 1,
@@ -40,7 +44,8 @@
 			[-139, 168, 40, 328],
 			[9, 312, 324, 40],
 			[1, 22, 312, 36]
-		]
+		],
+		"message": "Antigravity will push the ball away from it"
 	},
 	{
 		"gravity": 1,

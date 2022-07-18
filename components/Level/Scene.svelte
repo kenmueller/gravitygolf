@@ -148,6 +148,9 @@
 		>
 			<Trash />
 		</button>
+		{#if level.message}
+			<p class="message">{level.message}</p>
+		{/if}
 	</header>
 	<canvas bind:this={canvas} />
 	{#if currentForce}
@@ -216,8 +219,8 @@
 			right: 0;
 			padding: 0 calc(0.03rem * var(--scale));
 			font-size: calc(0.05rem * var(--scale));
-			color: transparentize(black, 0.5);
-			background: transparentize(white, 0.4);
+			color: rgba(black, 0.5);
+			background: rgba(white, 0.6);
 			border-radius: calc(0.03rem * var(--scale));
 			transform: translate(
 				calc(0.07rem * var(--scale)),
@@ -293,6 +296,28 @@
 		margin-left: 1rem;
 	}
 
+	.message {
+		pointer-events: none;
+		position: absolute;
+		top: 100%;
+		right: 0;
+		max-width: 30rem;
+		margin-top: 2rem;
+		padding: 1rem 2rem;
+		color: rgba(white, 0.5);
+		background: rgba(white, 0.05);
+		border-radius: 1rem;
+
+		@media (min-width: 37.5rem) {
+			padding: 2rem 4rem;
+		}
+	}
+
+	canvas {
+		position: relative;
+		z-index: 50;
+	}
+
 	.delete-force {
 		pointer-events: none;
 		display: flex;
@@ -302,7 +327,7 @@
 		right: 0;
 		bottom: 0;
 		color: white;
-		background: transparentize(white, 0.9);
+		background: rgba(white, 0.1);
 		border: 0.25rem dashed white;
 		z-index: 0;
 
@@ -310,10 +335,5 @@
 			height: 2rem;
 			margin-right: 0.5rem;
 		}
-	}
-
-	canvas {
-		position: relative;
-		z-index: 50;
 	}
 </style>

@@ -315,8 +315,8 @@
 			right: 0;
 			padding: 0 calc(0.03rem * var(--scale));
 			font-size: calc(0.05rem * var(--scale));
-			color: transparentize(black, 0.5);
-			background: transparentize(white, 0.4);
+			color: rgba(black, 0.5);
+			background: rgba(white, 0.6);
 			border-radius: calc(0.03rem * var(--scale));
 			transform: translate(
 				calc(0.07rem * var(--scale)),
@@ -443,7 +443,7 @@
 		right: 0;
 		bottom: 0;
 		color: white;
-		background: transparentize(white, 0.9);
+		background: rgba(white, 0.1);
 		border: 0.25rem dashed white;
 		z-index: 0;
 

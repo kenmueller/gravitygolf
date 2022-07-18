@@ -25,17 +25,17 @@
 		padding: 0.5rem 1rem 0.5rem 2.5rem;
 		font-size: 1rem;
 		color: white;
-		background: transparentize(white, 0.9);
+		background: rgba(white, 0.1);
 		border-radius: 0.5rem;
 		transition: background 0.3s;
 
 		&::placeholder {
-			color: transparentize(white, 0.5);
+			color: rgba(white, 0.5);
 		}
 
 		&:hover,
 		&:focus {
-			background: transparentize(white, 0.8);
+			background: rgba(white, 0.2);
 
 			+ :global(svg) {
 				opacity: 1;
