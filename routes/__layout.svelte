@@ -7,7 +7,7 @@
 <script lang="ts">
 	import type { Load } from '@sveltejs/kit'
 	import { getAnalytics, logEvent } from 'firebase/analytics'
-	import { SvelteToast, toast } from '@zerodevx/svelte-toast'
+	import { SvelteToast } from '@zerodevx/svelte-toast'
 
 	import { browser } from '$app/env'
 
@@ -24,8 +24,6 @@
 			firebase_screen: url.pathname,
 			firebase_screen_class: 'layout'
 		})
-
-	$: toast.push('Level link copied to clipboard', { duration: 100000 })
 
 	const down = (event: MouseEvent) => {
 		if (
