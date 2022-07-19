@@ -7,6 +7,7 @@
 <script lang="ts">
 	import type { Load } from '@sveltejs/kit'
 	import { getAnalytics, logEvent } from 'firebase/analytics'
+	import { SvelteToast } from '@zerodevx/svelte-toast'
 
 	import { browser } from '$app/env'
 
@@ -66,6 +67,7 @@
 </PageTransition>
 
 <Overlay />
+<SvelteToast />
 
 <style lang="scss" global>
 	@use 'balloon-css/src/balloon' as *;

@@ -1,4 +1,8 @@
 <script lang="ts">
+	import { toast } from '@zerodevx/svelte-toast'
+	import copy from 'copy-to-clipboard'
+
+	import { page } from '$app/stores'
 	import { goto } from '$app/navigation'
 
 	import type RawLevel from '$lib/level/raw'
@@ -43,9 +47,15 @@
 			if (!response.ok)
 				throw new HttpError(response.status, await response.text())
 
-			hideOverlay()
+			const link = `/levels/community/${encodeURIComponent(
+				await response.text()
+			)}`
 
-			await goto('/levels/community')
+			copy(new URL(link, $page.url.origin).href)
+			toast.push('Level link copied to clipboard')
+
+			hideOverlay()
+			await goto(link)
 		} catch (value) {
 			console.error(value)
 			alert(errorFromValue(value).message)
