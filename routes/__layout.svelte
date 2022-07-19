@@ -7,7 +7,7 @@
 <script lang="ts">
 	import type { Load } from '@sveltejs/kit'
 	import { getAnalytics, logEvent } from 'firebase/analytics'
-	import { SvelteToast } from '@zerodevx/svelte-toast'
+	import { SvelteToast, toast } from '@zerodevx/svelte-toast'
 
 	import { browser } from '$app/env'
 
@@ -24,6 +24,8 @@
 			firebase_screen: url.pathname,
 			firebase_screen_class: 'layout'
 		})
+
+	$: toast.push('Level link copied to clipboard', { duration: 100000 })
 
 	const down = (event: MouseEvent) => {
 		if (
@@ -74,13 +76,13 @@
 
 	:root {
 		--balloon-color: white;
-		--balloon-text-color: colors.$gray;
-	}
+		--balloon-text-color: #{colors.$gray};
 
-	[aria-label][data-balloon-pos]::after {
-		font-family: 'Kdam Thmor Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI',
-			Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
-			sans-serif !important;
+		--toastWidth: 20rem
+		--toastPadding: 0 4rem 0 0;
+		--toastBackground: #{colors.$gray-blue};
+		--toastBorderRadius: 0.4rem;
+		--toastMsgPadding: 0.8rem 1rem;
 	}
 
 	*,
@@ -123,5 +125,15 @@
 
 	svg {
 		display: block;
+	}
+
+	[aria-label][data-balloon-pos]::after {
+		font-family: 'Kdam Thmor Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+			Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
+			sans-serif !important;
+	}
+
+	._toastItem ._toastBtn {
+		margin-right: 0.4rem;
 	}
 </style>
