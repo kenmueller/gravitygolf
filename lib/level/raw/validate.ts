@@ -35,6 +35,17 @@ const checkObjects = (
 	)
 }
 
+const checkStars = (
+	level: RawLevel,
+	maxStars: number
+) => {
+	const stars = level['stars']
+	
+	return (
+		Array.length(stars) <= maxStars
+	)
+}
+
 const validateRawLevel = (data: unknown): data is RawLevel => {
 	const level = data as RawLevel
 
@@ -47,7 +58,8 @@ const validateRawLevel = (data: unknown): data is RawLevel => {
 		isArray(level.ball, 'number', 3) &&
 		isArray(level.hole, 'number', 3) &&
 		checkObjects(level, 'stars', 3) &&
-		checkObjects(level, 'walls', 4)
+		checkObjects(level, 'walls', 4) &&
+		checkStars(level, 3)
 	)
 }
 
