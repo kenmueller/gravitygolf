@@ -45,6 +45,7 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 
 	private previousTime: number | null = null
 	private frame: number | null = null
+	private readonly fixedFramerateDelta: number = 1/60;
 
 	private center = { x: 0, y: 0 }
 
@@ -101,19 +102,37 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 
 		this.canvas.addEventListener('contextmenu', this.rightClick)
 
-		this.frame = requestAnimationFrame(this.tick)
+		this.frame = requestAnimationFrame(this.tickWrapper)
 	}
 
 	private readonly scale = () => scale(this.context, this.view)
 	private readonly resize = () => resize(this.canvas, this.view)
 
-	private readonly tick = (currentTime: number) => {
-		this.frame = null
+	private readonly tickWrapper = (currentTime: number) => {
+		if (this.previousTime === null) {
+			this.previousTime = 0
+		}
 
 		currentTime /= 1000
+		let deltaTime = currentTime - this.previousTime;
 
-		const delta = currentTime - (this.previousTime || currentTime)
-		this.previousTime = currentTime
+
+		while (deltaTime > this.fixedFramerateDelta) { // Repeat until missed ticks caught up
+			console.log(this.frame)
+			if (this.tick()) {
+				return
+			}
+			deltaTime = currentTime - this.previousTime;
+			this.previousTime = currentTime
+		}
+
+		this.frame = requestAnimationFrame(this.tickWrapper)
+	}
+
+	private readonly tick = () => {
+		this.frame = null
+
+		const delta = this.fixedFramerateDelta;
 
 		if (this.hit) {
 			if (
@@ -137,7 +156,7 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 				if (this.frame) cancelAnimationFrame(this.frame)
 				this.frame = null
 
-				return
+				return true
 			}
 
 			for (const wall of this.walls) {
@@ -260,8 +279,7 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 				normalizedBall.radius * 2,
 				normalizedBall.radius * 2
 			)
-
-		this.frame = requestAnimationFrame(this.tick)
+		return false
 	}
 
 	private readonly down = cursorHandler((cursor, event) => {
