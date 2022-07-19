@@ -12,7 +12,7 @@
 <MetaTitle value="Level Editor | Gravity Golf" />
 <MetaDescription />
 
-{#if !$mobile || ($mobile && $landscape)}
+{#if !$mobile || $landscape}
 	<LevelEditor />
 {:else}
 	<main>

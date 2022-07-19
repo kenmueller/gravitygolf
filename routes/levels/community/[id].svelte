@@ -44,7 +44,7 @@
 <MetaTitle value="{level.name} | Gravity Golf" />
 <MetaDescription />
 
-{#if !$mobile || ($mobile && $landscape)}
+{#if !$mobile || $landscape}
 	<LevelScene
 		name={level.name}
 		communityId={level.id}

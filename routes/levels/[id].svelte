@@ -52,7 +52,7 @@
 <MetaDescription />
 
 {#if enabled}
-	{#if !$mobile || ($mobile && $landscape)}
+	{#if !$mobile || $landscape}
 		<LevelScene
 			{name}
 			{level}
