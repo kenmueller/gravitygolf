@@ -1,4 +1,5 @@
 import type RawLevel from '.'
+import MAX_STARS from '$lib/scene/star/max'
 
 const KEYS = ['gravity', 'antigravity', 'ball', 'hole', 'stars', 'walls']
 
@@ -22,27 +23,18 @@ const checkForces = (level: RawLevel, type: 'gravity' | 'antigravity') => {
 const checkObjects = (
 	level: RawLevel,
 	type: 'stars' | 'walls',
-	objectLength: number
+	objectLength: number,
+	maxLength: number | null = null
 ) => {
 	if (!(type in level)) return true
 	const value = level[type]
 
 	return (
 		Array.isArray(value) &&
+		(maxLength === null || value.length <= maxLength) &&
 		(value as unknown[]).every(object =>
 			isArray(object, 'number', objectLength)
 		)
-	)
-}
-
-const checkStars = (
-	level: RawLevel,
-	maxStars: number
-) => {
-	const stars = level['stars']
-	
-	return (
-		Array.length(stars) <= maxStars
 	)
 }
 
@@ -57,9 +49,8 @@ const validateRawLevel = (data: unknown): data is RawLevel => {
 		checkForces(level, 'antigravity') &&
 		isArray(level.ball, 'number', 3) &&
 		isArray(level.hole, 'number', 3) &&
-		checkObjects(level, 'stars', 3) &&
-		checkObjects(level, 'walls', 4) &&
-		checkStars(level, 3)
+		checkObjects(level, 'stars', 3, MAX_STARS) &&
+		checkObjects(level, 'walls', 4)
 	)
 }
 
