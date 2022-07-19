@@ -1,6 +1,6 @@
 # Gravity Golf
 
-<https://grav.golf>
+[grav.golf](https://grav.golf)
 
 ## Levels
 
