@@ -1,6 +1,6 @@
 # Gravity Golf
 
-<https://gravitygolf.vercel.app>
+<https://grav.golf>
 
 ## Levels
 
