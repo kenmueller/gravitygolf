@@ -4,7 +4,7 @@ import type { WebAppManifest } from 'web-app-manifest'
 import errorFromValue from '$lib/error/from/value'
 
 import touch from '../images/touch.png'
-import fallback from '../images/fallback.png'
+import mask from '../images/mask.png'
 
 const manifest: WebAppManifest = {
 	dir: 'ltr',
@@ -20,7 +20,7 @@ const manifest: WebAppManifest = {
 	categories: ['games', 'entertainment', 'education'],
 	icons: [
 		{ src: touch, sizes: '180x180' },
-		{ src: fallback, sizes: '512x512', purpose: 'monochrome maskable' }
+		{ src: mask, sizes: '512x512', purpose: 'monochrome maskable' }
 	]
 }
 
