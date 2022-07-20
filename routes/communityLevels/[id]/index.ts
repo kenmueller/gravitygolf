@@ -9,7 +9,7 @@ import errorFromValue from '$lib/error/from/value'
 
 const firestore = getFirestore(admin)
 
-export const get: RequestHandler = async ({ params: { id } }) => {
+export const GET: RequestHandler = async ({ params: { id } }) => {
 	try {
 		const snapshot = await firestore.doc(`community_levels/${id}`).get()
 

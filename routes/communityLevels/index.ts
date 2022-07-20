@@ -12,7 +12,7 @@ import errorFromValue from '$lib/error/from/value'
 
 const firestore = getFirestore(admin)
 
-export const get: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async ({ url }) => {
 	try {
 		const query = url.searchParams.get('query') ?? ''
 		const { hits } = await client.search(query)
@@ -27,7 +27,7 @@ export const get: RequestHandler = async ({ url }) => {
 	}
 }
 
-export const post: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request }) => {
 	try {
 		if (request.headers.get('content-type') !== 'application/json')
 			throw new HttpError(ErrorCode.BadRequest, 'Content-Type must be JSON')

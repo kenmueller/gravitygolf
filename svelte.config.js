@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 
 import preprocess from 'svelte-preprocess'
-import adapter from '@sveltejs/adapter-vercel'
+import adapter from '@sveltejs/adapter-auto'
 import autoprefixer from 'autoprefixer'
 
 const styles = ['colors', 'font', 'scroll']
@@ -55,16 +55,6 @@ const config = {
 					'https://tpc.googlesyndication.com',
 					'https://www.google.com'
 				]
-			}
-		},
-		vite: {
-			server: {
-				fs: {
-					allow: ['.']
-				}
-			},
-			build: {
-				assetsInlineLimit: 0
 			}
 		}
 	}

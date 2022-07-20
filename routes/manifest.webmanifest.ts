@@ -26,7 +26,7 @@ const manifest: WebAppManifest = {
 
 let data: string | null = null
 
-export const get: RequestHandler = () => {
+export const GET: RequestHandler = () => {
 	try {
 		return {
 			headers: {

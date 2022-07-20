@@ -1,7 +1,7 @@
 import type { RequestHandler } from '@sveltejs/kit'
 
 import levels from '$lib/level/levels'
-import errorFromValue from '../lib/error/from/value'
+import errorFromValue from '$lib/error/from/value'
 import getAllCommunityLevels from '$lib/level/community/levels/all'
 
 const getUrls = async () => [
@@ -28,7 +28,7 @@ ${(await getUrls())
 
 let data: string | null = null
 
-export const get: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async ({ url }) => {
 	try {
 		return {
 			headers: {
