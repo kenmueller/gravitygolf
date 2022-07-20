@@ -89,9 +89,7 @@
 		box-sizing: border-box;
 		margin: 0;
 		padding: 0;
-		font-family: 'Kdam Thmor Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI',
-			Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
-			sans-serif;
+		font-family: font.$family;
 		border: none;
 		outline: none;
 	}
@@ -126,9 +124,7 @@
 	}
 
 	[aria-label][data-balloon-pos]::after {
-		font-family: 'Kdam Thmor Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI',
-			Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
-			sans-serif !important;
+		font-family: font.$family !important;
 	}
 
 	._toastItem ._toastBtn {

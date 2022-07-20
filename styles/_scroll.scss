@@ -1,0 +1,15 @@
+@use 'colors';
+
+@mixin bar($width: 0.3rem, $color: rgba(white, 0.5), $background: transparent) {
+	scrollbar-width: thin;
+	scrollbar-color: $color $background;
+
+	&::-webkit-scrollbar {
+		width: $width;
+		background: $background;
+	}
+
+	&::-webkit-scrollbar-thumb {
+		background: $color;
+	}
+}

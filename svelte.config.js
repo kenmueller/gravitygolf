@@ -5,6 +5,8 @@ import preprocess from 'svelte-preprocess'
 import adapter from '@sveltejs/adapter-vercel'
 import autoprefixer from 'autoprefixer'
 
+const styles = ['colors', 'font', 'scroll']
+
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
 	preprocess: preprocess({
@@ -12,7 +14,7 @@ const config = {
 			plugins: [autoprefixer()]
 		},
 		scss: {
-			prependData: ['styles/colors'].map(path => `@use '${path}';`)
+			prependData: styles.map(path => `@use 'styles/${path}';`).join('')
 		}
 	}),
 	compilerOptions: {
