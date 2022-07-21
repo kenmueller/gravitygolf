@@ -45,7 +45,11 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 
 	private previousTime: number | null = null
 	private frame: number | null = null
-	private readonly fixedFramerateDelta: number = 1/60;
+
+	private readonly physTickrate: number = 60;
+	private readonly physSubticks: number = 16;
+	private readonly fixedTickrateDelta: number = 1 / (this.physTickrate * this.physSubticks);
+	private runningDelta: number = 0;
 
 	private center = { x: 0, y: 0 }
 
@@ -114,17 +118,16 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 		}
 
 		currentTime /= 1000
-		let deltaTime = currentTime - this.previousTime;
+		this.runningDelta += currentTime - this.previousTime;
 
 
-		while (deltaTime > this.fixedFramerateDelta) { // Repeat until missed ticks caught up
-			console.log(this.frame)
+		while (this.runningDelta > this.fixedTickrateDelta) { // Repeat until missed ticks caught up
 			if (this.tick()) {
 				return
 			}
-			deltaTime = currentTime - this.previousTime;
-			this.previousTime = currentTime
+			this.runningDelta -= this.fixedTickrateDelta;
 		}
+		this.previousTime = currentTime
 
 		this.frame = requestAnimationFrame(this.tickWrapper)
 	}
@@ -132,7 +135,7 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 	private readonly tick = () => {
 		this.frame = null
 
-		const delta = this.fixedFramerateDelta;
+		const delta = this.fixedTickrateDelta;
 
 		if (this.hit) {
 			if (
