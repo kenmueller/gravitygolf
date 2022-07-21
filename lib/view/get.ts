@@ -1,5 +1,3 @@
-const getView = () => ({
-	
-})
+const getView = () => ({})
 
 export default getView

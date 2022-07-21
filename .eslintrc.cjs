@@ -29,12 +29,12 @@ module.exports = {
 	},
 	parserOptions: {
 		sourceType: 'module',
-		ecmaVersion: 2019,
+		ecmaVersion: 2020,
 		project: ['tsconfig.json', 'tsconfig.dev.json']
 	},
 	env: {
 		browser: true,
-		es2017: true,
+		es2020: true,
 		node: true
 	}
 }

@@ -1,10 +1,9 @@
 {
 	"extends": "./.svelte-kit/tsconfig.json",
 	"compilerOptions": {
-		"moduleResolution": "node",
-		"module": "es2020",
-		"lib": ["es2020"],
-		"target": "es2019",
+		"allowJs": true,
+		"checkJs": true,
+		"sourceMap": true,
 		"importsNotUsedAsValues": "error",
 		"useUnknownInCatchVariables": true,
 		"noUnusedLocals": true,

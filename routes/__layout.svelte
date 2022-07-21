@@ -76,7 +76,7 @@
 		--balloon-color: white;
 		--balloon-text-color: #{colors.$gray};
 
-		--toastWidth: 20rem
+		--toastWidth: 20rem;
 		--toastPadding: 0 4rem 0 0;
 		--toastBackground: #{colors.$gray-blue};
 		--toastBorderRadius: 0.4rem;
