@@ -58,7 +58,7 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 	private frame: number | null = null
 
 	private readonly physTickrate: number = 60
-	private readonly physSubticks: number = 16
+	private readonly physSubticks: number = 8
 	private readonly fixedTickrateDelta: number = 1 / (this.physTickrate * this.physSubticks)
 	private runningDelta: number = 0
 
@@ -164,6 +164,10 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		}
 
 		this.runningDelta += currentTime - this.previousTime
+
+		if(this.runningDelta > this.fixedTickrateDelta * 12) { // More than 12 ticks behind
+			this.runningDelta = 0
+		}
 
 		while (this.runningDelta > this.fixedTickrateDelta) {
 			if (this.tick()) {
@@ -373,9 +377,7 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		this.context.stroke()
 
 		this.context.globalAlpha = 1
-
-		this.frame = requestAnimationFrame(this.tickWrapper)
-
+			
 		return false
 	}
 

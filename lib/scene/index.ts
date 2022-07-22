@@ -47,7 +47,7 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 	private frame: number | null = null
 
 	private readonly physTickrate: number = 60
-	private readonly physSubticks: number = 16
+	private readonly physSubticks: number = 8
 	private readonly fixedTickrateDelta: number = 1 / (this.physTickrate * this.physSubticks)
 	private runningDelta: number = 0
 
@@ -282,6 +282,7 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 				normalizedBall.radius * 2,
 				normalizedBall.radius * 2
 			)
+
 		return false
 	}
 
