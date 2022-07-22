@@ -46,6 +46,11 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 	private previousTime: number | null = null
 	private frame: number | null = null
 
+	private readonly physTickrate: number = 60
+	private readonly physSubticks: number = 16
+	private readonly fixedTickrateDelta: number = 1 / (this.physTickrate * this.physSubticks)
+	private runningDelta: number = 0
+
 	private center = { x: 0, y: 0 }
 
 	private mouseStart: (Position & { button: number }) | null = null
@@ -101,19 +106,36 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 
 		this.canvas.addEventListener('contextmenu', this.rightClick)
 
-		this.frame = requestAnimationFrame(this.tick)
+		this.frame = requestAnimationFrame(this.tickWrapper)
 	}
 
 	private readonly scale = () => scale(this.context, this.view)
 	private readonly resize = () => resize(this.canvas, this.view)
 
-	private readonly tick = (currentTime: number) => {
-		this.frame = null
-
+	private readonly tickWrapper = (currentTime: number) => {
 		currentTime /= 1000
 
-		const delta = currentTime - (this.previousTime || currentTime)
+		if (this.previousTime === null) {
+			this.previousTime = currentTime
+		}
+
+		this.runningDelta += currentTime - this.previousTime
+
+		while (this.runningDelta > this.fixedTickrateDelta) { // Repeat until missed ticks caught up
+			if (this.tick()) {
+				return
+			}
+			this.runningDelta -= this.fixedTickrateDelta
+		}
 		this.previousTime = currentTime
+
+		this.frame = requestAnimationFrame(this.tickWrapper)
+	}
+
+	private readonly tick = () => {
+		this.frame = null
+
+		const delta = this.fixedTickrateDelta
 
 		if (this.hit) {
 			if (
@@ -137,7 +159,7 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 				if (this.frame) cancelAnimationFrame(this.frame)
 				this.frame = null
 
-				return
+				return true
 			}
 
 			for (const wall of this.walls) {
@@ -260,8 +282,7 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 				normalizedBall.radius * 2,
 				normalizedBall.radius * 2
 			)
-
-		this.frame = requestAnimationFrame(this.tick)
+		return false
 	}
 
 	private readonly down = cursorHandler((cursor, event) => {

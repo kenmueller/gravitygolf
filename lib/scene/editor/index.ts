@@ -57,6 +57,11 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 	private previousTime: number | null = null
 	private frame: number | null = null
 
+	private readonly physTickrate: number = 60
+	private readonly physSubticks: number = 16
+	private readonly fixedTickrateDelta: number = 1 / (this.physTickrate * this.physSubticks)
+	private runningDelta: number = 0
+
 	private center = { x: 0, y: 0 }
 
 	private initialBallPosition: Position = { x: -100, y: 0 }
@@ -129,7 +134,7 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 
 		this.canvas.addEventListener('contextmenu', this.rightClick)
 
-		this.frame = requestAnimationFrame(this.tick)
+		this.frame = requestAnimationFrame(this.tickWrapper)
 
 		if (dev)
 			Object.defineProperty(window, 'levelData', {
@@ -150,13 +155,31 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 	private readonly scale = () => scale(this.context, this.view)
 	private readonly resize = () => resize(this.canvas, this.view)
 
-	private readonly tick = (currentTime: number) => {
-		this.frame = null
-
+	// TODO: remove duplicate code and use code from lib/scene/index.ts
+	private readonly tickWrapper = (currentTime: number) => {
 		currentTime /= 1000
 
-		const delta = currentTime - (this.previousTime || currentTime)
+		if (this.previousTime === null) {
+			this.previousTime = currentTime
+		}
+
+		this.runningDelta += currentTime - this.previousTime
+
+		while (this.runningDelta > this.fixedTickrateDelta) {
+			if (this.tick()) {
+				return
+			}
+			this.runningDelta -= this.fixedTickrateDelta
+		}
 		this.previousTime = currentTime
+
+		this.frame = requestAnimationFrame(this.tickWrapper)
+	}
+
+	private readonly tick = () => {
+		this.frame = null
+
+		const delta = this.fixedTickrateDelta
 
 		if (this.hit) {
 			if (
@@ -171,14 +194,14 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 					data: () => this.data,
 					reset: () => {
 						this.reset()
-						this.frame = requestAnimationFrame(this.tick)
+						this.frame = requestAnimationFrame(this.tickWrapper)
 					}
 				})
 
 				if (this.frame) cancelAnimationFrame(this.frame)
 				this.frame = null
 
-				return
+				return true
 			}
 
 			for (const wall of this.walls) {
@@ -351,7 +374,9 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 
 		this.context.globalAlpha = 1
 
-		this.frame = requestAnimationFrame(this.tick)
+		this.frame = requestAnimationFrame(this.tickWrapper)
+
+		return false
 	}
 
 	private get data(): RawLevel {
