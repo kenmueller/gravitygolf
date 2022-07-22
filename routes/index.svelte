@@ -2,6 +2,7 @@
 	import MetaImage from '../components/Meta/Image.svelte'
 	import MetaTitle from '../components/Meta/Title.svelte'
 	import MetaDescription from '../components/Meta/Description.svelte'
+	import AuthButton from '../components/Auth/Button.svelte'
 	import Play from '../images/Play.svelte'
 	import Community from '../images/Community.svelte'
 	import Edit from '../images/Edit.svelte'
@@ -48,9 +49,12 @@
 			<span>{link.text}</span>
 		</a>
 	{/each}
-	<a class="settings" href="/settings" aria-label="Settings">
-		<Settings />
-	</a>
+	<div class="toolbar">
+		<AuthButton />
+		<a class="settings" href="/settings" aria-label="Settings">
+			<Settings />
+		</a>
+	</div>
 </main>
 
 <style lang="scss">
@@ -111,10 +115,15 @@
 		margin: 0 auto;
 	}
 
-	.settings {
+	.toolbar {
+		display: flex;
 		position: absolute;
 		top: calc(1.2rem + env(safe-area-inset-top));
 		right: calc(1.2rem + env(safe-area-inset-right));
+	}
+
+	.settings {
+		margin-left: 1rem;
 		padding: 0.5rem;
 		color: rgba(white, 0.7);
 		background: rgba(white, 0.1);
