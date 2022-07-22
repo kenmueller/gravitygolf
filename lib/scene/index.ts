@@ -46,10 +46,10 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 	private previousTime: number | null = null
 	private frame: number | null = null
 
-	private readonly physTickrate: number = 60;
-	private readonly physSubticks: number = 16;
-	private readonly fixedTickrateDelta: number = 1 / (this.physTickrate * this.physSubticks);
-	private runningDelta: number = 0;
+	private readonly physTickrate: number = 60
+	private readonly physSubticks: number = 16
+	private readonly fixedTickrateDelta: number = 1 / (this.physTickrate * this.physSubticks)
+	private runningDelta: number = 0
 
 	private center = { x: 0, y: 0 }
 
@@ -113,19 +113,19 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 	private readonly resize = () => resize(this.canvas, this.view)
 
 	private readonly tickWrapper = (currentTime: number) => {
+		currentTime /= 1000
+
 		if (this.previousTime === null) {
-			this.previousTime = 0
+			this.previousTime = currentTime
 		}
 
-		currentTime /= 1000
-		this.runningDelta += currentTime - this.previousTime;
-
+		this.runningDelta += currentTime - this.previousTime
 
 		while (this.runningDelta > this.fixedTickrateDelta) { // Repeat until missed ticks caught up
 			if (this.tick()) {
 				return
 			}
-			this.runningDelta -= this.fixedTickrateDelta;
+			this.runningDelta -= this.fixedTickrateDelta
 		}
 		this.previousTime = currentTime
 
@@ -135,7 +135,7 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 	private readonly tick = () => {
 		this.frame = null
 
-		const delta = this.fixedTickrateDelta;
+		const delta = this.fixedTickrateDelta
 
 		if (this.hit) {
 			if (
