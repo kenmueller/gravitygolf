@@ -133,7 +133,11 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 				showOverlay(LevelWin, {
 					stars,
 					hasNext: this.done.hasNext,
-					next: this.done.next
+					next: this.done.next,
+					reset: () => {
+						this.reset()
+						this.frame = requestAnimationFrame(this.tick)
+					}
 				})
 
 				if (this.frame) cancelAnimationFrame(this.frame)
