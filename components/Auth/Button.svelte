@@ -22,8 +22,8 @@
 </script>
 
 <button
-	aria-busy={loading || undefined}
 	disabled={Boolean($currentUser)}
+	aria-busy={loading || undefined}
 	on:click={$currentUser ? undefined : signIn}
 >
 	<User />
@@ -43,7 +43,7 @@
 		border-radius: 0.5rem;
 		transition: color 0.3s, opacity 0.3s;
 
-		&:hover {
+		&:not(:disabled):not([aria-busy]):hover {
 			color: white;
 		}
 
