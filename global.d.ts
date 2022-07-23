@@ -14,4 +14,5 @@ interface ImportMetaEnv {
 	VITE_FIREBASE_APP_ID: string
 	VITE_FIREBASE_MEASUREMENT_ID: string
 	VITE_HASH: string
+	VITE_COOKIE_SECRET: string
 }

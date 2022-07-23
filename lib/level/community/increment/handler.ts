@@ -4,7 +4,7 @@ import { getFirestore, FieldValue } from 'firebase-admin/firestore'
 import type Property from './property'
 import admin from '$lib/firebase/admin'
 import ErrorCode from '$lib/error/code'
-import HttpError from '$lib/error'
+import HttpError from '$lib/error/http'
 import errorFromValue from '$lib/error/from/value'
 
 const firestore = getFirestore(admin)

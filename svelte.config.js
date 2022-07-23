@@ -39,12 +39,16 @@ const config = {
 					'https://pagead2.googlesyndication.com',
 					'https://firebase.googleapis.com',
 					'https://firebaseinstallations.googleapis.com',
-					'https://www.google-analytics.com'
+					'https://www.google-analytics.com',
+					'https://identitytoolkit.googleapis.com',
+					'https://securetoken.googleapis.com',
+					'https://firestore.googleapis.com'
 				],
 				'script-src': [
 					'self',
 					'https://pagead2.googlesyndication.com',
-					'https://www.googletagmanager.com'
+					'https://www.googletagmanager.com',
+					'https://apis.google.com'
 				],
 				'style-src': ['self', 'unsafe-inline', 'https://fonts.googleapis.com'],
 				'img-src': ['self', 'https://pagead2.googlesyndication.com'],
@@ -53,7 +57,8 @@ const config = {
 					'self',
 					'https://googleads.g.doubleclick.net',
 					'https://tpc.googlesyndication.com',
-					'https://www.google.com'
+					'https://www.google.com',
+					'https://gravitygolfgame.firebaseapp.com'
 				]
 			}
 		}

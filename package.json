@@ -16,6 +16,8 @@
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "next",
 		"@sveltejs/kit": "next",
+		"@types/cookie": "^0.5.1",
+		"@types/cookie-signature": "^1.0.4",
 		"@types/crypto-js": "^4.1.1",
 		"@types/web-app-manifest": "^1.0.2",
 		"@typescript-eslint/eslint-plugin": "^5.30.7",
@@ -24,6 +26,8 @@
 		"algoliasearch": "^4.14.1",
 		"autoprefixer": "^10.4.7",
 		"balloon-css": "^1.2.0",
+		"cookie": "^0.5.0",
+		"cookie-signature": "^1.2.0",
 		"copy-to-clipboard": "^3.3.1",
 		"crypto-js": "^4.1.1",
 		"eslint": "^8.20.0",

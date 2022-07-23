@@ -1,6 +1,5 @@
 import type User from './user'
 
-export default interface Session {
+export default interface Locals {
 	user: User | null
-	mobile: boolean
 }

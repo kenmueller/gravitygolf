@@ -1,11 +1,12 @@
 import type Fetch from '$lib/fetch'
 import type CommunityLevelRecord from '../record'
+import errorFromResponse from '$lib/error/from/response'
 
 const getCommunityLevels = async (fetch: Fetch, query: string) => {
 	const response = await fetch(
-		`/communityLevels?query=${encodeURIComponent(query)}`
+		`/api/levels/community?query=${encodeURIComponent(query)}`
 	)
-	if (!response.ok) throw new Error(await response.text())
+	if (!response.ok) throw await errorFromResponse(response)
 
 	return (await response.json()) as CommunityLevelRecord[]
 }

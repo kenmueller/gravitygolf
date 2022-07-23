@@ -53,6 +53,8 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 
 	private hit = false
 
+	private inCollision = false
+
 	private forces: Force[] = undefined as never
 	private ball: Ball = undefined as never
 	private hole: Hole = undefined as never
@@ -140,6 +142,7 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 				return
 			}
 
+			// let anyWallCollisions = false
 			for (const wall of this.walls) {
 				const angle = collision(
 					normalizePoint(this.ball, this.canvas, this.center),
@@ -147,15 +150,19 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 				)
 
 				if (angle !== null) {
-					const v = Math.atan2(-this.ball.vy, this.ball.vx)
+					// anyWallCollisions = true
+					if (!this.inCollision) {
+						const v = Math.atan2(-this.ball.vy, this.ball.vx)
 
-					const bounceAngle = 2 * angle - v + Math.PI
-					const speed = Math.sqrt(this.ball.vy ** 2 + this.ball.vx ** 2)
+						const bounceAngle = 2 * angle - v + Math.PI
+						const speed = Math.sqrt(this.ball.vy ** 2 + this.ball.vx ** 2)
 
-					this.ball.vy = -Math.sin(bounceAngle) * speed
-					this.ball.vx = Math.cos(bounceAngle) * speed
+						this.ball.vy = -Math.sin(bounceAngle) * speed
+						this.ball.vx = Math.cos(bounceAngle) * speed
+					}
 				}
 			}
+			// this.inCollision = anyWallCollisions
 
 			for (const force of this.forces) {
 				const rSquared = distanceSquared(

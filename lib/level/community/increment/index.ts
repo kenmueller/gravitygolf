@@ -1,10 +1,12 @@
 import type Property from './property'
-import HttpError from '$lib/error'
+import HttpError from '$lib/error/http'
 import ErrorCode from '$lib/error/code'
 
 const incrementCommunityLevelProperty = (id: string, property: Property) => {
 	const sent = navigator.sendBeacon(
-		`/communityLevels/${encodeURIComponent(id)}/${encodeURIComponent(property)}`
+		`/api/levels/community/${encodeURIComponent(id)}/${encodeURIComponent(
+			property
+		)}`
 	)
 
 	if (!sent)

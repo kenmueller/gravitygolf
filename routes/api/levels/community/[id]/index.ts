@@ -3,7 +3,7 @@ import { getFirestore } from 'firebase-admin/firestore'
 
 import type RawLevel from '$lib/level/raw'
 import admin from '$lib/firebase/admin'
-import HttpError from '$lib/error'
+import HttpError from '$lib/error/http'
 import ErrorCode from '$lib/error/code'
 import errorFromValue from '$lib/error/from/value'
 

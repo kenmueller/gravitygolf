@@ -13,7 +13,7 @@
 	import Save from '../../images/Save.svelte'
 	import Reset from '../../images/Reset.svelte'
 	import errorFromValue from '$lib/error/from/value'
-	import HttpError from '$lib/error'
+	import errorFromResponse from '$lib/error/from/response'
 
 	export let stars: number
 	export let data: () => RawLevel
@@ -34,18 +34,15 @@
 
 	const publish = async () => {
 		try {
-			if (!name) return
-
+			if (!name || loading) return
 			loading = true
 
-			const response = await fetch('/communityLevels', {
+			const response = await fetch('/api/levels/community', {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({ name, data: data() }, replaceWithRounded(2))
 			})
-
-			if (!response.ok)
-				throw new HttpError(response.status, await response.text())
+			if (!response.ok) throw await errorFromResponse(response)
 
 			const link = `/levels/community/${encodeURIComponent(
 				await response.text()

@@ -6,7 +6,7 @@ import client from '$lib/level/community/client'
 import fromRecord from '$lib/level/community/record/from'
 import validateRawLevel from '$lib/level/raw/validate'
 import replaceWithRounded from '$lib/replaceWithRounded'
-import HttpError from '$lib/error'
+import HttpError from '$lib/error/http'
 import ErrorCode from '$lib/error/code'
 import errorFromValue from '$lib/error/from/value'
 

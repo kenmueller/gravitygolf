@@ -1,4 +1,4 @@
-import HttpError from '..'
+import HttpError from '../http'
 import ErrorCode from '../code'
 import DEFAULT_ERROR from '../default'
 
