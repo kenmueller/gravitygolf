@@ -44,32 +44,34 @@ worker.addEventListener('activate', event => {
 })
 
 worker.addEventListener('fetch', event => {
-	if (event.request.method !== 'GET') return
+	const { request } = event
+	if (request.method !== 'GET') return
 
-	const url = new URL(event.request.url)
+	const { origin, pathname } = new URL(request.url)
+	if (origin !== worker.location.origin) return
 
-	if (url.origin !== worker.location.origin) return
-	if (!files.includes(url.pathname)) return
-
-	event.respondWith(stale(event.request))
+	event.respondWith(files.includes(pathname) ? stale(request) : fresh(request))
 })
 
 const stale = async (request: Request) =>
 	(await fromCache(request)) ?? save(request, caches.open(CACHE))
 
-const fromCache = async (request: Request) => {
-	const response = await caches.match(request)
+const fresh = async (request: Request) => {
+	try {
+		return await save(request, caches.open(CACHE))
+	} catch (error) {
+		const cached = await fromCache(request)
+		if (cached) return cached
 
-	if (!response) return null
-	if (!response.ok) throw new Error(await response.clone().text())
-
-	return response
+		throw error
+	}
 }
+
+const fromCache = async (request: Request) =>
+	(await caches.match(request)) ?? null
 
 const save = async (request: Request, cache: MaybePromise<Cache>) => {
 	const response = await fetch(request)
-	if (!response.ok) throw new Error(await response.text())
-
 	void saveTransaction(request, response.clone(), cache)
 
 	return response
