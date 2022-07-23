@@ -51,7 +51,11 @@ const config = {
 					'https://apis.google.com'
 				],
 				'style-src': ['self', 'unsafe-inline', 'https://fonts.googleapis.com'],
-				'img-src': ['self', 'https://pagead2.googlesyndication.com'],
+				'img-src': [
+					'self',
+					'https://pagead2.googlesyndication.com',
+					'https://www.google.com'
+				],
 				'font-src': ['self', 'https://fonts.gstatic.com'],
 				'frame-src': [
 					'self',

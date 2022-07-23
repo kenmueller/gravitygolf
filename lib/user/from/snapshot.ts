@@ -1,9 +1,10 @@
 import type User from '..'
 import type Snapshot from '$lib/snapshot'
+import exists from '$lib/snapshot/exists'
 import get from '$lib/snapshot/get'
 
 const userFromSnapshot = (snapshot: Snapshot): User | null => {
-	if (!snapshot.exists) return null
+	if (!exists(snapshot)) return null
 
 	return {
 		id: snapshot.id,
