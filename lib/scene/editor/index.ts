@@ -49,6 +49,7 @@ const WALL_CORNER_RADIUS = 10
 const WALL_CORNER_EXTRA = WALL_CORNER_RADIUS / 3
 const WALL_CORNER_COLOR = 'rgb(127, 127, 255)'
 const DEFAULT_WALL_SIZE = { width: 40, height: 70 }
+const COEFF_RESTITUTION = .90 // Averige C_r of a ping pong ball
 
 export default class EditorScene extends EventDispatcher<EditorEvents> {
 	private view: View = undefined as never
@@ -215,13 +216,26 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 				)
 
 				if (angle !== null) {
-					const v = Math.atan2(-this.ball.vy, this.ball.vx)
+					const v = Math.atan2(-this.ball.vy, this.ball.vx) * this.ball.coeff_restitution
 
 					const bounceAngle = 2 * angle - v + Math.PI
 					const speed = Math.sqrt(this.ball.vy ** 2 + this.ball.vx ** 2)
 
 					this.ball.vy = -Math.sin(bounceAngle) * speed
 					this.ball.vx = Math.cos(bounceAngle) * speed
+
+					// Left
+					if (-Math.PI / 2 < angle && angle < Math.PI / 2)
+						this.ball.x = wall.x - wall.width / 2 - this.ball.radius;
+					// Right
+					else if ((Math.PI / 2 < angle && angle < 3 * Math.PI / 2) || (-Math.PI < angle && angle < -Math.PI / 2)) // TR corner is negative, for some reason
+						this.ball.x = wall.x + wall.width / 2 + this.ball.radius;
+					// Bottom
+					if (0 < angle && angle < Math.PI)
+						this.ball.y = wall.y - wall.height / 2 - this.ball.radius;
+					// Top
+					else if (Math.PI < angle || angle < 0)
+						this.ball.y = wall.y + wall.height / 2 + this.ball.radius;
 				}
 			}
 
@@ -897,6 +911,7 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 			x: this.initialBallPosition.x,
 			y: this.initialBallPosition.y,
 			radius: BALL_RADIUS,
+			coeff_restitution: COEFF_RESTITUTION,
 			vx: 0,
 			vy: 0,
 			image: useImage(ballImage)

@@ -5,7 +5,7 @@ export default interface Level {
 	maxAntigravity: number
 	fixedGravity: Position[]
 	fixedAntigravity: Position[]
-	ball: Position & { radius: number }
+	ball: Position & { radius: number; coeff_restitution: number }
 	hole: Position & { radius: number }
 	stars: (Position & { radius: number })[]
 	walls: (Position & { width: number; height: number })[]

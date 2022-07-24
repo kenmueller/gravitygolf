@@ -169,13 +169,26 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 				)
 
 				if (angle !== null) {
-					const v = Math.atan2(-this.ball.vy, this.ball.vx)
+					const v = Math.atan2(-this.ball.vy, this.ball.vx) * this.ball.coeff_restitution
 
 					const bounceAngle = 2 * angle - v + Math.PI
 					const speed = Math.sqrt(this.ball.vy ** 2 + this.ball.vx ** 2)
 
 					this.ball.vy = -Math.sin(bounceAngle) * speed
 					this.ball.vx = Math.cos(bounceAngle) * speed
+
+					// Left
+					if (-Math.PI / 2 < angle && angle < Math.PI / 2)
+						this.ball.x = wall.x - wall.width / 2 - this.ball.radius;
+					// Right
+					else if ((Math.PI / 2 < angle && angle < 3 * Math.PI / 2) || (-Math.PI < angle && angle < -Math.PI / 2)) // TR corner is negative, for some reason
+						this.ball.x = wall.x + wall.width / 2 + this.ball.radius;
+					// Bottom
+					if (0 < angle && angle < Math.PI)
+						this.ball.y = wall.y - wall.height / 2 - this.ball.radius;
+					// Top
+					else if (Math.PI < angle || angle < 0)
+						this.ball.y = wall.y + wall.height / 2 + this.ball.radius;
 				}
 			}
 
