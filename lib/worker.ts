@@ -11,11 +11,9 @@ import levels from './level/levels'
 
 type MaybePromise<Value> = Value | Promise<Value>
 
-const CACHE = `cache/${version}`
-
 const files = [...staticPages, ...buildFiles, ...staticFiles]
 
-const pages = [
+const cachedPages = [
 	'/',
 	'/levels',
 	...levels.map((_level, index) => `/levels/${index + 1}`),
@@ -26,8 +24,8 @@ const worker = self as unknown as ServiceWorkerGlobalScope
 
 worker.addEventListener('install', event => {
 	event.waitUntil(
-		caches.open(CACHE).then(async cache => {
-			await cache.addAll([...files, ...pages])
+		caches.open(version).then(async cache => {
+			await cache.addAll([...files, ...cachedPages])
 			await worker.skipWaiting()
 		})
 	)
@@ -36,7 +34,7 @@ worker.addEventListener('install', event => {
 worker.addEventListener('activate', event => {
 	event.waitUntil(
 		caches.keys().then(async keys => {
-			await Promise.all(keys.map(key => key === CACHE || caches.delete(key)))
+			await Promise.all(keys.map(key => key === version || caches.delete(key)))
 			await worker.clients.claim()
 		})
 	)
@@ -53,11 +51,11 @@ worker.addEventListener('fetch', event => {
 })
 
 const stale = async (request: Request) =>
-	(await fromCache(request)) ?? save(request, caches.open(CACHE))
+	(await fromCache(request)) ?? save(request, caches.open(version))
 
 const fresh = async (request: Request) => {
 	try {
-		return await save(request, caches.open(CACHE))
+		return await save(request, caches.open(version))
 	} catch (error) {
 		const cached = await fromCache(request)
 		if (cached) return cached
