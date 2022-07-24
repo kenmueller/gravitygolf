@@ -1,4 +1,5 @@
 import type { Unsubscriber } from 'svelte/store'
+import { Engine, Bodies, Composite } from 'matter-js'
 
 import type SceneEvents from './events'
 import type View from '$lib/view'
@@ -8,7 +9,7 @@ import type Force from './force'
 import type Ball from './ball'
 import type Hole from './hole'
 import type Star from './star'
-import type Wall from './wall'
+import type Wall from './wall/physics'
 import type LevelDone from './done'
 import EventDispatcher from '$lib/event/dispatcher'
 import forceRadius from './force/radius'
@@ -54,6 +55,7 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 	private hit = false
 
 	private inCollision = false
+	private engine = Engine.create()
 
 	private forces: Force[] = undefined as never
 	private ball: Ball = undefined as never
