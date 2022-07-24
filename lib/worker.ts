@@ -13,10 +13,9 @@ type MaybePromise<Value> = Value | Promise<Value>
 
 const CACHE = `cache/${version}`
 
-const files = [
-	...staticPages,
-	...buildFiles,
-	...staticFiles,
+const files = [...staticPages, ...buildFiles, ...staticFiles]
+
+const pages = [
 	'/',
 	'/levels',
 	...levels.map((_level, index) => `/levels/${index + 1}`),
@@ -28,7 +27,7 @@ const worker = self as unknown as ServiceWorkerGlobalScope
 worker.addEventListener('install', event => {
 	event.waitUntil(
 		caches.open(CACHE).then(async cache => {
-			await cache.addAll(files)
+			await cache.addAll([...files, ...pages])
 			await worker.skipWaiting()
 		})
 	)
