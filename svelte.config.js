@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 
 import preprocess from 'svelte-preprocess'
-import adapter from '@sveltejs/adapter-auto'
+import adapter from '@sveltejs/adapter-vercel'
 import autoprefixer from 'autoprefixer'
 
 const styles = ['colors', 'font', 'scroll']
