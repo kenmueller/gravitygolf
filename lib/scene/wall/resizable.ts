@@ -1,8 +1,8 @@
-import type Position from '$lib/position'
+import type Wall from '.'
 import type WallCorner from './corner'
+import type { Body } from 'matter-js'
 
-export default interface ResizableWall extends Position {
-	width: number
-	height: number
+export default interface ResizableWall extends Wall {
 	corners: WallCorner[]
+	physics: Body
 }

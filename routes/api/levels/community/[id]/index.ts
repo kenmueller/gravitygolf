@@ -1,8 +1,8 @@
 import type { RequestHandler } from '@sveltejs/kit'
 import { getFirestore } from 'firebase-admin/firestore'
 
-import type RawLevel from '$lib/level/raw'
 import admin from '$lib/firebase/admin'
+import communityLevelFromSnapshot from '$lib/level/community/snapshot/from'
 import HttpError from '$lib/error/http'
 import ErrorCode from '$lib/error/code'
 import errorFromValue from '$lib/error/from/value'
@@ -11,20 +11,16 @@ const firestore = getFirestore(admin)
 
 export const GET: RequestHandler = async ({ params: { id } }) => {
 	try {
-		const snapshot = await firestore.doc(`community_levels/${id}`).get()
+		const level = communityLevelFromSnapshot(
+			await firestore.doc(`community_levels/${id}`).get()
+		)
 
-		if (!snapshot.exists)
+		if (!level)
 			throw new HttpError(ErrorCode.NotFound, 'Community level not found')
-
-		const data = snapshot.data() ?? {}
 
 		return {
 			headers: { 'content-type': 'application/json' },
-			body: JSON.stringify({
-				...data,
-				id: snapshot.id,
-				data: JSON.parse(data.data as string) as RawLevel
-			})
+			body: JSON.stringify(level)
 		}
 	} catch (value) {
 		const { code, message } = errorFromValue(value)

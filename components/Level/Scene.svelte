@@ -21,6 +21,7 @@
 
 	export let name: string
 	export let communityId: string | null = null
+	export let message: string | null = null
 	export let level: Level
 	export let setStars: (stars: number) => void
 	export let back: string
@@ -148,8 +149,8 @@
 		>
 			<Trash />
 		</button>
-		{#if level.message}
-			<p class="message">{level.message}</p>
+		{#if message}
+			<p class="message">{message}</p>
 		{/if}
 	</header>
 	<canvas bind:this={canvas} />

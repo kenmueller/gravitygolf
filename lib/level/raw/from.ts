@@ -7,8 +7,7 @@ const levelFromRaw = ({
 	ball,
 	hole,
 	stars,
-	walls,
-	message
+	walls
 }: RawLevel): Level => ({
 	maxGravity: Array.isArray(gravity) ? gravity[0] : gravity ?? 0,
 	maxAntigravity: Array.isArray(antigravity)
@@ -23,8 +22,7 @@ const levelFromRaw = ({
 	ball: { x: ball[0], y: ball[1], radius: ball[2] },
 	hole: { x: hole[0], y: hole[1], radius: hole[2] },
 	stars: stars?.map(([x, y, radius]) => ({ x, y, radius })) ?? [],
-	walls: walls?.map(([x, y, width, height]) => ({ x, y, width, height })) ?? [],
-	message: message ?? null
+	walls: walls?.map(([x, y, width, height]) => ({ x, y, width, height })) ?? []
 })
 
 export default levelFromRaw

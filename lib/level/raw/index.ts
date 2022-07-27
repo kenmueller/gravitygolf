@@ -5,5 +5,4 @@ export default interface RawLevel {
 	hole: [number, number, number]
 	stars?: [number, number, number][]
 	walls?: [number, number, number, number][]
-	message?: string
 }

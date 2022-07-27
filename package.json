@@ -38,6 +38,7 @@
 		"firebase-admin": "^11.0.0",
 		"is-mobile": "^3.1.1",
 		"matter-js": "^0.18.0",
+		"node-fetch": "^3.2.9",
 		"prettier": "^2.7.1",
 		"prettier-plugin-svelte": "^2.7.0",
 		"sass": "^1.54.0",

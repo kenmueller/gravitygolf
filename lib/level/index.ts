@@ -9,5 +9,4 @@ export default interface Level {
 	hole: Position & { radius: number }
 	stars: (Position & { radius: number })[]
 	walls: (Position & { width: number; height: number })[]
-	message: string | null
 }
