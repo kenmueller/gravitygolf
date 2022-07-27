@@ -6,7 +6,7 @@ import fetch from 'node-fetch'
 const data = join(cwd(), 'data')
 
 const main = async () => {
-	const response = await fetch(`http://localhost:3000/api/levels`)
+	const response = await fetch('https://admin.grav.golf/api/levels')
 	if (!response.ok) throw new Error(await response.text())
 
 	const levels = await response.json()
@@ -17,4 +17,4 @@ const main = async () => {
 	])
 }
 
-main()
+void main()

@@ -11,7 +11,8 @@
 		"check": "svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check --plugin-search-dir=. . && eslint .",
-		"format": "prettier --write --plugin-search-dir=. ."
+		"format": "prettier --write --plugin-search-dir=. .",
+		"levels": "node load/levels"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-vercel": "next",
@@ -20,6 +21,7 @@
 		"@types/cookie-signature": "^1.0.4",
 		"@types/crypto-js": "^4.1.1",
 		"@types/matter-js": "^0.17.7",
+		"@types/node-fetch": "^2.6.2",
 		"@types/web-app-manifest": "^1.0.2",
 		"@typescript-eslint/eslint-plugin": "^5.30.7",
 		"@typescript-eslint/parser": "^5.30.7",
