@@ -42,7 +42,8 @@
 	$: if (enabled === false) goto('/levels').catch(console.error)
 
 	$: name = `Level ${id}`
-	$: level = levelFromRaw(levels[id - 1].data as RawLevel)
+	$: level = levels[id - 1]
+	$: data = levelFromRaw(level.data as RawLevel)
 
 	$: hasNext = id !== levels.length
 </script>
@@ -55,7 +56,8 @@
 	{#if !$mobile || $landscape}
 		<LevelScene
 			{name}
-			{level}
+			message={level.message}
+			level={data}
 			setStars={stars => setStars(id, stars)}
 			back="/levels"
 			{hasNext}
