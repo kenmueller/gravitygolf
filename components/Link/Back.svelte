@@ -5,6 +5,8 @@
 	export let message: string | null = null
 	export let focusable = true
 
+	$: internal = href.startsWith('/')
+
 	const unload = (event: BeforeUnloadEvent) => {
 		if (!message) return
 
@@ -13,7 +15,7 @@
 	}
 
 	const click = (event: MouseEvent) => {
-		if (!message) return
+		if (!(message && internal)) return
 		if (!confirm(message)) event.preventDefault()
 	}
 </script>
