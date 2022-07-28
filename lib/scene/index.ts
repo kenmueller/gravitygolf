@@ -9,7 +9,7 @@ import type Ball from './ball'
 import type Hole from './hole'
 import type Star from './star'
 import type Wall from './wall'
-import type LevelDone from './done'
+import type LevelSceneOptions from './options'
 import EventDispatcher from '$lib/event/dispatcher'
 import forceRadius from './force/radius'
 import { MAX_FORCE_HIT_DISTANCE, MAX_FORCE_HIT_VELOCITY } from './force/hit'
@@ -65,7 +65,7 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 		private readonly canvas: HTMLCanvasElement,
 		private readonly context: CanvasRenderingContext2D,
 		private readonly level: Level,
-		private readonly done: LevelDone
+		private readonly options: LevelSceneOptions
 	) {
 		super()
 
@@ -126,14 +126,14 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 				this.hole.radius - this.ball.radius
 			) {
 				const stars = this.starCount
-				this.done.setStars(stars)
+				this.options.setStars(stars)
 
 				this.dispatchEvent('win')
 
 				showOverlay(LevelWin, {
 					stars,
-					hasNext: this.done.hasNext,
-					next: this.done.next,
+					hasNext: this.options.hasNext,
+					next: this.options.next,
 					reset: () => {
 						this.reset()
 						this.frame = requestAnimationFrame(this.tick)

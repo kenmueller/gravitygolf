@@ -2,6 +2,8 @@
 	import { onDestroy } from 'svelte'
 	import { fade } from 'svelte/transition'
 
+	import { page } from '$app/stores'
+
 	import type Position from '$lib/position'
 	import type Force from '$lib/scene/force'
 	import type Star from '$lib/scene/star'
@@ -21,10 +23,18 @@
 
 	import starImage from '../../images/star.png'
 
+	$: query = $page.url.searchParams
+
 	let canvas: HTMLCanvasElement | null = null
 	$: context = canvas?.getContext('2d')
 
-	$: scene = canvas && context && new Editor(canvas, context)
+	$: scene =
+		canvas &&
+		context &&
+		new Editor(canvas, context, {
+			publishLink: query.get('publish') || null,
+			initialData: JSON.parse(query.get('data') || 'null')
+		})
 
 	let hit = false
 
@@ -34,12 +44,17 @@
 
 	$: playing = false
 
-	let totalGravity = 0
-	let totalAntigravity = 0
+	$: totalGravity =
+		(scene?.initialData.maxGravity ?? 0) +
+		(scene?.initialData.fixedGravity.length ?? 0)
 
-	let fixedForces = {
-		gravity: 0,
-		antigravity: 0
+	$: totalAntigravity =
+		(scene?.initialData.maxAntigravity ?? 0) +
+		(scene?.initialData.fixedAntigravity.length ?? 0)
+
+	$: fixedForces = {
+		gravity: scene?.initialData.fixedGravity.length ?? 0,
+		antigravity: scene?.initialData.fixedAntigravity.length ?? 0
 	}
 
 	$: forcesRemaining = {
@@ -56,17 +71,15 @@
 			scene?.addForce(position, direction, fixed)
 		}
 
-	let fixedStars = 0
-
-	let stars = MAX_STARS
-
-	$: scene?.addEventListener('stars', newStars => {
-		stars = newStars
-	})
+	$: fixedStars = scene?.initialData.stars.length ?? 0
+	$: stars = MAX_STARS - fixedStars
 
 	$: scene?.addEventListener('fixedStars', newFixedStars => {
 		fixedStars = newFixedStars
-		stars = MAX_STARS - fixedStars
+	})
+
+	$: scene?.addEventListener('stars', newStars => {
+		stars = newStars
 	})
 
 	let currentObject:
@@ -90,15 +103,26 @@
 	$: radius = forceRadius($mobile)
 
 	$: scene?.addEventListener('clear', () => {
-		totalGravity = 0
-		scene?.updateMaxGravities(0)
+		if (!scene) return
 
-		totalAntigravity = 0
-		scene?.updateMaxAntigravities(0)
+		totalGravity =
+			scene.initialData.maxGravity + scene.initialData.fixedGravity.length
 
-		fixedForces = { gravity: 0, antigravity: 0 }
-		fixedStars = 0
-		stars = MAX_STARS
+		scene.updateMaxGravities(totalGravity)
+
+		totalAntigravity =
+			scene.initialData.maxAntigravity +
+			scene.initialData.fixedAntigravity.length
+
+		scene.updateMaxAntigravities(totalAntigravity)
+
+		fixedForces = {
+			gravity: scene.initialData.fixedGravity.length,
+			antigravity: scene.initialData.fixedAntigravity.length
+		}
+
+		fixedStars = scene.initialData.stars.length
+
 		playing = false
 	})
 
