@@ -204,8 +204,6 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 				) <=
 				this.hole.radius - this.ball.radius
 			) {
-				this.dispatchEvent('win', true)
-
 				showOverlay(EditorWin, {
 					stars: this.starCount,
 					defaultName: this.defaultName,
@@ -214,9 +212,6 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 					reset: () => {
 						this.reset()
 						this.frame = requestAnimationFrame(this.tick)
-					},
-					hide: () => {
-						this.dispatchEvent('win', false)
 					}
 				})
 

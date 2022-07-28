@@ -27,6 +27,7 @@
 	$: query = $page.url.searchParams
 
 	$: defaultName = query.get('name') || null
+	$: backLink = query.get('back') || null
 	$: publishLink = query.get('publish') || null
 	$: initialData = JSON.parse(query.get('data') || 'null') as RawLevel | null
 
@@ -132,12 +133,6 @@
 		playing = false
 	})
 
-	let isWinOverlayShowing = false
-
-	$: scene?.addEventListener('win', showing => {
-		isWinOverlayShowing = showing
-	})
-
 	let maxGravity: HTMLInputElement | null = null
 	let maxAntigravity: HTMLInputElement | null = null
 
@@ -156,8 +151,8 @@
 <main>
 	<header>
 		<BackLink
-			href="/"
-			message={isWinOverlayShowing && publishLink
+			href={backLink || '/'}
+			message={backLink || publishLink
 				? null
 				: 'All progress will be lost. Are you sure?'}
 			focusable={false}
