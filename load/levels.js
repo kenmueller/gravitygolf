@@ -3,7 +3,7 @@ import { join } from 'path'
 import { mkdir, writeFile } from 'fs/promises'
 import fetch from 'node-fetch'
 
-const origin = process.env.ORIGIN || 'https://admin.grav.golf'
+const origin = process.env.ADMIN_ORIGIN || 'https://admin.grav.golf'
 const data = join(cwd(), 'data')
 
 void (async () => {
