@@ -57,7 +57,9 @@ const WALL_CORNER_COLOR = 'rgb(127, 127, 255)'
 const DEFAULT_WALL_SIZE = { width: 40, height: 70 }
 
 export default class EditorScene extends EventDispatcher<EditorEvents> {
+	private readonly defaultName: string | null
 	private readonly publishLink: string | null
+
 	readonly initialData: Level
 
 	private view: View = undefined as never
@@ -105,7 +107,9 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 	) {
 		super()
 
+		this.defaultName = options.defaultName
 		this.publishLink = options.publishLink
+
 		this.initialData = levelFromRaw(options.initialData ?? DEFAULT_INITIAL_DATA)
 
 		this.unsubscribeView = view.subscribe($view => {
@@ -200,12 +204,19 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 				) <=
 				this.hole.radius - this.ball.radius
 			) {
+				this.dispatchEvent('win', true)
+
 				showOverlay(EditorWin, {
 					stars: this.starCount,
+					defaultName: this.defaultName,
+					publishLink: this.publishLink,
 					data: () => this.data,
 					reset: () => {
 						this.reset()
 						this.frame = requestAnimationFrame(this.tick)
+					},
+					hide: () => {
+						this.dispatchEvent('win', false)
 					}
 				})
 

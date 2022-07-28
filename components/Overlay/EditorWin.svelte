@@ -16,19 +16,24 @@
 	import errorFromResponse from '$lib/error/from/response'
 
 	export let stars: number
+	export let defaultName: string | null
+	export let publishLink: string | null
 	export let data: () => RawLevel
 	export let reset: () => void
+	export let hide: () => void
 
 	$: hitAllStars = stars === MAX_STARS
 
 	let input: HTMLInputElement | null = null
-	$: if (hitAllStars) input?.focus()
+	$: if (publishLink === null && hitAllStars) input?.focus()
 
-	let name = ''
+	$: name = defaultName ?? ''
 	let loading = false
 
 	const restart = () => {
 		reset()
+
+		hide()
 		hideOverlay()
 	}
 
@@ -37,22 +42,28 @@
 			if (!name || loading) return
 			loading = true
 
-			const response = await fetch('/api/levels/community', {
-				method: 'POST',
-				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ name, data: data() }, replaceWithRounded(2))
-			})
-			if (!response.ok) throw await errorFromResponse(response)
+			if (publishLink) {
+				window.location.href = `${publishLink}${encodeURIComponent(
+					JSON.stringify(data(), replaceWithRounded(2))
+				)}`
+			} else {
+				const response = await fetch('/api/levels/community', {
+					method: 'POST',
+					headers: { 'content-type': 'application/json' },
+					body: JSON.stringify({ name, data: data() }, replaceWithRounded(2))
+				})
+				if (!response.ok) throw await errorFromResponse(response)
 
-			const link = `/levels/community/${encodeURIComponent(
-				await response.text()
-			)}`
+				const link = `/levels/community/${encodeURIComponent(
+					await response.text()
+				)}`
 
-			copy(new URL(link, $page.url.origin).href)
-			toast.push('Level link copied to clipboard')
+				copy(new URL(link, $page.url.origin).href)
+				toast.push('Level link copied to clipboard')
 
-			hideOverlay()
-			await goto(link)
+				hideOverlay()
+				await goto(link)
+			}
 		} catch (value) {
 			console.error(value)
 			alert(errorFromValue(value).message)
@@ -66,7 +77,7 @@
 	<form on:submit|preventDefault={publish}>
 		<input
 			placeholder="Name your level"
-			disabled={!hitAllStars}
+			disabled={!(publishLink === null && hitAllStars)}
 			bind:this={input}
 			bind:value={name}
 		/>

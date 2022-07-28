@@ -8,6 +8,7 @@
 	import type Force from '$lib/scene/force'
 	import type Star from '$lib/scene/star'
 	import type ResizableWall from '$lib/scene/wall/resizable'
+	import type RawLevel from '$lib/level/raw'
 	import forceRadius from '$lib/scene/force/radius'
 	import FORCE_DELETE_DIMENSIONS from '$lib/scene/force/delete/dimensions'
 	import MAX_STARS from '$lib/scene/star/max'
@@ -25,16 +26,17 @@
 
 	$: query = $page.url.searchParams
 
+	$: defaultName = query.get('name') || null
+	$: publishLink = query.get('publish') || null
+	$: initialData = JSON.parse(query.get('data') || 'null') as RawLevel | null
+
 	let canvas: HTMLCanvasElement | null = null
 	$: context = canvas?.getContext('2d')
 
 	$: scene =
 		canvas &&
 		context &&
-		new Editor(canvas, context, {
-			publishLink: query.get('publish') || null,
-			initialData: JSON.parse(query.get('data') || 'null')
-		})
+		new Editor(canvas, context, { defaultName, publishLink, initialData })
 
 	let hit = false
 
@@ -130,6 +132,12 @@
 		playing = false
 	})
 
+	let isWinOverlayShowing = false
+
+	$: scene?.addEventListener('win', showing => {
+		isWinOverlayShowing = showing
+	})
+
 	let maxGravity: HTMLInputElement | null = null
 	let maxAntigravity: HTMLInputElement | null = null
 
@@ -149,7 +157,9 @@
 	<header>
 		<BackLink
 			href="/"
-			message="All progress will be lost. Are you sure?"
+			message={isWinOverlayShowing && publishLink
+				? null
+				: 'All progress will be lost. Are you sure?'}
 			focusable={false}
 		>
 			Level Editor
