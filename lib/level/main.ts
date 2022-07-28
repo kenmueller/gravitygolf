@@ -1,4 +1,4 @@
-import type RawLevel from '../raw'
+import type RawLevel from './raw'
 
 export default interface MainLevel {
 	id: string

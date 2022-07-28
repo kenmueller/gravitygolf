@@ -1,15 +1,14 @@
 import type { Unsubscriber } from 'svelte/store'
-import { Engine, Body, Bodies, Composite } from 'matter-js'
 
 import type SceneEvents from './events'
 import type View from '$lib/view'
 import type Position from '$lib/position'
 import type Level from '$lib/level'
 import type Force from './force'
-import type BallWithPhysics from './ball/physics'
+import type Ball from './ball'
 import type Hole from './hole'
 import type Star from './star'
-import type WallWithPhysics from './wall/physics'
+import type Wall from './wall'
 import type LevelDone from './done'
 import EventDispatcher from '$lib/event/dispatcher'
 import forceRadius from './force/radius'
@@ -55,13 +54,12 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 	private hit = false
 
 	private inCollision = false
-	private engine = Engine.create({ gravity: { scale: 0 } })
 
 	private forces: Force[] = undefined as never
-	private ball: BallWithPhysics = undefined as never
+	private ball: Ball = undefined as never
 	private hole: Hole = undefined as never
 	private stars: Star[] = undefined as never
-	private walls: WallWithPhysics[] = undefined as never
+	private walls: Wall[] = undefined as never
 
 	constructor(
 		private readonly canvas: HTMLCanvasElement,
@@ -87,12 +85,7 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 			image: useImage(starImage)
 		}))
 
-		this.walls = level.walls.map(wall => ({
-			...wall,
-			physics: Bodies.rectangle(wall.x, wall.y, wall.width, wall.height, {
-				isStatic: true
-			})
-		}))
+		this.walls = level.walls
 
 		this.clear(true)
 
@@ -154,25 +147,25 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 			}
 
 			// let anyWallCollisions = false
-			// for (const wall of this.walls) {
-			// 	const angle = collision(
-			// 		normalizePoint(this.ball, this.canvas, this.center),
-			// 		normalizeShape(wall, this.canvas, this.center)
-			// 	)
+			for (const wall of this.walls) {
+				const angle = collision(
+					normalizePoint(this.ball, this.canvas, this.center),
+					normalizeShape(wall, this.canvas, this.center)
+				)
 
-			// 	if (angle !== null) {
-			// 		// anyWallCollisions = true
-			// 		if (!this.inCollision) {
-			// 			const v = Math.atan2(-this.ball.vy, this.ball.vx)
+				if (angle !== null) {
+					// anyWallCollisions = true
+					if (!this.inCollision) {
+						const v = Math.atan2(-this.ball.vy, this.ball.vx)
 
-			// 			const bounceAngle = 2 * angle - v + Math.PI
-			// 			const speed = Math.sqrt(this.ball.vy ** 2 + this.ball.vx ** 2)
+						const bounceAngle = 2 * angle - v + Math.PI
+						const speed = Math.sqrt(this.ball.vy ** 2 + this.ball.vx ** 2)
 
-			// 			this.ball.vy = -Math.sin(bounceAngle) * speed
-			// 			this.ball.vx = Math.cos(bounceAngle) * speed
-			// 		}
-			// 	}
-			// }
+						this.ball.vy = -Math.sin(bounceAngle) * speed
+						this.ball.vx = Math.cos(bounceAngle) * speed
+					}
+				}
+			}
 			// this.inCollision = anyWallCollisions
 
 			for (const force of this.forces) {
@@ -190,18 +183,11 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 
 				this.ball.vx += x * delta
 				this.ball.vy += y * delta
-				Body.setVelocity(this.ball.physics, {
-					x: this.ball.vx,
-					y: this.ball.vy
-				})
 			}
-			Engine.update(this.engine, delta)
-			this.ball.x = this.ball.physics.position.x
-			this.ball.y = this.ball.physics.position.y
 		}
 
-		// this.ball.x += this.ball.vx * delta
-		// this.ball.y -= this.ball.vy * delta
+		this.ball.x += this.ball.vx * delta
+		this.ball.y -= this.ball.vy * delta
 
 		clear(this.canvas, this.context)
 
@@ -485,18 +471,12 @@ export default class Scene extends EventDispatcher<SceneEvents> {
 	readonly reset = (initial = false) => {
 		this.hit = false
 		this.dispatchEvent('hit', false)
-		Engine.clear(this.engine)
 
 		this.ball = {
 			...this.level.ball,
 			vx: 0,
 			vy: 0,
-			image: useImage(ballImage),
-			physics: Bodies.circle(
-				this.level.ball.x,
-				this.level.ball.y,
-				this.ball.radius
-			)
+			image: useImage(ballImage)
 		}
 
 		for (const star of this.stars) star.hit = false

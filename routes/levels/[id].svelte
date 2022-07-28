@@ -42,7 +42,7 @@
 	$: if (enabled === false) goto('/levels').catch(console.error)
 
 	$: name = `Level ${id}`
-	$: level = levelFromRaw(levels[id - 1] as RawLevel)
+	$: level = levelFromRaw(levels[id - 1].data as RawLevel)
 
 	$: hasNext = id !== levels.length
 </script>
