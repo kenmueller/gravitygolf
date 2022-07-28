@@ -133,6 +133,12 @@
 		playing = false
 	})
 
+	let isWinOverlayShowing = false
+
+	$: scene?.addEventListener('win', showing => {
+		isWinOverlayShowing = showing
+	})
+
 	let maxGravity: HTMLInputElement | null = null
 	let maxAntigravity: HTMLInputElement | null = null
 
@@ -152,7 +158,7 @@
 	<header>
 		<BackLink
 			href={backLink || '/'}
-			message={backLink || publishLink
+			message={isWinOverlayShowing && publishLink
 				? null
 				: 'All progress will be lost. Are you sure?'}
 			focusable={false}

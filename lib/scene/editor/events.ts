@@ -6,4 +6,7 @@ export default interface EditorEvents extends Omit<SceneEvents, 'win'> {
 	reset: []
 	fixedStars: [number]
 	wall: [ResizableWall | null]
+
+	/** If the win overlay is showing */
+	win: [boolean]
 }
