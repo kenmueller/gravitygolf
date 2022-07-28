@@ -548,6 +548,8 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		if (!(this.mouseStart && this.mouseCurrent)) return
 
 		if (!this.hit) {
+			let didHit = false
+
 			if (
 				this.mouseStart.button === 0 &&
 				this.mouseCurrent.x === this.mouseStart.x &&
@@ -576,10 +578,15 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 
 				this.ball.vx = x
 				this.ball.vy = y
-			} else if (this.mouseStart.button === 0 && 'force' in this.mouseCurrent) {
-				// End dragging force
+
+				didHit = true
+			}
+
+			if (this.mouseStart.button === 0 && 'force' in this.mouseCurrent) {
 				this.dispatchEvent('force', null)
+
 				if (
+					!didHit &&
 					this.mouseCurrent.x >
 						this.canvas.width -
 							FORCE_DELETE_DIMENSIONS.width * this.view.scale &&
@@ -592,6 +599,7 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 					this.updateCursor(this.mouseCurrent)
 				}
 			} else if (
+				!didHit &&
 				this.mouseStart.button === 2 &&
 				'force' in this.mouseCurrent &&
 				this.mouseOnForce(this.mouseCurrent, this.mouseCurrent.force)
@@ -604,7 +612,9 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 				}
 			} else if (this.mouseStart.button === 0 && 'star' in this.mouseCurrent) {
 				this.dispatchEvent('star', null)
+
 				if (
+					!didHit &&
 					this.mouseCurrent.x >
 						this.canvas.width -
 							FORCE_DELETE_DIMENSIONS.width * this.view.scale &&
@@ -617,6 +627,7 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 					this.updateCursor(this.mouseCurrent)
 				}
 			} else if (
+				!didHit &&
 				this.mouseStart.button === 2 &&
 				'star' in this.mouseCurrent &&
 				this.mouseOnStar(this.mouseCurrent, this.mouseCurrent.star) &&
@@ -626,7 +637,9 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 				this.updateCursor(this.mouseCurrent)
 			} else if (this.mouseStart.button === 0 && 'wall' in this.mouseCurrent) {
 				this.dispatchEvent('wall', null)
+
 				if (
+					!didHit &&
 					this.mouseCurrent.x >
 						this.canvas.width -
 							FORCE_DELETE_DIMENSIONS.width * this.view.scale &&
@@ -638,6 +651,7 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 					this.updateCursor(this.mouseCurrent)
 				}
 			} else if (
+				!didHit &&
 				this.mouseStart.button === 0 &&
 				'wallCorner' in this.mouseCurrent
 			) {
@@ -646,13 +660,18 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 				if (wall.height < 0) wall.height *= -1
 				this.positionWallCorners(wall)
 			} else if (
+				!didHit &&
 				this.mouseStart.button === 2 &&
 				'wall' in this.mouseCurrent &&
 				this.mouseOnWall(this.mouseCurrent)(this.mouseCurrent.wall) &&
 				this.deleteWall(this.mouseCurrent.wall)
 			) {
 				this.updateCursor(this.mouseCurrent)
-			} else if (this.mouseStart.button === 0 && 'ball' in this.mouseCurrent) {
+			} else if (
+				!didHit &&
+				this.mouseStart.button === 0 &&
+				'ball' in this.mouseCurrent
+			) {
 				this.initialBallPosition.x =
 					this.mouseCurrent.x - this.canvas.width / 2 - this.center.x
 				this.initialBallPosition.y =
