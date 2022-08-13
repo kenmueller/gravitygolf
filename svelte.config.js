@@ -30,7 +30,17 @@ const config = {
 			? {
 					default: true,
 					crawl: false,
-					entries: ['*', '/manifest.webmanifest', '/sitemap.xml'],
+					entries: [
+						'/',
+						'/levels',
+						'/levels/id',
+						'/levels/community/mobile',
+						'/levels/community/id',
+						'/levels/editor',
+						'/settings',
+						'/manifest.webmanifest',
+						'/sitemap.xml'
+					],
 					origin: process.env.VITE_ORIGIN
 			  }
 			: undefined,

@@ -11,7 +11,7 @@
 
 	const links = [
 		{
-			href: '/levels/community',
+			href: `/levels/community${MOBILE ? '/mobile' : ''}`,
 			icon: Community,
 			text: 'Community Levels'
 		},

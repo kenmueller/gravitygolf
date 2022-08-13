@@ -20,8 +20,14 @@
 	const setProps = async (load: Load) => {
 		const output = await load()
 
+		if (output.error)
+			return alert(
+				typeof output.error === 'string' ? output.error : output.error.message
+			)
+
 		if (output.redirect) return goto(output.redirect)
-		if (output.props) props = output.props as Props
+
+		props = (output.props ?? {}) as Props
 	}
 </script>
 

@@ -21,7 +21,8 @@ const cachedPages = [
 			(_level, index) =>
 				`/levels/${MOBILE ? 'id?value=' : ''}${encodeURIComponent(index + 1)}`
 		),
-	'/levels/editor'
+	'/levels/editor',
+	'/settings'
 ]
 
 const worker = self as unknown as ServiceWorkerGlobalScope

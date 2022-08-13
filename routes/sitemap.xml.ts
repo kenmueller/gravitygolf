@@ -11,7 +11,7 @@ const getUrls = async () => [
 		(_level, index) =>
 			`/levels/${MOBILE ? 'id?value=' : ''}${encodeURIComponent(index + 1)}`
 	),
-	'/levels/community',
+	`/levels/community${MOBILE ? '/mobile' : ''}`,
 	...(await getAllCommunityLevels()).map(
 		({ id }) =>
 			`/levels/community/${MOBILE ? 'id?value=' : ''}${encodeURIComponent(id)}`
