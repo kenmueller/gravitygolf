@@ -10,6 +10,12 @@ import errorFromValue from '$lib/error/from/value'
 const firestore = getFirestore(admin)
 
 export const GET: RequestHandler = async ({ params: { id } }) => {
+	const headers = {
+		'access-control-allow-methods': 'GET',
+		'access-control-allow-origin': '*',
+		'access-control-allow-credentials': 'true'
+	}
+
 	try {
 		const level = communityLevelFromSnapshot(
 			await firestore.doc(`community_levels/${id}`).get()
@@ -19,11 +25,11 @@ export const GET: RequestHandler = async ({ params: { id } }) => {
 			throw new HttpError(ErrorCode.NotFound, 'Community level not found')
 
 		return {
-			headers: { 'content-type': 'application/json' },
+			headers: { ...headers, 'content-type': 'application/json' },
 			body: JSON.stringify(level)
 		}
 	} catch (value) {
 		const { code, message } = errorFromValue(value)
-		return { status: code, body: message }
+		return { headers, status: code, body: message }
 	}
 }

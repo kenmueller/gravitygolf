@@ -4,7 +4,7 @@
 	import MetaImage from '../../components/Meta/Image.svelte'
 	import MetaTitle from '../../components/Meta/Title.svelte'
 	import MetaDescription from '../../components/Meta/Description.svelte'
-	import LevelEditor from '../../components/Level/Editor.svelte'
+	// import LevelEditor from '../../components/Level/Editor.svelte'
 	import BackLink from '../../components/Link/Back.svelte'
 </script>
 
@@ -13,7 +13,7 @@
 <MetaDescription />
 
 {#if !$mobile || $landscape}
-	<LevelEditor />
+	<!-- <LevelEditor /> -->
 {:else}
 	<main>
 		<BackLink href="/">Level Editor</BackLink>

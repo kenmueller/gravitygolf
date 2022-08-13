@@ -1,10 +1,11 @@
 import { sveltekit } from '@sveltejs/kit/vite'
 
-const plugins = [sveltekit()]
-
 /** @type {import('vite').UserConfig} */
 const config = {
-	plugins,
+	plugins: [sveltekit()],
+	define: {
+		MOBILE: Boolean(process.env.MOBILE)
+	},
 	server: {
 		fs: {
 			allow: ['.']

@@ -29,9 +29,16 @@ ${(await getUrls())
 let data: string | null = null
 
 export const GET: RequestHandler = async ({ url }) => {
+	const headers = {
+		'access-control-allow-methods': 'GET',
+		'access-control-allow-origin': '*',
+		'access-control-allow-credentials': 'true'
+	}
+
 	try {
 		return {
 			headers: {
+				...headers,
 				'cache-control': 'no-cache',
 				'content-type': 'application/xml'
 			},
@@ -39,6 +46,6 @@ export const GET: RequestHandler = async ({ url }) => {
 		}
 	} catch (value) {
 		const { code, message } = errorFromValue(value)
-		return { status: code, body: message }
+		return { headers, status: code, body: message }
 	}
 }

@@ -7,9 +7,8 @@ import {
 	files as staticFiles
 } from '$service-worker'
 
+import type MaybePromise from './promise/maybe'
 import levelCount from './level/count'
-
-type MaybePromise<Value> = Value | Promise<Value>
 
 const files = [...staticPages, ...buildFiles, ...staticFiles]
 
@@ -18,7 +17,9 @@ const cachedPages = [
 	'/levels',
 	...Array(levelCount)
 		.fill(undefined)
-		.map((_level, index) => `/levels/${index + 1}`),
+		.map((_level, index) =>
+			MOBILE ? `/levels/id?value=${index + 1}` : `/levels/${index + 1}`
+		),
 	'/levels/editor'
 ]
 

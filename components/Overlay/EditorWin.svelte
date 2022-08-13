@@ -10,6 +10,7 @@
 	import hideOverlay from '$lib/overlay/hide'
 	import Win from './Win.svelte'
 	import replaceWithRounded from '$lib/replaceWithRounded'
+	import prefixUrl from '$lib/url/prefix'
 	import Save from '../../images/Save.svelte'
 	import Reset from '../../images/Reset.svelte'
 	import errorFromValue from '$lib/error/from/value'
@@ -47,7 +48,7 @@
 					JSON.stringify(data(), replaceWithRounded(2))
 				)}`
 			} else {
-				const response = await fetch('/api/levels/community', {
+				const response = await fetch(prefixUrl('/api/levels/community'), {
 					method: 'POST',
 					headers: { 'content-type': 'application/json' },
 					body: JSON.stringify({ name, data: data() }, replaceWithRounded(2))

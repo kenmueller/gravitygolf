@@ -9,7 +9,7 @@ const getSession: GetSession = ({ request, locals }): Session => {
 
 	return {
 		user: (locals as Locals).user,
-		mobile: userAgent ? isMobile({ ua: userAgent }) : false
+		mobile: MOBILE || (userAgent ? isMobile({ ua: userAgent }) : false)
 	}
 }
 

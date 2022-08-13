@@ -1,8 +1,10 @@
 <script lang="ts" context="module">
 	export const load: Load = async ({ fetch }) => {
 		try {
-			isInitial.set(true)
-			initialLevels.set(await getLevels(fetch, get(query)))
+			if (browser) {
+				isInitial.set(true)
+				initialLevels.set(await getLevels(fetch, get(query)))
+			}
 
 			return {}
 		} catch (value) {
@@ -31,6 +33,7 @@
 	import Search from '../../../components/Search.svelte'
 	import Level from '../../../components/Level/Cell/Community.svelte'
 	import Edit from '../../../images/Edit.svelte'
+	import { browser } from '$app/env'
 </script>
 
 <MetaImage />

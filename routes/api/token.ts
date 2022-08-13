@@ -6,7 +6,22 @@ import ErrorCode from '$lib/error/code'
 import HttpError from '$lib/error/http'
 import errorFromValue from '$lib/error/from/value'
 
+export const OPTIONS: RequestHandler = () => ({
+	headers: {
+		'access-control-allow-methods': 'OPTIONS, POST',
+		'access-control-allow-origin': '*',
+		'access-control-allow-credentials': 'true'
+	},
+	body: ''
+})
+
 export const POST: RequestHandler = async ({ request }) => {
+	const headers = {
+		'access-control-allow-methods': 'OPTIONS, POST',
+		'access-control-allow-origin': '*',
+		'access-control-allow-credentials': 'true'
+	}
+
 	try {
 		if (request.headers.get('content-type') !== 'application/json')
 			throw new HttpError(400, 'Invalid content type')
@@ -24,11 +39,11 @@ export const POST: RequestHandler = async ({ request }) => {
 			}
 
 		return {
-			headers: { 'set-cookie': setToken(token) },
+			headers: { ...headers, 'set-cookie': setToken(token) },
 			body: ''
 		}
 	} catch (value) {
 		const { code, message } = errorFromValue(value)
-		return { status: code, body: message }
+		return { headers, status: code, body: message }
 	}
 }

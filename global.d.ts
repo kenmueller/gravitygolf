@@ -1,6 +1,8 @@
 /// <reference types="@sveltejs/kit" />
 
 interface ImportMetaEnv {
+	VITE_ORIGIN: string
+	VITE_PRODUCTION_ORIGIN: string
 	VITE_ADSENSE_CLIENT: string
 	VITE_GITHUB_URL: string
 	VITE_ALGOLIA_APP_ID: string
@@ -16,3 +18,5 @@ interface ImportMetaEnv {
 	VITE_HASH: string
 	VITE_COOKIE_SECRET: string
 }
+
+declare const MOBILE: boolean

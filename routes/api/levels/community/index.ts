@@ -13,21 +13,42 @@ import errorFromValue from '$lib/error/from/value'
 const firestore = getFirestore(admin)
 
 export const GET: RequestHandler = async ({ url }) => {
+	const headers = {
+		'access-control-allow-methods': 'GET',
+		'access-control-allow-origin': '*',
+		'access-control-allow-credentials': 'true'
+	}
+
 	try {
 		const query = url.searchParams.get('query') ?? ''
 		const { hits } = await client.search(query)
 
 		return {
-			headers: { 'content-type': 'application/json' },
+			headers: { ...headers, 'content-type': 'application/json' },
 			body: JSON.stringify(hits.map(fromRecord))
 		}
 	} catch (value) {
 		const { code, message } = errorFromValue(value)
-		return { status: code, body: message }
+		return { headers, status: code, body: message }
 	}
 }
 
+export const OPTIONS: RequestHandler = () => ({
+	headers: {
+		'access-control-allow-methods': 'OPTIONS, POST',
+		'access-control-allow-origin': '*',
+		'access-control-allow-credentials': 'true'
+	},
+	body: ''
+})
+
 export const POST: RequestHandler = async ({ request }) => {
+	const headers = {
+		'access-control-allow-methods': 'OPTIONS, POST',
+		'access-control-allow-origin': '*',
+		'access-control-allow-credentials': 'true'
+	}
+
 	try {
 		if (request.headers.get('content-type') !== 'application/json')
 			throw new HttpError(ErrorCode.BadRequest, 'Content-Type must be JSON')
@@ -59,9 +80,9 @@ export const POST: RequestHandler = async ({ request }) => {
 			data: JSON.stringify(data, replaceWithRounded(2))
 		})
 
-		return { body: document.id }
+		return { headers, body: document.id }
 	} catch (value) {
 		const { code, message } = errorFromValue(value)
-		return { status: code, body: message }
+		return { headers, status: code, body: message }
 	}
 }

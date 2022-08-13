@@ -1,9 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 
+import 'dotenv/config'
+
 import preprocess from 'svelte-preprocess'
-import adapter from '@sveltejs/adapter-vercel'
 import autoprefixer from 'autoprefixer'
+
+import staticAdapter from '@sveltejs/adapter-static'
+import vercelAdapter from '@sveltejs/adapter-vercel'
 
 const styles = ['colors', 'font', 'scroll']
 
@@ -21,7 +25,10 @@ const config = {
 		immutable: true
 	},
 	kit: {
-		adapter: adapter(),
+		adapter: process.env.MOBILE ? staticAdapter() : vercelAdapter(),
+		prerender: process.env.MOBILE
+			? { crawl: false, default: true, origin: process.env.VITE_ORIGIN }
+			: undefined,
 		files: {
 			assets: 'public',
 			hooks: 'hooks',
@@ -36,6 +43,7 @@ const config = {
 				'default-src': ['self'],
 				'connect-src': [
 					'self',
+					process.env.VITE_PRODUCTION_ORIGIN,
 					'https://pagead2.googlesyndication.com',
 					'https://firebase.googleapis.com',
 					'https://firebaseinstallations.googleapis.com',
