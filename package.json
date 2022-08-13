@@ -15,6 +15,10 @@
 		"format": "prettier --write --plugin-search-dir=. ."
 	},
 	"devDependencies": {
+		"@capacitor/android": "^4.0.1",
+		"@capacitor/cli": "^4.0.1",
+		"@capacitor/core": "^4.0.1",
+		"@capacitor/ios": "^4.0.1",
 		"@sveltejs/adapter-static": "next",
 		"@sveltejs/adapter-vercel": "next",
 		"@sveltejs/kit": "next",
