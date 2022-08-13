@@ -6,7 +6,12 @@
 	export let level: CommunityLevelRecord
 </script>
 
-<Base href="/levels/community/{level.id}" stars={$stars?.[level.id] ?? null}>
+<Base
+	href="/levels/community/{MOBILE ? 'id?value=' : ''}{encodeURIComponent(
+		level.id
+	)}"
+	stars={$stars?.[level.id] ?? null}
+>
 	{level.name}
 	<span>
 		{level.attempts} attempt{level.attempts === 1 ? '' : 's'} •

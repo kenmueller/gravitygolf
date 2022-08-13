@@ -17,8 +17,9 @@ const cachedPages = [
 	'/levels',
 	...Array(levelCount)
 		.fill(undefined)
-		.map((_level, index) =>
-			MOBILE ? `/levels/id?value=${index + 1}` : `/levels/${index + 1}`
+		.map(
+			(_level, index) =>
+				`/levels/${MOBILE ? 'id?value=' : ''}${encodeURIComponent(index + 1)}`
 		),
 	'/levels/editor'
 ]

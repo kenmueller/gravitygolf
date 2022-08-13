@@ -6,7 +6,7 @@
 </script>
 
 <Base
-	href="/levels/{id}"
+	href="/levels/{MOBILE ? 'id?value=' : ''}{encodeURIComponent(id)}"
 	disabled={id - 1 > ($stars?.length ?? 0)}
 	stars={$stars?.[id - 1] ?? null}
 >

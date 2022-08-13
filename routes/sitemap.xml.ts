@@ -7,10 +7,14 @@ import getAllCommunityLevels from '$lib/level/community/levels/all'
 const getUrls = async () => [
 	'/',
 	'/levels',
-	...levels.map((_level, index) => `/levels/${index + 1}`),
+	...levels.map(
+		(_level, index) =>
+			`/levels/${MOBILE ? 'id?value=' : ''}${encodeURIComponent(index + 1)}`
+	),
 	'/levels/community',
 	...(await getAllCommunityLevels()).map(
-		({ id }) => `/levels/community/${encodeURIComponent(id)}`
+		({ id }) =>
+			`/levels/community/${MOBILE ? 'id?value=' : ''}${encodeURIComponent(id)}`
 	),
 	'/levels/editor'
 ]
