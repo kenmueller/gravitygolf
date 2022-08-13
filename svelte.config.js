@@ -27,7 +27,12 @@ const config = {
 	kit: {
 		adapter: process.env.MOBILE ? staticAdapter() : vercelAdapter(),
 		prerender: process.env.MOBILE
-			? { crawl: false, default: true, origin: process.env.VITE_ORIGIN }
+			? {
+					default: true,
+					crawl: false,
+					entries: ['*', '/manifest.webmanifest', '/sitemap.xml'],
+					origin: process.env.VITE_ORIGIN
+			  }
 			: undefined,
 		files: {
 			assets: 'public',
