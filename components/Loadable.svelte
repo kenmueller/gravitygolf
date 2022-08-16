@@ -10,10 +10,12 @@
 	type Load = () => MaybePromise<LoadOutput<Props>>
 
 	export let props: Props | null = null
+	export let defaultProps: Props | null = null
+
 	export let load: Load
 
-	// Force unwrap props
 	$: _props = props as Props
+	$: _defaultProps = defaultProps as Props
 
 	$: if (browser && !props) setProps(load)
 
@@ -33,6 +35,8 @@
 
 {#if _props}
 	<slot props={_props} />
+{:else if _defaultProps}
+	<slot props={_defaultProps} />
 {:else}
 	<slot name="loading" />
 {/if}
