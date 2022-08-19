@@ -10,8 +10,8 @@ const toCursor = (event: CursorEvent): Cursor | null => {
 			mouse: true
 		}
 
-	if (event.changedTouches.length !== 1) return null
-	const touch = event.changedTouches[0]
+	const touch = event.touches[0]
+	if (!touch) return null
 
 	return {
 		x: touch.clientX,

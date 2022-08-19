@@ -33,6 +33,13 @@
 <MetaTitle />
 <MetaDescription />
 
+<div class="toolbar">
+	<AuthButton />
+	<a class="settings" href="/settings" aria-label="Settings">
+		<Settings />
+	</a>
+</div>
+
 <main>
 	<h1>Gravity Golf</h1>
 	<a class="levels" href="/levels" aria-label="Levels">
@@ -49,23 +56,50 @@
 			<span>{link.text}</span>
 		</a>
 	{/each}
-	<div class="toolbar">
-		<AuthButton />
-		<a class="settings" href="/settings" aria-label="Settings">
-			<Settings />
-		</a>
-	</div>
 </main>
 
 <style lang="scss">
+	.toolbar {
+		display: flex;
+		position: absolute;
+		top: calc(1.2rem + env(safe-area-inset-top));
+		right: calc(1.2rem + env(safe-area-inset-right));
+		z-index: 100;
+	}
+
+	.settings {
+		margin-left: 1rem;
+		padding: 0.5rem;
+		color: rgba(white, 0.7);
+		background: rgba(white, 0.1);
+		border-radius: 0.5rem;
+		transition: color 0.3s;
+
+		&:hover {
+			color: white;
+		}
+
+		> :global(svg) {
+			width: 2rem;
+		}
+	}
+
 	main {
+		@include scroll.bar;
+
 		position: relative;
 		display: flex;
 		flex-direction: column;
-		justify-content: center;
 		align-items: center;
-		overflow: hidden;
+		overflow-y: auto;
 		height: 100%;
+		padding: 5rem 0 2rem;
+		z-index: 0;
+
+		@media (min-height: 38.75rem) {
+			justify-content: center;
+			padding: 0;
+		}
 	}
 
 	h1 {
@@ -74,12 +108,16 @@
 	}
 
 	.levels {
-		margin: 4rem 0 1rem;
+		margin: 2rem 0 1rem;
 		padding: 1.5rem;
 		color: rgba(white, 0.7);
 		background: rgba(white, 0.1);
 		border-radius: 0.5rem;
 		transition: color 0.3s;
+
+		@media (min-height: 38.75rem) {
+			margin: 4rem 0 1rem;
+		}
 
 		&:hover {
 			color: white;
@@ -113,29 +151,5 @@
 
 	span {
 		margin: 0 auto;
-	}
-
-	.toolbar {
-		display: flex;
-		position: absolute;
-		top: calc(1.2rem + env(safe-area-inset-top));
-		right: calc(1.2rem + env(safe-area-inset-right));
-	}
-
-	.settings {
-		margin-left: 1rem;
-		padding: 0.5rem;
-		color: rgba(white, 0.7);
-		background: rgba(white, 0.1);
-		border-radius: 0.5rem;
-		transition: color 0.3s;
-
-		&:hover {
-			color: white;
-		}
-
-		> :global(svg) {
-			width: 2rem;
-		}
 	}
 </style>
