@@ -51,8 +51,8 @@ const DEFAULT_INITIAL_DATA: RawLevel = {
 }
 
 const STAR_RADIUS = 35
-const WALL_CORNER_RADIUS = 10
-const WALL_CORNER_EXTRA = WALL_CORNER_RADIUS / 3
+const WALL_CORNER_RADIUS = (mobile: boolean) => (mobile ? 40 : 15)
+const WALL_CORNER_EXTRA = (mobile: boolean) => WALL_CORNER_RADIUS(mobile) / 3
 const WALL_CORNER_COLOR = 'rgb(127, 127, 255)'
 const DEFAULT_WALL_SIZE = { width: 40, height: 70 }
 
@@ -284,7 +284,7 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		if (!this.hit)
 			for (const corner of [...this.neswWallCorners, ...this.nwseWallCorners]) {
 				const shape = normalizeShape(
-					{ ...corner, radius: WALL_CORNER_RADIUS },
+					{ ...corner, radius: WALL_CORNER_RADIUS(this.view.mobile) },
 					this.canvas,
 					this.center
 				)
@@ -718,7 +718,7 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 	private readonly mouseOnWallCorner =
 		(mouse: Position) => (corner: WallCorner) =>
 			distance(normalizePoint(corner, this.canvas, this.center), mouse) <=
-			WALL_CORNER_RADIUS
+			WALL_CORNER_RADIUS(this.view.mobile)
 
 	private readonly mouseOnBall = (mouse: Position) =>
 		distance(normalizePoint(this.ball, this.canvas, this.center), mouse) <=
@@ -854,20 +854,28 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		for (const corner of wall.corners)
 			switch (corner.position) {
 				case 'NE':
-					corner.x = wall.x + wall.width / 2 + WALL_CORNER_EXTRA
-					corner.y = wall.y + wall.height / 2 + WALL_CORNER_EXTRA
+					corner.x =
+						wall.x + wall.width / 2 + WALL_CORNER_EXTRA(this.view.mobile)
+					corner.y =
+						wall.y + wall.height / 2 + WALL_CORNER_EXTRA(this.view.mobile)
 					break
 				case 'NW':
-					corner.x = wall.x - wall.width / 2 - WALL_CORNER_EXTRA
-					corner.y = wall.y + wall.height / 2 + WALL_CORNER_EXTRA
+					corner.x =
+						wall.x - wall.width / 2 - WALL_CORNER_EXTRA(this.view.mobile)
+					corner.y =
+						wall.y + wall.height / 2 + WALL_CORNER_EXTRA(this.view.mobile)
 					break
 				case 'SE':
-					corner.x = wall.x + wall.width / 2 + WALL_CORNER_EXTRA
-					corner.y = wall.y - wall.height / 2 - WALL_CORNER_EXTRA
+					corner.x =
+						wall.x + wall.width / 2 + WALL_CORNER_EXTRA(this.view.mobile)
+					corner.y =
+						wall.y - wall.height / 2 - WALL_CORNER_EXTRA(this.view.mobile)
 					break
 				case 'SW':
-					corner.x = wall.x - wall.width / 2 - WALL_CORNER_EXTRA
-					corner.y = wall.y - wall.height / 2 - WALL_CORNER_EXTRA
+					corner.x =
+						wall.x - wall.width / 2 - WALL_CORNER_EXTRA(this.view.mobile)
+					corner.y =
+						wall.y - wall.height / 2 - WALL_CORNER_EXTRA(this.view.mobile)
 					break
 			}
 	}
@@ -890,29 +898,29 @@ export default class EditorScene extends EventDispatcher<EditorEvents> {
 		}
 
 		const neCorner: WallCorner = {
-			x: wall.x + wall.width / 2 + WALL_CORNER_EXTRA,
-			y: wall.y + wall.height / 2 + WALL_CORNER_EXTRA,
+			x: wall.x + wall.width / 2 + WALL_CORNER_EXTRA(this.view.mobile),
+			y: wall.y + wall.height / 2 + WALL_CORNER_EXTRA(this.view.mobile),
 			position: 'NE',
 			wall
 		}
 
 		const nwCorner: WallCorner = {
-			x: wall.x - wall.width / 2 - WALL_CORNER_EXTRA,
-			y: wall.y + wall.height / 2 + WALL_CORNER_EXTRA,
+			x: wall.x - wall.width / 2 - WALL_CORNER_EXTRA(this.view.mobile),
+			y: wall.y + wall.height / 2 + WALL_CORNER_EXTRA(this.view.mobile),
 			position: 'NW',
 			wall
 		}
 
 		const seCorner: WallCorner = {
-			x: wall.x + wall.width / 2 + WALL_CORNER_EXTRA,
-			y: wall.y - wall.height / 2 - WALL_CORNER_EXTRA,
+			x: wall.x + wall.width / 2 + WALL_CORNER_EXTRA(this.view.mobile),
+			y: wall.y - wall.height / 2 - WALL_CORNER_EXTRA(this.view.mobile),
 			position: 'SE',
 			wall
 		}
 
 		const swCorner: WallCorner = {
-			x: wall.x - wall.width / 2 - WALL_CORNER_EXTRA,
-			y: wall.y - wall.height / 2 - WALL_CORNER_EXTRA,
+			x: wall.x - wall.width / 2 - WALL_CORNER_EXTRA(this.view.mobile),
+			y: wall.y - wall.height / 2 - WALL_CORNER_EXTRA(this.view.mobile),
 			position: 'SW',
 			wall
 		}
