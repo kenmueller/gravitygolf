@@ -41,9 +41,11 @@
 
 	button,
 	a {
+		flex-shrink: 0;
 		display: flex;
 		align-items: center;
 		padding: 0.5rem 1rem;
+		white-space: nowrap;
 		font-size: 1rem;
 		color: white;
 		background: colors.$blue;
@@ -57,6 +59,7 @@
 
 	button {
 		> :global(svg) {
+			flex-shrink: 0;
 			height: 1.4rem;
 			margin-right: 0.5rem;
 			transform: translateY(-1px);
@@ -67,6 +70,7 @@
 		margin-left: 1rem;
 
 		> :global(svg) {
+			flex-shrink: 0;
 			height: 1.1rem;
 			margin-left: 0.8rem;
 		}

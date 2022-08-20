@@ -48,6 +48,7 @@
 		}
 
 		> :global(svg) {
+			flex-shrink: 0;
 			height: 2rem;
 		}
 	}

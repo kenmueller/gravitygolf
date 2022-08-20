@@ -44,6 +44,7 @@
 		}
 
 		> :global(svg) {
+			flex-shrink: 0;
 			margin: -0.5rem 0 -0.5rem -0.7rem;
 			width: 2.5rem;
 		}

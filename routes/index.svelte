@@ -145,6 +145,7 @@
 		}
 
 		> :global(svg) {
+			flex-shrink: 0;
 			width: 2rem;
 		}
 	}

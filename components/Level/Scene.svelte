@@ -280,6 +280,7 @@
 		}
 
 		> :global(svg) {
+			flex-shrink: 0;
 			width: 1.5rem;
 		}
 	}
@@ -333,6 +334,7 @@
 		z-index: 0;
 
 		> :global(svg) {
+			flex-shrink: 0;
 			height: 2rem;
 			margin-right: 0.5rem;
 		}

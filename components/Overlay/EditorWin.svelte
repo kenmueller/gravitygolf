@@ -127,9 +127,11 @@
 	}
 
 	button {
+		flex-shrink: 0;
 		display: flex;
 		align-items: center;
 		padding: 0.5rem 1rem;
+		white-space: nowrap;
 		font-size: 1rem;
 		color: white;
 		background: colors.$blue;
@@ -137,6 +139,7 @@
 		transition: opacity 0.3s;
 
 		> :global(svg) {
+			flex-shrink: 0;
 			margin-right: 0.5rem;
 			transform: translateY(-1px);
 		}

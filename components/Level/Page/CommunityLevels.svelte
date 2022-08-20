@@ -48,7 +48,7 @@
 		</BackLink>
 		<a href="/levels/editor">
 			<Edit />
-			Create Level
+			<span>Create Level</span>
 		</a>
 		<span class="stars" data-stars={$totalStars} />
 	</header>
@@ -99,8 +99,16 @@
 		}
 
 		> :global(svg) {
+			flex-shrink: 0;
 			width: 1.8rem;
-			margin-right: 0.5rem;
+		}
+
+		> span {
+			display: none;
+			margin-left: 0.7rem;
+			@media (min-width: 26.25rem) {
+				display: block;
+			}
 		}
 	}
 

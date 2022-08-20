@@ -163,8 +163,11 @@
 				: 'All progress will be lost. Are you sure?'}
 			focusable={false}
 		>
-			Level Editor
-			{#if !$mobile}| Gravity Golf{/if}
+			<span>Level&nbsp;</span>
+			Editor
+			{#if !$mobile}
+				<span>| Gravity Golf</span>
+			{/if}
 		</BackLink>
 		<div class="objects">
 			{#if $view}
@@ -243,10 +246,10 @@
 		>
 			{#if playing}
 				<Edit />
-				Edit
+				<span>Edit</span>
 			{:else}
 				<Play />
-				Play
+				<span>Play</span>
 			{/if}
 		</button>
 		<button
@@ -256,7 +259,9 @@
 			aria-label="Restart"
 			on:click={() => scene?.reset()}
 		>
-			{#if !$mobile}Press SPACE BAR to restart{/if}
+			{#if !$mobile}
+				<span>Press SPACE BAR to restart</span>
+			{/if}
 			<Reset />
 		</button>
 		<button
@@ -301,13 +306,34 @@
 		align-items: center;
 		position: absolute;
 		top: 1.5rem;
-		left: 2rem;
-		right: 2rem;
+		left: 1rem;
+		right: 1rem;
 		z-index: 100;
 		pointer-events: none;
 
 		> :global(*) {
 			pointer-events: all;
+		}
+
+		> :global a {
+			margin-right: 1rem;
+
+			@media (min-width: 775px) {
+				margin-right: 0;
+			}
+
+			> span {
+				display: none;
+
+				@media (min-width: 775px) {
+					display: block;
+				}
+			}
+		}
+
+		@media (min-width: 1070px) {
+			left: 2rem;
+			right: 2rem;
 		}
 	}
 
@@ -385,7 +411,7 @@
 		overflow: hidden;
 		max-width: 5rem;
 		width: 100%;
-		margin: 0 2rem 0 0.8rem;
+		margin: 0 1.5rem 0 0.8rem;
 		padding: 0.3rem 0.5rem;
 		color: white;
 		background: rgba(white, 0.1);
@@ -393,6 +419,10 @@
 
 		&::placeholder {
 			color: rgba(white, 0.5);
+		}
+
+		@media (min-width: 71.25rem) {
+			margin: 0 2rem 0 0.8rem;
 		}
 	}
 
@@ -405,7 +435,11 @@
 	}
 
 	.stars {
-		margin: 0 auto 0 3rem;
+		margin: 0 auto 0 1.5rem;
+
+		@media (min-width: 71.25rem) {
+			margin: 0 auto 0 3rem;
+		}
 	}
 
 	.star {
@@ -440,6 +474,7 @@
 		}
 
 		> :global(svg) {
+			flex-shrink: 0;
 			width: 1.5rem;
 		}
 	}
@@ -448,11 +483,21 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		min-width: 3.75rem;
 		margin-right: auto;
+		padding: 0 1rem;
 
-		> :global(svg) {
-			margin-right: 0.5rem;
+		@media (min-width: 1200px) {
+			min-width: 3.75rem;
+			padding: 0;
+		}
+
+		> span {
+			display: none;
+			margin-left: 0.5rem;
+
+			@media (min-width: 1200px) {
+				display: block;
+			}
 		}
 	}
 
@@ -460,8 +505,8 @@
 		display: flex;
 		align-items: center;
 
-		> :global(svg) {
-			margin-left: 0.7rem;
+		> span {
+			margin-right: 0.7rem;
 		}
 	}
 
@@ -483,6 +528,7 @@
 		z-index: 0;
 
 		> :global(svg) {
+			flex-shrink: 0;
 			height: 2rem;
 			margin-right: 0.5rem;
 		}
