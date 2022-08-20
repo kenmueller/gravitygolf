@@ -25,7 +25,8 @@ module.exports = {
 		'@typescript-eslint/ban-ts-comment': 'off'
 	},
 	globals: {
-		$$restProps: 'readonly'
+		$$restProps: 'readonly',
+		MOBILE: 'readonly'
 	},
 	parserOptions: {
 		sourceType: 'module',
