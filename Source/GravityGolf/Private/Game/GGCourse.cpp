@@ -1425,6 +1425,12 @@ void AGGCourse::Advance()
 		}
 		return;
 	}
+	if (!bDrawn && GetNetMode() == NM_Standalone && FPackageName::DoesPackageExist(TEXT("/Game/Levels/Workshop")))
+	{
+		// The last hole is solved. What is left is to build holes of one's own.
+		UGameplayStatics::OpenLevel(this, FName(TEXT("/Game/Levels/Workshop")));
+		return;
+	}
 	ResetHole();
 }
 

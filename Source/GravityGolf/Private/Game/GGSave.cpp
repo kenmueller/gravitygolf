@@ -1,5 +1,7 @@
 #include "Game/GGSave.h"
 
+#include "Engine/GameInstance.h"
+
 #include "Engine/Engine.h"
 #include "GameFramework/GameUserSettings.h"
 #include "Kismet/GameplayStatics.h"
@@ -37,8 +39,35 @@ int32 UGGSave::HoleIndex(const FString& CourseId)
 	return INDEX_NONE;
 }
 
+namespace
+{
+// Automated play uses a scratch save: empty to begin with, never written. It lasts as long as the game it was asked
+// for (one play session in the editor), so the player's own save is back the next time they play.
+bool bScratchSave = false;
+TWeakObjectPtr<UGameInstance> ScratchOwner;
+} // namespace
+
+void UGGSave::UseScratch(const UObject* WorldContext)
+{
+	if (Loaded)
+	{
+		Loaded->RemoveFromRoot();
+	}
+	Loaded = Cast<UGGSave>(UGameplayStatics::CreateSaveGameObject(UGGSave::StaticClass()));
+	Loaded->AddToRoot();
+	bScratchSave = true;
+	ScratchOwner = UGameplayStatics::GetGameInstance(WorldContext);
+}
+
 UGGSave& UGGSave::Get()
 {
+	if (bScratchSave && !ScratchOwner.IsValid() && Loaded)
+	{
+		// The automated session is over: forget its scratch save and read the real one again.
+		Loaded->RemoveFromRoot();
+		Loaded = nullptr;
+		bScratchSave = false;
+	}
 	if (!Loaded)
 	{
 		if (UGameplayStatics::DoesSaveGameExist(Slot, 0))
@@ -57,7 +86,11 @@ UGGSave& UGGSave::Get()
 
 void UGGSave::Store()
 {
-	UGameplayStatics::SaveGameToSlot(&Get(), Slot, 0);
+	UGGSave& Save = Get();
+	if (!bScratchSave)
+	{
+		UGameplayStatics::SaveGameToSlot(&Save, Slot, 0);
+	}
 }
 
 bool UGGSave::RecordSolve(const FString& CourseId, int32 Swings)

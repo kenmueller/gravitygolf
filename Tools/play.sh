@@ -20,3 +20,5 @@ PY
 	exit 0
 fi
 python3 "$ROOT/Tools/mcp.py" call call_tool "{\"toolset_name\":\"EditorToolset.EditorAppToolset\",\"tool_name\":\"StartPIE\",\"arguments\":{\"options\":{\"warmupSeconds\":${1:-8}}}}" 2>&1 | head -1
+# Automated play never touches the player's own save: it gets an empty one that is not written (GGTestSave).
+"$ROOT/Tools/console.sh" "GGTestSave"

@@ -61,6 +61,8 @@ public:
 	static UGGSave& Get();
 	/** Write it to disk. */
 	static void Store();
+	/** For automated play: swap in an empty save that is never written, for as long as this game lasts. */
+	static void UseScratch(const UObject* WorldContext);
 
 	static const TArray<FGGHoleInfo>& Holes();
 	static int32 HoleIndex(const FString& CourseId);

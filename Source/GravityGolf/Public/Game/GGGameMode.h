@@ -31,6 +31,10 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 
+	/** Console: automated play calls this first, so nothing it does lands in the player's own save. */
+	UFUNCTION(Exec)
+	void GGTestSave();
+
 	/** Console, in the Workshop: "tool wall", "stroke x0,y0,x1,y1" (one stroke of the tool, in centimetres), "click fx,fy"
 	 *  (a press on the screen), "test", "build", "undo", "new", "name N", "keep", "open N", "code" (log it) or "code <text>"
 	 *  (open one), "check" (start the proof), "view x,y,distance", "frame". Every call logs the Workshop's state. */

@@ -533,7 +533,7 @@ void AGGGolfer::TouchButtons(const FVector2D& View, TArray<FGGTouchButton>& Out)
 	// Under the right thumb: the one big thing you can do now.
 	if (Phase == EGGPhase::Sunk)
 	{
-		Add(TEXT("Swing"), 17.f, 19.f, 10.5f, C->HasNext() ? TEXT("NEXT") : TEXT("AGAIN"));
+		Add(TEXT("Swing"), 17.f, 19.f, 10.5f, C->HasNext() ? TEXT("NEXT") : C->Drawn() || GetNetMode() != NM_Standalone ? TEXT("AGAIN") : TEXT("BUILD"));
 	}
 	else if (Phase == EGGPhase::Flying)
 	{

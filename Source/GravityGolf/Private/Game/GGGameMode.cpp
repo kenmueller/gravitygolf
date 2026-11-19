@@ -61,9 +61,19 @@ AGGGameMode::AGGGameMode()
 	HUDClass = AGGHUD::StaticClass();
 }
 
+void AGGGameMode::GGTestSave()
+{
+	UGGSave::UseScratch(this);
+	UE_LOG(LogGGMode, Display, TEXT("Automated play: using a scratch save; the player's own is untouched"));
+}
+
 void AGGGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+	if (FParse::Param(FCommandLine::Get(), TEXT("GGTestSave")))
+	{
+		UGGSave::UseScratch(this);
+	}
 
 	const FString CourseId = UGameplayStatics::GetCurrentLevelName(this, true).ToLower();
 	if (CourseId == TEXT("workshop"))

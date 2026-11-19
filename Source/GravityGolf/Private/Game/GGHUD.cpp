@@ -171,9 +171,30 @@ void AGGHUD::DrawPlay(const AGGGolfer* Golfer, const AGGCourse* Course)
 		{
 			Label(FString::Printf(TEXT("Your best: %d"), Best), CX, Top + 152.f * S, 20.f * S, Dim, true);
 		}
+		const bool bAlone = GetNetMode() == NM_Standalone;
 		if (!bTouch)
 		{
-			Label(Course->HasNext() ? TEXT("Click for the next hole") : TEXT("Click to play it again"), CX, Top + 198.f * S, 20.f * S, Dim, true);
+			Label(Course->HasNext() ? TEXT("Click for the next hole") : bAlone ? TEXT("Click to go on to the Workshop") : TEXT("Click to play it again"),
+				CX, Top + 198.f * S, 20.f * S, Dim, true);
+		}
+		if (!Course->HasNext())
+		{
+			// The last hole: the course is finished. Say so, with the player's record, and point at what comes next.
+			const TArray<FGGHoleInfo>& All = UGGSave::Holes();
+			int32 Solved = 0;
+			int32 Flawless = 0;
+			for (const FGGHoleInfo& Hole : All)
+			{
+				const int32 Fewest = Save.Best(Hole.Course);
+				Solved += Fewest > 0 ? 1 : 0;
+				Flawless += Fewest > 0 && Fewest <= Hole.Perfect ? 1 : 0;
+			}
+			const float EndTop = Top + H + 26.f * S;
+			DrawRect(FLinearColor(0.f, 0.f, 0.f, 0.45f), CX - W * 0.5f, EndTop, W, 150.f * S);
+			DrawRect(Gold, CX - W * 0.5f, EndTop, W, 3.f * S);
+			Label(TEXT("THE COURSE IS COMPLETE"), CX, EndTop + 20.f * S, 30.f * S, Gold, true, true);
+			Label(FString::Printf(TEXT("%d of %d holes solved        %d in a perfect round"), Solved, All.Num(), Flawless), CX, EndTop + 68.f * S, 20.f * S, Ink, true);
+			Label(TEXT("Every hole was made with the tools in the Workshop. Build one that stumps a friend."), CX, EndTop + 104.f * S, 18.f * S, Dim, true);
 		}
 		return;
 	}

@@ -84,6 +84,7 @@ Tools/py.sh <file.py>         run Python in the open editor; the value of the la
 Tools/web.sh [config] [host]  package for the web (Wasm + WebGPU) with the source engine at ~/UE59; see docs/WEB.md
 Tools/webtest.sh [play|phone|tour]   run the web build in Chrome with screenshots (tour: every hole's solution)
 Tools/nettest.sh              two players in the editor; compares both copies of the hole after every step
+Tools/hosttest.sh [Level]     two standalone copies of the game: one hosts, one joins by address
 Tools/rivaltest.sh [Level ...]   the rival bot plays a hole at each skill, time sped up; reports time and swings
 Tools/workshoptest.sh         works the Workshop without hands: every tool, undo, hole codes, touch, the proof, a test play
 Tests/Sim/design.sh <json> solve|search|probe   the standalone tools on a Workshop design (`GGWorkshop json <file>` writes one)
@@ -137,8 +138,9 @@ console and read the pass list in the log before guessing.
 - Run exactly one editor. Start it only with `Tools/editor.sh`, never in the background alongside another call.
   A second editor can't bind the MCP port and silently runs without it.
 
-- A standalone `-game` launch (Tools/capture.sh) hung at startup compiling global shaders after ray tracing was
-  enabled. Use PIE captures until that's understood.
+- A standalone `-game` launch once hung at startup compiling global shaders (just after ray tracing was enabled).
+  It starts in about ten seconds now; `Tools/hosttest.sh` launches two. A `-game` copy can't bind the MCP port while
+  the editor is open and logs an error about it, which is harmless.
 - The first editor start after changing renderer settings recompiles shaders and rebuilds Nanite data for the
   Megaplants trees (several minutes). MCP tools return "slow task" until it finishes.
 - After `ExitEditor`, the MCP port can stay held for a few seconds. If a fresh editor logs "MCP server listener
@@ -149,6 +151,9 @@ console and read the pass list in the log before guessing.
   must go through a `Net*` multicast on `AGGCourse` issued by the server (clients ask through `Server*` calls on
   their golfer), must give the same result on every machine, and must call `Flush()` first if it depends on the
   ball having stopped. Run `Tools/nettest.sh` after touching it.
+- Automated play must not write Ken's save. `Tools/play.sh` runs `GGTestSave` as soon as play starts (an empty save
+  that is never written, for that session only); standalone copies take `-GGTestSave`. Anything that starts play
+  another way has to do the same.
 - Stop play with `Tools/play.sh stop`, never the MCP `StopPIE` tool: it crashes the editor when a second player's
   window is open. After any editor crash, close the crash-report window (`Tools/editor.sh` does): it holds the MCP
   port and the next editor starts deaf.
