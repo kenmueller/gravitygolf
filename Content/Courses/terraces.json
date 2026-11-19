@@ -181,5 +181,6 @@
 			"power": 0.275
 		}
 	],
-	"next": "SaltMirror"
+	"next": "SaltMirror",
+	"ambience": "wind"
 }

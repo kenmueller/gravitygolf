@@ -548,5 +548,6 @@
 			],
 			"radius": 65
 		}
-	]
+	],
+	"ambience": "night"
 }

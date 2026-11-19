@@ -38,4 +38,5 @@ c.machine(1100, 600)
 c.placement_area(200, -WIDTH / 2 + 200, LENGTH - 200, WIDTH / 2 - 200)
 # Verified answer, used by the in-game solution playback and the smoke test.
 c.solution(0, [(3350, 400)], yaw=44, power=0.275)
+c.extra["ambience"] = "wind"
 c.write()

@@ -228,5 +228,6 @@
 			"power": 0.575
 		}
 	],
-	"next": "Lantern"
+	"next": "Lantern",
+	"ambience": "canyon"
 }

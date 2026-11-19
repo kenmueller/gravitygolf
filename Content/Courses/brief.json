@@ -196,5 +196,6 @@
 			"power": 0.35
 		}
 	],
-	"next": "Colonnade"
+	"next": "Colonnade",
+	"ambience": "night"
 }

@@ -98,4 +98,5 @@ c.placement_area(150, -600, LENGTH - 150, 600)
 # through the gate onto the pad. Back the same way with the middle plate of the second three.
 c.solution(0, [C], yaw=16, power=0.1)
 c.solution(1, [E], yaw=-24, power=0.175)
+c.extra["ambience"] = "night"
 c.write()

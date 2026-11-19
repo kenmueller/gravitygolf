@@ -53,4 +53,5 @@ c.placement_area(150, -300, 5850, 1200)
 # Verified answers, one per leg.
 c.solution(0, [(3200, 650), (3100, 1150)], yaw=-18, power=0.55)
 c.solution(1, [(1150, -200), (3700, 950)], yaw=-175, power=0.675)
+c.extra["ambience"] = "canyon"
 c.write()

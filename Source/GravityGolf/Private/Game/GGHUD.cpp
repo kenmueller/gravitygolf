@@ -5,6 +5,7 @@
 #include "Engine/Engine.h"
 #include "Engine/Font.h"
 #include "Fonts/SlateFontInfo.h"
+#include "Game/GGAudio.h"
 #include "Game/GGCourse.h"
 #include "Game/GGGameMode.h"
 #include "EngineUtils.h"
@@ -828,6 +829,7 @@ void AGGHUD::RunAction(const FItem& Item, int32 Direction)
 		else if (Action == TEXT("Volume"))
 		{
 			Save.Volume = FMath::Clamp(FMath::RoundToFloat((Save.Volume + 0.1f * Step) * 10.f) / 10.f, 0.f, 1.f);
+			GGAudio::SetAmbienceVolume(Save.Volume);
 		}
 		else if (Action == TEXT("Quality"))
 		{

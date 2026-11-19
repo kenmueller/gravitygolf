@@ -37,4 +37,5 @@ c.placement_area(200, -HALF + 150, LENGTH - 200, HALF - 150)
 # Verified answers, one per leg.
 c.solution(0, [(3650, -50)], yaw=3, power=0.3)
 c.solution(1, [(4550, -200)], yaw=-10, power=0.25)
+c.extra["ambience"] = "wind"
 c.write()

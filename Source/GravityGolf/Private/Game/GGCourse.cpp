@@ -421,6 +421,10 @@ bool AGGCourse::LoadText(const FString& Text, const FString& CourseId)
 	{
 		bPlantsSpawned = true;
 		SpawnPlants(UGameplayStatics::GetCurrentLevelName(this, true));
+		// The air of the place, once per level.
+		FString Bed;
+		Json->TryGetStringField(TEXT("ambience"), Bed);
+		GGAudio::Ambience(this, Bed.IsEmpty() ? FString(TEXT("wind")) : Bed);
 	}
 	return true;
 }

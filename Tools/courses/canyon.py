@@ -46,4 +46,5 @@ c.machine(1050, -250, strength=-420, reach=1500)  # repulsor
 c.placement_area(150, -300, 5850, 1200)
 # Intended answer: the attractor just inside the doorway, the repulsor against the far wall above it.
 c.solution(0, [(2900, 700), (2850, 1200)], yaw=-20, power=0.575)
+c.extra["ambience"] = "canyon"
 c.write()

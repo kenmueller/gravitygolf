@@ -51,4 +51,5 @@ c.machine(1050, -350, strength=-420, reach=1500)  # repulsor
 c.placement_area(150, -600, 5850, ALCOVE_N - 100)
 # The repulsor stands on the plate and pushes from there; the attractor waits in the hall below it.
 c.solution(0, [(3250, 150), (3000, 1350)], yaw=14, power=0.325)
+c.extra["ambience"] = "water"
 c.write()

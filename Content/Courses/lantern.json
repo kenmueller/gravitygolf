@@ -327,5 +327,6 @@
 			"power": 0.875
 		}
 	],
-	"next": "Returning"
+	"next": "Returning",
+	"ambience": "night"
 }

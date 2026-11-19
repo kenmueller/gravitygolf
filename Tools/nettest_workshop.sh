@@ -9,7 +9,7 @@ call() { python3 "$ROOT/Tools/mcp.py" call call_tool "$1" >/dev/null 2>&1; }
 "$ROOT/Tools/play.sh" stop
 players 2
 call '{"toolset_name":"EditorToolset.LevelToolset","tool_name":"LoadLevel","arguments":{"levelPath":"/Game/Levels/Workshop","unsavedChangesPolicy":"Discard"}}'
-"$ROOT/Tools/play.sh" 16 >/dev/null
+GG_PLAYERS=2 "$ROOT/Tools/play.sh" 16 >/dev/null
 "$ROOT/Tools/net.sh" all "GGTestSave" >/dev/null
 STATUS=0
 step() { # label, player, command, seconds

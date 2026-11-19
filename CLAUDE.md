@@ -57,7 +57,8 @@ Source/GravityGolf/
   */Game/GGCourse.*           loads Content/Courses/<level>.json, steps the sim at 240 Hz, ball/attractors/flag
   */Game/GGGolfer.*           first-person character: walk, keys, gamepad and touch; carry machines, swing, menus
   */Game/GGGameMode.*         starts the course matching the level name; console commands (GGDemo, GGHole, GGPerf, GGView...)
-  */Game/GGAudio.*            runtime-synthesized sounds (footsteps, strike, bounce, cup, machine)
+  */Game/GGAudio.*            runtime-synthesized sounds (footsteps, strike, bounce, cup, machine) and a looping bed of
+                              air per place (a course's "ambience": wind, canyon, night, water, hum)
   */Game/GGHUD.*              play HUD, touch controls, solved card and the menus (title, pause, holes, settings)
   */Game/GGSave.*             saved progress and settings; the list of holes in play order
   */Game/GGRival.*            the bot to race: plays the hole in a ghost copy of its own, at three skills
@@ -85,6 +86,7 @@ Tools/py.sh <file.py>         run Python in the open editor; the value of the la
 Tools/web.sh [config] [host]  package for the web (Wasm + WebGPU) with the source engine at ~/UE59; see docs/WEB.md
 Tools/webtest.sh [play|phone|tour]   run the web build in Chrome with screenshots (tour: every hole's solution)
 Tools/nettest.sh              two players in the editor; compares both copies of the hole after every step
+Tools/sounds.sh               writes every sound the game makes to WAV and measures it (length, level, pitch, brightness)
 Tools/hosttest.sh [Level]     two standalone copies of the game: one hosts, one joins by address
 Tools/nettest_workshop.sh     two players in the Workshop: the host builds, tests and solves; both copies compared
 Tools/rivaltest.sh [Level ...]   the rival bot plays a hole at each skill, time sped up; reports time and swings

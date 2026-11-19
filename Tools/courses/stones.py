@@ -58,4 +58,5 @@ c.placement_area(150, -HALF + 100, LENGTH - 150, HALF - 100)
 # behind the pad. Back: a firm swing kisses the long wall, is drawn through the gap and the plinth, and drops.
 c.solution(0, [PAST_THE_END], yaw=-1, power=0.225)
 c.solution(1, [BY_THE_CUP], yaw=-165, power=0.35)
+c.extra["ambience"] = "wind"
 c.write()

@@ -301,5 +301,6 @@
 			"radius": 85
 		}
 	],
-	"next": "Wires"
+	"next": "Wires",
+	"ambience": "wind"
 }

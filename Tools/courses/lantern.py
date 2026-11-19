@@ -50,4 +50,5 @@ c.placement_area(X0 + 150, Y0 + 150, X1 - 150, Y1 - 150)
 # Verified answers, one per leg.
 c.solution(0, [(-750, 200)], yaw=92, power=0.125)
 c.solution(1, [(1950, 1350)], yaw=35, power=0.875)
+c.extra["ambience"] = "night"
 c.write()

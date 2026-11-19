@@ -224,6 +224,7 @@ FString FGGDesign::ToJson() const
 	// The ground is a slab 30 cm thick lying on the Workshop's table: a ball that rolls off its edge is lost at once.
 	Root->SetNumberField(TEXT("killZ"), -22);
 	Root->SetBoolField(TEXT("drawn"), true);
+	Root->SetStringField(TEXT("ambience"), TEXT("hum"));
 
 	const TSharedRef<FJsonObject> TeeObject = MakeShared<FJsonObject>();
 	TeeObject->SetArrayField(TEXT("position"), Nums({double(Tee.X), double(Tee.Y), 6}));

@@ -43,4 +43,5 @@ c.machine(-1500, -550, strength=420, reach=1900)
 c.machine(-1200, -550, strength=420, reach=1900)
 c.placement_area(X0 + 150, Y0 + 150, X1 - 150, GALLERY_N - 100)
 c.solution(0, [(-450, 500), (1450, 450)], yaw=64, power=0.35)
+c.extra["ambience"] = "night"
 c.write()

@@ -31,6 +31,10 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 
+	/** Console: write every sound the game makes to a folder as WAV files, to be measured (Tools/sounds.sh). */
+	UFUNCTION(Exec)
+	void GGSounds(const FString& Folder);
+
 	/** Console: automated play calls this first, so nothing it does lands in the player's own save. */
 	UFUNCTION(Exec)
 	void GGTestSave();

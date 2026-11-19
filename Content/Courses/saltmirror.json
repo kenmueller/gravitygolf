@@ -227,5 +227,6 @@
 			"power": 0.25
 		}
 	],
-	"next": "Canyon"
+	"next": "Canyon",
+	"ambience": "wind"
 }

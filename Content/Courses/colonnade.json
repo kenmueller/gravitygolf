@@ -287,5 +287,6 @@
 			"power": 0.325
 		}
 	],
-	"next": "Stones"
+	"next": "Stones",
+	"ambience": "water"
 }

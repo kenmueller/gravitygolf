@@ -18,6 +18,7 @@
 #include "Engine/GameViewportClient.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
+#include "Game/GGAudio.h"
 #include "Game/GGCourse.h"
 #include "Game/GGGolfer.h"
 #include "Game/GGHUD.h"
@@ -59,6 +60,11 @@ AGGGameMode::AGGGameMode()
 	PrimaryActorTick.bCanEverTick = true;
 	DefaultPawnClass = AGGGolfer::StaticClass();
 	HUDClass = AGGHUD::StaticClass();
+}
+
+void AGGGameMode::GGSounds(const FString& Folder)
+{
+	GGAudio::Export(Folder);
 }
 
 void AGGGameMode::GGTestSave()
