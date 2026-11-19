@@ -1,22 +1,26 @@
 # Putting Gravity Golf on the web
 
-Status on 2026-11-19: **not deployed.** The engine build on this Mac cannot compile the game for the web yet. This
-page records what was tried, what blocks it, and the plan for when it is unblocked.
+Status on 2026-11-19: **not deployed.** The launcher engine on this Mac cannot build for the web, so the engine is
+being built from source. This page records what was tried, the route taken, and how hosting will work.
 
 ## What Unreal 5.9 offers
 
 The 5.9 preview has a `Wasm` platform: the game compiles to WebAssembly with Emscripten 6.0.10 and draws with WebGPU.
-It is experimental and needs a C++ project (this one is). Three rendering tiers can be cooked side by side and the
-page picks one per visitor:
+It is experimental and needs a C++ project (this one is). Epic's own instructions ship in the engine source at
+`Engine/Platforms/Wasm/Docs/` (start with `GettingStarted.md`) and as a procedure for an agent at
+`Engine/Platforms/Wasm/Skills/web-deploy/SKILL.md`. Read those before changing anything here.
 
-| Tier | What it has | Who gets it |
+Every tier uses the phone renderer in this preview:
+
+| Tier | What it is | Who gets it |
 | --- | --- | --- |
-| Mobile forward | The phone renderer | Always cooked; phones, weak GPUs |
-| Mobile deferred | Phone renderer, deferred lighting | Default on |
-| Desktop (`bTargetDesktopTier`) | Deferred, software Lumen bounce light, TSR | Desktop Chrome/Edge with a capable GPU |
+| Mobile forward | Phone renderer, forward shading. Has a known reflection bug (metal draws black) | Phones, weak GPUs, Firefox |
+| Mobile deferred | Phone renderer, deferred shading | Desktop-class GPUs; the default there |
+| Desktop (`bTargetDesktopTier`) | Deferred renderer with software Lumen | **Experimental, not supported in Preview 1.** Only runs when a link asks for it (`?tier=desktop`). Off in this project |
 
-None of them has Nanite, hardware ray tracing or MegaLights, which this game's full look leans on. The web version is
-the "reduced form" by construction. Chrome and Edge are the supported browsers.
+No tier has Nanite, virtual shadow maps, hardware ray tracing or MegaLights, which this game's full look leans on.
+The web version is the "reduced form" by construction. Chrome and Edge are the reference browsers; Safari and Firefox
+run with caveats. The heap is capped at 4 GB.
 
 ## What was tried here, and what happened
 
@@ -27,50 +31,63 @@ the "reduced form" by construction. Chrome and Edge are the supported browsers.
    deploy planner). Epic lists this as a known issue of the preview: "The premade builds on Mac and Linux are missing
    part of the Wasm (Web) support files", workaround a source build, with a fix build promised.
 4. Installed the Emscripten SDK 6.0.10 at `~/emsdk` (the version the engine pins), which any route needs.
-5. Tried cooking the content for the web with the installed editor; see "Cook test" below.
+5. The installed editor will not even list the web platform for cooking until it finds that SDK
+   (`WASM_EMSDK_ROOT`).
 
-## Ways to unblock, in order of preference
+## The route taken: engine from source
 
-1. **Epic's fix build.** If the launcher offers an update to 5.9 on Mac, take it and run `Tools/web.sh`.
-2. **Engine from source.** Needs Ken's Epic account linked to GitHub (only he can do that; the account
-   signed in here gets a 404 on `EpicGames/UnrealEngine`). Then: clone the 5.9 branch, `Setup.sh`, build, and point
-   `UE_ROOT` at it. Roughly 150 GB of disk and a few hours of machine time, unattended.
-3. **A Windows machine.** The Windows launcher build of the same changelist is reported to package for the web.
-
-## Packaging (once unblocked)
+Ken linked his Epic account to GitHub on 2026-11-19. The engine source (tag `5.9.0-preview-1`, the same version as
+the launcher install) is at `~/UE59`, a path with no spaces. The Emscripten SDK is at `~/emsdk`.
 
 ```bash
-Tools/web.sh Development static
+cd ~/UE59 && ./Setup.sh --force --exclude=Win64 --exclude=Linux --exclude=LinuxArm64 --exclude=Android
 ```
 
-That runs `BuildCookRun -platform=Wasm` (build, cook the five levels, stage, package) into `Saved/Web` and asks the
-engine's deploy planner for a plan. The output is a folder of static files: `index.html`, the engine's page scripts,
-`GravityGolf.js`, a large `.wasm`, and the content containers, each with a Brotli-compressed `.br` twin.
+If Epic ships the fix build for the Mac launcher install, `UE_ROOT` can point at that instead.
 
-Project settings for the web live in `Platforms/Wasm/Config/WasmEngine.ini`.
+## Packaging
+
+```bash
+Tools/web.sh Development static     # iterate
+Tools/web.sh Shipping r2worker      # anything public; Development builds are blocked by the release scan
+```
+
+The script copies the project to `../gravitygolf-web` (so building against the source engine never touches the
+binaries the launcher editor uses), drops the MCP toolset plugins from the copy (they break a web cook), runs
+`BuildCookRun -platform=Wasm`, checks the result with the engine's `check_stage.py`, and writes a deploy plan. The
+first run also builds the editor from source, which is the long part.
+
+Output, under `../gravitygolf-web/Saved/Web`: the `Wasm` folder is the whole site (`index.html`, the page scripts, a
+service worker, `GravityGolf.js`, a large `.wasm`, the content containers, and a Brotli `.br` twin of each large
+file). `Wasm-Debug` must never be uploaded. `play-gravitygolf.sh` serves it locally with the right headers.
+
+Web settings live in `Config/DefaultEngine.ini` under `[/Script/WasmTargetPlatform.WasmTargetSettings]`.
 
 ## Hosting
 
-The page is static files, but it has three requirements an ordinary static host may not meet:
+The site is static files, but the host has to get several things right (Epic's `Docs/Deploy.md` has the full table
+and ready-made configuration for each host):
 
-- **Cross-origin isolation.** The engine uses threads, so every response needs
-  `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`. (The engine can inject
-  these with a service worker, `bInjectIsolationHeaders`, for hosts that cannot set headers.)
-- **Big files, served pre-compressed.** One measured 5.9 build had a 139 MB `.wasm` that is 26 MB as Brotli; a jam
-  game's first load was about 270 MB. The host must serve the `.br` twin with `Content-Encoding: br` and must not
-  have a per-file limit below the largest file (containers can be split with `MaxIoStorePartitionSizeMB`).
-- **Byte ranges.** The engine reads containers in ranges, so the host must honour `Range` requests.
+- **HTTPS.**
+- **Cross-origin isolation**, because the engine uses threads: `Cross-Origin-Opener-Policy: same-origin` and
+  `Cross-Origin-Embedder-Policy: require-corp` on the page, and `Cross-Origin-Resource-Policy` on every file. For a
+  host that cannot set headers, `bInjectIsolationHeaders` makes the service worker add them.
+- **Byte ranges answered raw**, with no compression applied on the fly. The engine reads the containers in ranges and
+  a compressed range corrupts them.
+- **The `.br` twin for whole-file downloads**, which cuts the download about threefold.
+- **`Cache-Control: no-cache`.** The service worker versions files itself; `immutable` would pin old ones.
+- **Large files.** The `.wasm` or a container is often 100 to 300 MB. Cloudflare Pages caps a file at 25 MiB.
 
-Recommendation: **Cloudflare R2 behind a Worker** (the planner's `r2worker` host). No per-file limit, no charge for
-downloads (the thing a free game with a few-hundred-megabyte first load would otherwise pay for), full control of
-headers, and it is the same platform VISION.md already picks for multiplayer rooms. Each deploy goes under its own
-prefix, so a release is switched on and rolled back by changing one pointer.
+Recommendation: **Cloudflare R2 behind a Worker** (the planner's `r2worker` host; the engine ships the Worker). No
+per-file limit, no charge for downloads (the thing a free game with a few-hundred-megabyte first load would otherwise
+pay for), and it is the platform VISION.md already picks for multiplayer rooms. Each build is uploaded under its own
+prefix and switched on by changing one variable; rollback is the same switch.
 
-For a first public test before that exists: **itch.io** as an HTML game with "SharedArrayBuffer support" ticked. It is
-free, sets the isolation headers for you, and 5.9 web games already run there; its per-file limit is 200 MB.
+For a first public test: **itch.io** as an HTML game with **Edit game > Embed options > SharedArrayBuffer support**
+ticked. Per-file limit 200 MB, 1,000 files in the zip.
 
-Vercel and Railway are connected to this session and could serve it, but both charge for bandwidth and Vercel caps
-static files, so they suit a small landing page better than the game itself.
+Publishing is a person's step: the engine's tools only write a plan, and they check it for leaked paths, names and
+keys first. After upload, `webdoctor.py <url>` verifies the live host read-only.
 
 ## What will need work for this game on the web
 
