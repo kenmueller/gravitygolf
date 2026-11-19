@@ -131,6 +131,31 @@ bool AGGCourse::Load(const FString& CourseId)
 		Course.SafeZones.push_back({ReadVec(Value->AsObject(), TEXT("position")), Value->AsObject()->GetNumberField(TEXT("radius"))});
 	}
 
+	const TArray<TSharedPtr<FJsonValue>>* Switches = nullptr;
+	if (Json->TryGetArrayField(TEXT("switches"), Switches))
+	{
+		for (const TSharedPtr<FJsonValue>& Value : *Switches)
+		{
+			Course.Switches.push_back({ReadVec(Value->AsObject(), TEXT("position")), Value->AsObject()->GetNumberField(TEXT("radius"))});
+		}
+	}
+	const TArray<TSharedPtr<FJsonValue>>* Gates = nullptr;
+	if (Json->TryGetArrayField(TEXT("gates"), Gates))
+	{
+		for (const TSharedPtr<FJsonValue>& Value : *Gates)
+		{
+			const TSharedPtr<FJsonObject> G = Value->AsObject();
+			const GG::FVec3 Center = ReadVec(G, TEXT("center"));
+			const GG::FVec3 Half = ReadVec(G, TEXT("size")) * 0.5;
+			GG::FGate Gate;
+			Gate.Box = {Center - Half, Center + Half, ParseSurface(G->GetStringField(TEXT("surface")))};
+			Gate.Switch = G->GetIntegerField(TEXT("switch"));
+			Gate.OpenSeconds = G->GetNumberField(TEXT("openSeconds"));
+			Course.Gates.push_back(Gate);
+		}
+	}
+	HeldSwitches.assign(Course.Switches.size(), false);
+
 	for (const TSharedPtr<FJsonValue>& Value : Json->GetArrayField(TEXT("boxes")))
 	{
 		const TSharedPtr<FJsonObject> Box = Value->AsObject();
@@ -217,6 +242,42 @@ void AGGCourse::BuildActors()
 			->SetCastShadow(false);
 	}
 
+	// Switch plates: discs set into the ground that light when the ball rolls over them.
+	for (const GG::FSwitch& Switch : Course.Switches)
+	{
+		const double Scale = Switch.Radius / 50.0;
+		UMaterialInstanceDynamic* Material = Glow(FLinearColor(1.f, 0.6f, 0.15f), 1.5f);
+		SwitchMaterials.Add(Material);
+		AddMesh(Cylinder, Material, FTransform(FRotator::ZeroRotator, ToUnreal(Switch.Center) + FVector(0, 0, 0.5), FVector(Scale, Scale, 0.006)))
+			->SetCastShadow(false);
+	}
+
+	// Gates: bars of light across an opening. They drop into the ground while the gate is open.
+	for (const GG::FGate& Gate : Course.Gates)
+	{
+		USceneComponent* Bars = NewObject<USceneComponent>(this);
+		Bars->SetMobility(EComponentMobility::Movable);
+		Bars->SetupAttachment(Root);
+		Bars->RegisterComponent();
+		const FVector Min = ToUnreal(Gate.Box.Min);
+		const FVector Max = ToUnreal(Gate.Box.Max);
+		const bool bAlongY = (Max.Y - Min.Y) > (Max.X - Min.X);
+		const double Length = bAlongY ? Max.Y - Min.Y : Max.X - Min.X;
+		const double Height = Max.Z - Min.Z;
+		const FVector Center = (Min + Max) * 0.5;
+		Bars->SetWorldLocation(FVector(Center.X, Center.Y, Min.Z));
+		UMaterialInstanceDynamic* Light = Glow(FLinearColor(1.f, 0.5f, 0.12f), 14.f);
+		const int32 Count = FMath::Max(3, FMath::RoundToInt32(Length / 42.0));
+		for (int32 Bar = 0; Bar < Count; ++Bar)
+		{
+			const double Along = (Bar + 0.5) / Count * Length - Length * 0.5;
+			const FVector At = bAlongY ? FVector(0, Along, Height * 0.5) : FVector(Along, 0, Height * 0.5);
+			AddMesh(Cylinder, Light, FTransform(FRotator::ZeroRotator, At, FVector(0.035, 0.035, Height / 100.0)), Bars)->SetCastShadow(false);
+		}
+		GateBars.Add(Bars);
+		GateLevel.Add(1.f);
+	}
+
 	for (int32 I = 0; I < MachineBases.Num(); ++I)
 	{
 		BuildMachine(I);
@@ -238,6 +299,9 @@ void AGGCourse::BuildActors()
 	FieldRing = MakeDots(FLinearColor(0.25f, 0.6f, 1.f), 4.f);
 	FieldDots = MakeDots(FLinearColor(0.25f, 0.6f, 1.f), 4.f);
 	FieldDots->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cone.Cone")));
+	FieldPushDots = MakeDots(FLinearColor(1.f, 0.5f, 0.12f), 4.f);
+	FieldPushDots->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cone.Cone")));
+	FieldPushRing = MakeDots(FLinearColor(1.f, 0.5f, 0.12f), 4.f);
 	MachineFlash.Init(0.f, MachineBases.Num());
 }
 
@@ -338,6 +402,7 @@ void AGGCourse::ResetHole()
 {
 	Lie = Course.Tee;
 	LastSafe = Course.Tee;
+	HeldSwitches.assign(Course.Switches.size(), false);
 	PreviousPosition = Lie;
 	StrokeCount = 0;
 	Status.Reset();
@@ -418,7 +483,7 @@ void AGGCourse::Swing(const FVector& Direction, double Power)
 	const FVector Velocity = Direction.GetSafeNormal() * (FMath::Clamp(Power, 0.02, 1.0) * Physics.MaxLaunchSpeed);
 	++StrokeCount;
 	Status.Reset();
-	Sim.Begin(Course, Attractors, Lie, ToSim(Velocity), Physics);
+	Sim.Begin(Course, Attractors, Lie, ToSim(Velocity), Physics, &HeldSwitches);
 	PreviousPosition = Lie;
 	Accumulator = 0.0;
 	Trail.Reset();
@@ -433,7 +498,7 @@ void AGGCourse::PreviewSwing(const FVector& Direction, double Power, double Seco
 	OutPoints.Reset();
 	GG::FSim Preview;
 	const FVector Velocity = Direction.GetSafeNormal() * (FMath::Clamp(Power, 0.02, 1.0) * Physics.MaxLaunchSpeed);
-	Preview.Begin(Course, Attractors, Lie, ToSim(Velocity), Physics);
+	Preview.Begin(Course, Attractors, Lie, ToSim(Velocity), Physics, &HeldSwitches);
 	const int32 Steps = FMath::RoundToInt32(Seconds / GG::FSim::Dt);
 	for (int32 Step = 0; Step < Steps && !Preview.Finished(); ++Step)
 	{
@@ -464,6 +529,11 @@ void AGGCourse::FinishStroke(GG::EBallState State)
 		{
 			// Resting in a safe zone banks the progress. The pad settles the ball at its center, so the next
 			// swing always starts from the same known spot (which is also what the solver proves from).
+			for (size_t I = 0; I < HeldSwitches.size(); ++I)
+			{
+				// A plate pressed on the way to a pad stays pressed for the rest of the hole.
+				HeldSwitches[I] = HeldSwitches[I] || Sim.SwitchPressed(static_cast<int>(I));
+			}
 			const GG::FSafeZone& Zone = Course.SafeZones[Sim.Ball().SafeZone];
 			Lie = Zone.Center + GG::FVec3{0.0, 0.0, Course.BallRadius};
 			LastSafe = Lie;
@@ -518,6 +588,14 @@ void AGGCourse::Tick(float DeltaSeconds)
 				else if (Event.Type == GG::EEventType::Sunk)
 				{
 					GGAudio::Sunk(this, ToUnreal(Event.Position));
+				}
+				else if (Event.Type == GG::EEventType::SwitchPressed)
+				{
+					GGAudio::SwitchPress(this, ToUnreal(Event.Position));
+				}
+				else if (Event.Type == GG::EEventType::GateClosed)
+				{
+					GGAudio::GateShut(this, BallLocation());
 				}
 				else if (Event.Type == GG::EEventType::Engaged || Event.Type == GG::EEventType::Released)
 				{
@@ -579,6 +657,15 @@ void AGGCourse::UpdateFieldPreview(float DeltaSeconds)
 	{
 		Ring->SetScalarParameterValue(TEXT("Strength"), FMath::Lerp(0.8f, CVarFieldGlow.GetValueOnGameThread(), FieldLevel));
 	}
+	for (UInstancedStaticMeshComponent* Set : {FieldPushRing.Get(), FieldPushDots.Get()})
+	{
+		if (UMaterialInstanceDynamic* Material = Cast<UMaterialInstanceDynamic>(Set->GetMaterial(0)))
+		{
+			const float Idle = Set == FieldPushRing ? 0.8f : 0.f;
+			Material->SetScalarParameterValue(TEXT("Strength"), FMath::Lerp(Idle, CVarFieldGlow.GetValueOnGameThread(), FieldLevel));
+		}
+		Set->ClearInstances();
+	}
 	if (UMaterialInstanceDynamic* Arrows = Cast<UMaterialInstanceDynamic>(FieldDots->GetMaterial(0)))
 	{
 		Arrows->SetScalarParameterValue(TEXT("Strength"), FMath::Lerp(0.f, CVarFieldGlow.GetValueOnGameThread(), FieldLevel));
@@ -603,8 +690,8 @@ void AGGCourse::UpdateFieldPreview(float DeltaSeconds)
 			const double Turn = 2.0 * PI * I / RingDashes + Time * 0.05;
 			const FVector Out(FMath::Cos(Turn), FMath::Sin(Turn), 0.0);
 			const FVector Along(-Out.Y, Out.X, 0.0);
-			FieldRing->AddInstance(FTransform(Along.Rotation(), Base + Out * Range + FVector(0, 0, 3.0), FVector(0.6, 0.06, 0.03)),
-				true);
+			(bPull ? FieldRing : FieldPushRing)->AddInstance(
+				FTransform(Along.Rotation(), Base + Out * Range + FVector(0, 0, 3.0), FVector(0.6, 0.06, 0.03)), true);
 		}
 
 		if (FieldLevel < 0.02f)
@@ -633,10 +720,27 @@ void AGGCourse::UpdateFieldPreview(float DeltaSeconds)
 				const double Size = (0.22 + 0.55 * Window) * FieldLevel * SizeScale;
 				// A flat cone lying on the grass with its tip along the force.
 				const FVector Tip = bPull ? -Radial : Radial;
-				FieldDots->AddInstance(FTransform(FRotationMatrix::MakeFromZX(Tip, FVector::UpVector).Rotator(),
+				(bPull ? FieldDots : FieldPushDots)->AddInstance(FTransform(FRotationMatrix::MakeFromZX(Tip, FVector::UpVector).Rotator(),
 					Base + Radial * R + FVector(0, 0, 3.0), FVector(0.03, Size * 0.36, Size)), true);
 			}
 		}
+	}
+
+	// Plates glow green once pressed; gate bars sink while their gate is open.
+	const bool bLive = CurrentPhase == EGGPhase::Flying;
+	for (int32 I = 0; I < SwitchMaterials.Num(); ++I)
+	{
+		const bool bPressed = HeldSwitches[I] || (bLive && Sim.SwitchPressed(I));
+		SwitchMaterials[I]->SetVectorParameterValue(TEXT("Color"), bPressed ? FLinearColor(0.25f, 1.f, 0.45f) : FLinearColor(1.f, 0.6f, 0.15f));
+		SwitchMaterials[I]->SetScalarParameterValue(TEXT("Strength"), bPressed ? 6.f : 1.5f);
+	}
+	for (int32 I = 0; I < GateBars.Num(); ++I)
+	{
+		const GG::FGate& Gate = Course.Gates[I];
+		const bool bOpen = bLive ? Sim.GateOpen(I) : (HeldSwitches[Gate.Switch] && Gate.OpenSeconds <= 0.0);
+		GateLevel[I] = FMath::FInterpTo(GateLevel[I], bOpen ? 0.f : 1.f, DeltaSeconds, 9.f);
+		GateBars[I]->SetRelativeScale3D(FVector(1.f, 1.f, FMath::Max(GateLevel[I], 0.001f)));
+		GateBars[I]->SetVisibility(GateLevel[I] > 0.02f, true);
 	}
 
 	// A machine flashes when it takes hold of the ball and again when it lets go.

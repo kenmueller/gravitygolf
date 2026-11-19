@@ -394,6 +394,60 @@ def build_mirror():
     finish(material, path)
 
 
-for build in (build_surface, build_glow, build_ball, build_ocean, build_scan, build_salt, build_mirror):
+NIGHT = NOISE + r"""
+// A night sky drawn on a dome: deep gradient, a band of milky light, and stars that keep their size.
+float3 V = normalize(-CameraDir);
+float Up = saturate(V.z);
+float3 Sky = lerp(HorizonColor, ZenithColor, pow(Up, 0.45));
+
+// The band: a great circle tilted across the sky, broken up by noise.
+float3 Axis = normalize(float3(0.35, -0.5, 0.8));
+float Band = exp(-pow(dot(V, Axis) * 4.2, 2.0));
+float Dust = N.Fbm(V * 5.0 + 3.0, 5);
+Sky += BandColor * Band * smoothstep(0.25, 0.8, Dust) * (0.4 + 0.6 * Up);
+
+float3 Stars = 0;
+for (int Layer = 0; Layer < 3; Layer++)
+{
+    float Scale = 70.0 + Layer * 95.0;
+    float3 Cell = floor(V * Scale);
+    float3 Local = frac(V * Scale) - 0.5;
+    float H = N.Hash(Cell + Layer * 31.7);
+    float Threshold = lerp(0.93, 0.86, Band);
+    if (H > Threshold)
+    {
+        float3 Offset = float3(N.Hash(Cell + 1.3), N.Hash(Cell + 2.7), N.Hash(Cell + 4.1)) - 0.5;
+        float D2 = dot(Local - Offset * 0.6, Local - Offset * 0.6);
+        float Size = lerp(0.0012, 0.01, pow(N.Hash(Cell + 7.9), 7.0));
+        float Twinkle = 0.7 + 0.3 * sin(Time * (1.0 + H * 3.0) + H * 50.0);
+        float3 Tint = lerp(float3(0.7, 0.82, 1.0), float3(1.0, 0.86, 0.7), N.Hash(Cell + 9.2));
+        Stars += Tint * exp(-D2 / Size) * Twinkle;
+    }
+}
+return Sky + Stars * StarStrength * smoothstep(-0.02, 0.15, V.z);
+"""
+
+
+def build_night_sky():
+    material, path = fresh("M_GG_NightSky")
+    material.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_UNLIT)
+    material.set_editor_property("two_sided", True)
+    material.set_editor_property("is_sky", True)
+    camera = node(material, unreal.MaterialExpressionCameraVectorWS, -900, -200)
+    horizon = vector_param(material, "HorizonColor", (0.012, 0.02, 0.045, 1), -900, 0)
+    zenith = vector_param(material, "ZenithColor", (0.0015, 0.003, 0.012, 1), -900, 150)
+    band = vector_param(material, "BandColor", (0.03, 0.035, 0.07, 1), -900, 300)
+    stars = scalar_param(material, "StarStrength", 6.0, -900, 420)
+    time = node(material, unreal.MaterialExpressionTime, -900, 500)
+    sky = custom(material, NIGHT, ["CameraDir", "HorizonColor", "ZenithColor", "BandColor", "StarStrength", "Time"],
+                 -500, 100)
+    for source, pin in [(camera, "CameraDir"), (horizon, "HorizonColor"), (zenith, "ZenithColor"), (band, "BandColor"),
+                        (stars, "StarStrength"), (time, "Time")]:
+        MEL.connect_material_expressions(source, "", sky, pin)
+    MEL.connect_material_property(sky, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    finish(material, path)
+
+
+for build in (build_surface, build_glow, build_ball, build_ocean, build_scan, build_salt, build_mirror, build_night_sky):
     build()
 unreal.log("GG: materials done")

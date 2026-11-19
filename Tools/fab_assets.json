@@ -84,6 +84,12 @@
 			"listingId": "366026f1-13b7-42e8-b0e1-6d64f6363440",
 			"format": "gltf",
 			"path": "/Game/Fab/Canyon_Sandstone_Boulder"
+		},
+		{
+			"title": "Beige Marble Tiles",
+			"listingId": "4bfb7265-39f4-4c96-a953-28e7ab1e812e",
+			"format": "gltf",
+			"path": "/Game/Fab/Beige_Marble_Tiles"
 		}
 	]
 }

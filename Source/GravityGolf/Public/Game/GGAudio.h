@@ -17,4 +17,6 @@ void MachinePickUp(UObject* WorldContext, const FVector& Location);
 void MachinePlace(UObject* WorldContext, const FVector& Location);
 /** The field taking hold of the ball (rising) or letting it go (falling). */
 void MachineField(UObject* WorldContext, const FVector& Location, bool bRelease);
+void SwitchPress(UObject* WorldContext, const FVector& Location);
+void GateShut(UObject* WorldContext, const FVector& Location);
 } // namespace GGAudio

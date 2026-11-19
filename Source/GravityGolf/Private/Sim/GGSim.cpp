@@ -74,7 +74,7 @@ uint64_t Mix(uint64_t Hash, const void* Data, size_t Size)
 } // namespace
 
 void FSim::Begin(const FCourse& InCourse, const std::vector<FAttractor>& InAttractors, FVec3 Start, FVec3 Launch,
-	const FPhysics& InPhysics)
+	const FPhysics& InPhysics, const std::vector<bool>* HeldSwitches)
 {
 	Course = &InCourse;
 	Attractors = InAttractors;
@@ -86,6 +86,15 @@ void FSim::Begin(const FCourse& InCourse, const std::vector<FAttractor>& InAttra
 	bInCupZone = false;
 	Engaged.assign(Attractors.size(), false);
 	Released.assign(Attractors.size(), false);
+	PressedAt.assign(InCourse.Switches.size(), -1.0);
+	for (size_t I = 0; HeldSwitches && I < PressedAt.size() && I < HeldSwitches->size(); ++I)
+	{
+		if ((*HeldSwitches)[I])
+		{
+			PressedAt[I] = 0.0;
+		}
+	}
+	GateWasOpen.assign(InCourse.Gates.size(), false);
 }
 
 FVec3 FSim::Acceleration(FVec3 Position, FVec3 Velocity, std::vector<FEvent>* Events)
@@ -160,6 +169,98 @@ void FSim::Step(std::vector<FEvent>* Events)
 	}
 }
 
+bool FSim::GateOpen(int Index) const
+{
+	const FGate& Gate = Course->Gates[Index];
+	const double Pressed = PressedAt[Gate.Switch];
+	if (Pressed < 0.0)
+	{
+		return false;
+	}
+	return Gate.OpenSeconds <= 0.0 || BallState.Time - Pressed <= Gate.OpenSeconds;
+}
+
+void FSim::Collide(const FBox& Box, FVec3 A, double H, bool bWasOnGround, ESurface& Ground, std::vector<FEvent>* Events)
+{
+	FBall& B = BallState;
+	const FVec3 Q{Clamp(B.Position.X, Box.Min.X, Box.Max.X), Clamp(B.Position.Y, Box.Min.Y, Box.Max.Y),
+		Clamp(B.Position.Z, Box.Min.Z, Box.Max.Z)};
+	const FVec3 D = B.Position - Q;
+	const double Dist2 = Dot(D, D);
+	if (Dist2 >= B.Radius * B.Radius)
+	{
+		return;
+	}
+
+	FVec3 N;
+	if (Dist2 > 0.0)
+	{
+		const double Dist = std::sqrt(Dist2);
+		N = D * (1.0 / Dist);
+		B.Position = Q + N * B.Radius;
+	}
+	else
+	{
+		// Center is inside the box: leave through the nearest face.
+		const double Faces[6] = {B.Position.X - Box.Min.X, Box.Max.X - B.Position.X, B.Position.Y - Box.Min.Y,
+			Box.Max.Y - B.Position.Y, B.Position.Z - Box.Min.Z, Box.Max.Z - B.Position.Z};
+		int Best = 0;
+		for (int I = 1; I < 6; ++I)
+		{
+			if (Faces[I] < Faces[Best])
+			{
+				Best = I;
+			}
+		}
+		const FVec3 Normals[6] = {{-1, 0, 0}, {1, 0, 0}, {0, -1, 0}, {0, 1, 0}, {0, 0, -1}, {0, 0, 1}};
+		N = Normals[Best];
+		B.Position = B.Position + N * (Faces[Best] + B.Radius);
+	}
+
+	const FSurfaceProps Surface = PropsFor(Box.Surface);
+	const double Vn = Dot(B.Velocity, N);
+	FVec3 Tangent = B.Velocity - N * Vn;
+	double NewVn = Vn > 0.0 ? Vn : 0.0;
+
+	if (Vn < 0.0)
+	{
+		const double Impact = -Vn;
+		if (Impact > Physics.BounceThreshold)
+		{
+			NewVn = Impact * Surface.Restitution;
+			Tangent = Tangent * Surface.Grip;
+			Emit(Events, EEventType::Bounce, Box.Surface, Impact, B.Position);
+		}
+		else if (!bWasOnGround && N.Z > 0.5)
+		{
+			Emit(Events, EEventType::Land, Box.Surface, Impact, B.Position);
+		}
+	}
+
+	// Rolling resistance scaled by the load on the surface. Because it can zero the tangential speed
+	// outright, it also holds the ball still on a surface a weak pull couldn't move it across.
+	double Load = -Dot(A, N);
+	if (Load > 0.0)
+	{
+		const double Speed = Length(Tangent);
+		const double Decel = Surface.Rolling * Load * H;
+		Tangent = Speed > Decel ? Tangent * ((Speed - Decel) / Speed) : FVec3{};
+	}
+
+	if (Surface.Drag > 0.0)
+	{
+		const double Keep = 1.0 - Surface.Drag * H;
+		Tangent = Tangent * (Keep > 0.0 ? Keep : 0.0);
+	}
+
+	B.Velocity = Tangent + N * NewVn;
+	if (N.Z > 0.5)
+	{
+		B.bOnGround = true;
+		Ground = Box.Surface;
+	}
+}
+
 void FSim::SubStep(double H, std::vector<FEvent>* Events)
 {
 	FBall& B = BallState;
@@ -174,81 +275,44 @@ void FSim::SubStep(double H, std::vector<FEvent>* Events)
 
 	for (const FBox& Box : Course->Boxes)
 	{
-		const FVec3 Q{Clamp(B.Position.X, Box.Min.X, Box.Max.X), Clamp(B.Position.Y, Box.Min.Y, Box.Max.Y),
-			Clamp(B.Position.Z, Box.Min.Z, Box.Max.Z)};
-		const FVec3 D = B.Position - Q;
-		const double Dist2 = Dot(D, D);
-		if (Dist2 >= B.Radius * B.Radius)
-		{
-			continue;
-		}
+		Collide(Box, A, H, bWasOnGround, Ground, Events);
+	}
 
-		FVec3 N;
-		if (Dist2 > 0.0)
+	// Switches: rolling over one presses it. Gates: solid unless their switch is holding them open.
+	for (size_t I = 0; I < Course->Switches.size(); ++I)
+	{
+		const FSwitch& Switch = Course->Switches[I];
+		const double Dx = B.Position.X - Switch.Center.X;
+		const double Dy = B.Position.Y - Switch.Center.Y;
+		const double Dz = B.Position.Z - Switch.Center.Z;
+		if (Dx * Dx + Dy * Dy <= Switch.Radius * Switch.Radius && Dz > -B.Radius && Dz < 3.0 * B.Radius)
 		{
-			const double Dist = std::sqrt(Dist2);
-			N = D * (1.0 / Dist);
-			B.Position = Q + N * B.Radius;
-		}
-		else
-		{
-			// Center is inside the box: leave through the nearest face.
-			const double Faces[6] = {B.Position.X - Box.Min.X, Box.Max.X - B.Position.X, B.Position.Y - Box.Min.Y,
-				Box.Max.Y - B.Position.Y, B.Position.Z - Box.Min.Z, Box.Max.Z - B.Position.Z};
-			int Best = 0;
-			for (int I = 1; I < 6; ++I)
+			if (PressedAt[I] < 0.0)
 			{
-				if (Faces[I] < Faces[Best])
+				Emit(Events, EEventType::SwitchPressed, ESurface::Stone, Length(B.Velocity), Switch.Center);
+				if (Events)
 				{
-					Best = I;
+					Events->back().Index = static_cast<int>(I);
 				}
 			}
-			const FVec3 Normals[6] = {{-1, 0, 0}, {1, 0, 0}, {0, -1, 0}, {0, 1, 0}, {0, 0, -1}, {0, 0, 1}};
-			N = Normals[Best];
-			B.Position = B.Position + N * (Faces[Best] + B.Radius);
+			PressedAt[I] = B.Time;
 		}
-
-		const FSurfaceProps Surface = PropsFor(Box.Surface);
-		const double Vn = Dot(B.Velocity, N);
-		FVec3 Tangent = B.Velocity - N * Vn;
-		double NewVn = Vn > 0.0 ? Vn : 0.0;
-
-		if (Vn < 0.0)
+	}
+	for (size_t I = 0; I < Course->Gates.size(); ++I)
+	{
+		const bool bOpen = GateOpen(static_cast<int>(I));
+		if (GateWasOpen[I] && !bOpen)
 		{
-			const double Impact = -Vn;
-			if (Impact > Physics.BounceThreshold)
+			Emit(Events, EEventType::GateClosed, ESurface::Stone, 0.0, B.Position);
+			if (Events)
 			{
-				NewVn = Impact * Surface.Restitution;
-				Tangent = Tangent * Surface.Grip;
-				Emit(Events, EEventType::Bounce, Box.Surface, Impact, B.Position);
-			}
-			else if (!bWasOnGround && N.Z > 0.5)
-			{
-				Emit(Events, EEventType::Land, Box.Surface, Impact, B.Position);
+				Events->back().Index = static_cast<int>(I);
 			}
 		}
-
-		// Rolling resistance scaled by the load on the surface. Because it can zero the tangential speed
-		// outright, it also holds the ball still on a surface a weak pull couldn't move it across.
-		double Load = -Dot(A, N);
-		if (Load > 0.0)
+		GateWasOpen[I] = bOpen;
+		if (!bOpen)
 		{
-			const double Speed = Length(Tangent);
-			const double Decel = Surface.Rolling * Load * H;
-			Tangent = Speed > Decel ? Tangent * ((Speed - Decel) / Speed) : FVec3{};
-		}
-
-		if (Surface.Drag > 0.0)
-		{
-			const double Keep = 1.0 - Surface.Drag * H;
-			Tangent = Tangent * (Keep > 0.0 ? Keep : 0.0);
-		}
-
-		B.Velocity = Tangent + N * NewVn;
-		if (N.Z > 0.5)
-		{
-			B.bOnGround = true;
-			Ground = Box.Surface;
+			Collide(Course->Gates[I].Box, A, H, bWasOnGround, Ground, Events);
 		}
 	}
 

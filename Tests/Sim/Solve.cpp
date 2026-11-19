@@ -2,6 +2,7 @@
 //   1. NECESSARY: the leg can't be done with no machine, nor (when a hole has several) with any single machine.
 //   2. SOLVABLE:  with the machines placed well, a comfortable range of swings does it, and most placements don't.
 // Usage: Tests/Sim/solve.sh <course id>      (reads Saved/SimTest/<id>.course, written by Tools/courses/<id>.py)
+#include "CourseFile.h"
 #include "Sim/GGSim.h"
 
 #include <algorithm>
@@ -14,91 +15,6 @@
 
 using namespace GG;
 
-struct FMachineDef
-{
-	double Strength = 0, Range = 0, CoreHeight = 0, StartX = 0, StartY = 0;
-};
-
-struct FHint
-{
-	int Leg = 0;
-	double Yaw = 0, Power = 0;
-	std::vector<FVec3> Spots;
-};
-
-struct FSetup
-{
-	FCourse Course;
-	double MinX = 0, MinY = 0, MaxX = 0, MaxY = 0;
-	std::vector<FMachineDef> Machines;
-	std::vector<FVec3> NoMachine; // x, y, radius
-	std::vector<FHint> Hints;
-};
-
-static bool Load(const char* Path, FSetup& S)
-{
-	std::ifstream In(Path);
-	if (!In)
-	{
-		return false;
-	}
-	FCourse& C = S.Course;
-	In >> C.Tee.X >> C.Tee.Y >> C.Tee.Z >> C.Cup.X >> C.Cup.Y >> C.Cup.Z >> C.CupRadius >> C.CupCaptureSpeed;
-	In >> C.BallRadius >> C.KillZ >> S.MinX >> S.MinY >> S.MaxX >> S.MaxY;
-	int Count = 0;
-	In >> Count;
-	for (int I = 0; I < Count; ++I)
-	{
-		FMachineDef M;
-		In >> M.Strength >> M.Range >> M.CoreHeight >> M.StartX >> M.StartY;
-		S.Machines.push_back(M);
-	}
-	In >> Count;
-	for (int I = 0; I < Count; ++I)
-	{
-		FVec3 Zone;
-		In >> Zone.X >> Zone.Y >> Zone.Z;
-		S.NoMachine.push_back(Zone);
-	}
-	In >> Count;
-	for (int I = 0; I < Count; ++I)
-	{
-		FSafeZone Zone;
-		In >> Zone.Center.X >> Zone.Center.Y >> Zone.Center.Z >> Zone.Radius;
-		C.SafeZones.push_back(Zone);
-	}
-	In >> Count;
-	for (int I = 0; I < Count; ++I)
-	{
-		FBox B;
-		int Surface = 0;
-		In >> B.Min.X >> B.Min.Y >> B.Min.Z >> B.Max.X >> B.Max.Y >> B.Max.Z >> Surface;
-		B.Surface = static_cast<ESurface>(Surface);
-		C.Boxes.push_back(B);
-	}
-	In >> Count;
-	for (int I = 0; I < Count; ++I)
-	{
-		FHint H;
-		In >> H.Leg >> H.Yaw >> H.Power;
-		for (size_t M = 0; M < S.Machines.size(); ++M)
-		{
-			FVec3 Spot;
-			In >> Spot.X >> Spot.Y;
-			H.Spots.push_back(Spot);
-		}
-		S.Hints.push_back(H);
-	}
-	return static_cast<bool>(In);
-}
-
-/** A leg runs from Start to a target: safe zone Target, or the cup when Target is -1. */
-struct FLeg
-{
-	FVec3 Start;
-	int Target;
-};
-
 static FVec3 Launch(double YawDegrees, double Power)
 {
 	const double R = YawDegrees * 3.14159265358979323846 / 180.0;
@@ -107,10 +23,7 @@ static FVec3 Launch(double YawDegrees, double Power)
 
 static bool Reaches(const FSetup& S, const FLeg& Leg, const std::vector<FAttractor>& Machines, double Yaw, double Power)
 {
-	FSim Sim;
-	Sim.Begin(S.Course, Machines, Leg.Start, Launch(Yaw, Power));
-	const EBallState End = Sim.Run();
-	return Leg.Target < 0 ? End == EBallState::Sunk : (End == EBallState::AtRest && Sim.Ball().SafeZone == Leg.Target);
+	return LegReached(S, Leg, Machines, Launch(Yaw, Power));
 }
 
 /** Counts the swings that complete the leg over a yaw/power grid. */
@@ -136,25 +49,6 @@ static int CountSolutions(const FSetup& S, const FLeg& Leg, const std::vector<FA
 	return Count;
 }
 
-static bool Allowed(const FSetup& S, double X, double Y)
-{
-	for (const FBox& B : S.Course.Boxes)
-	{
-		if (B.Max.Z > 20.0 && X > B.Min.X - 40 && X < B.Max.X + 40 && Y > B.Min.Y - 40 && Y < B.Max.Y + 40)
-		{
-			return false;
-		}
-	}
-	for (const FVec3& Zone : S.NoMachine)
-	{
-		if ((X - Zone.X) * (X - Zone.X) + (Y - Zone.Y) * (Y - Zone.Y) < Zone.Z * Zone.Z)
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
 struct FSpot
 {
 	double X, Y;
@@ -170,7 +64,7 @@ static std::vector<FSpot> SweepSpots(const FSetup& S, const FLeg& Leg, const FMa
 	{
 		for (double Y = S.MinY; Y <= S.MaxY; Y += 150.0)
 		{
-			if (Allowed(S, X, Y))
+			if (MachineAllowed(S, X, Y))
 			{
 				Spots.push_back({X, Y, 0, 0, 0});
 			}
@@ -295,7 +189,7 @@ static bool SolveLeg(const FSetup& S, const FLeg& Leg, int LegIndex, const char*
 int main(int Argc, char** Argv)
 {
 	FSetup S;
-	if (Argc < 2 || !Load(Argv[1], S))
+	if (Argc < 2 || !LoadCourse(Argv[1], S))
 	{
 		std::printf("usage: solve <file.course>\n");
 		return 2;
@@ -303,25 +197,20 @@ int main(int Argc, char** Argv)
 
 	// Legs run tee -> safe zone 0 -> safe zone 1 -> ... -> cup. Each must obey the puzzle law on its own.
 	bool bPass = true;
-	FVec3 Start = S.Course.Tee;
 	const int Zones = static_cast<int>(S.Course.SafeZones.size());
 	for (int Leg = 0; Leg <= Zones; ++Leg)
 	{
-		char Name[64];
+		char Name[96];
 		if (Leg < Zones)
 		{
-			std::snprintf(Name, sizeof(Name), "%d: to safe zone %d", Leg + 1, Leg + 1);
+			std::snprintf(Name, sizeof(Name), "%d: to safe pad %d%s", Leg + 1, Leg + 1,
+				S.ZoneNeeds[Leg] >= 0 ? " (pressing its switch on the way)" : "");
 		}
 		else
 		{
 			std::snprintf(Name, sizeof(Name), "%d: to the cup", Leg + 1);
 		}
-		bPass &= SolveLeg(S, {Start, Leg < Zones ? Leg : -1}, Leg, Name);
-		if (Leg < Zones)
-		{
-			Start = S.Course.SafeZones[Leg].Center;
-			Start.Z += S.Course.BallRadius;
-		}
+		bPass &= SolveLeg(S, MakeLeg(S, Leg), Leg, Name);
 	}
 	std::printf("%s\n", bPass ? "PASS" : "FAIL");
 	return bPass ? 0 : 1;

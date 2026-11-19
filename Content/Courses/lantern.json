@@ -1,0 +1,305 @@
+{
+	"id": "lantern",
+	"name": "Lantern Court",
+	"level": "Lantern",
+	"par": 2,
+	"ballRadius": 6,
+	"gravity": [
+		0,
+		0,
+		-980
+	],
+	"killZ": -1400,
+	"tee": {
+		"position": [
+			0,
+			0,
+			6
+		],
+		"yaw": 0
+	},
+	"cup": {
+		"position": [
+			2950,
+			960,
+			0
+		],
+		"radius": 42,
+		"captureSpeed": 650
+	},
+	"noMachine": [
+		{
+			"position": [
+				-1300,
+				350,
+				0
+			],
+			"radius": 180,
+			"kind": "switch"
+		},
+		{
+			"position": [
+				-2300,
+				0,
+				0
+			],
+			"radius": 290,
+			"kind": "pad"
+		},
+		{
+			"position": [
+				2950,
+				960,
+				0
+			],
+			"radius": 430,
+			"kind": "court"
+		}
+	],
+	"safeZones": [
+		{
+			"position": [
+				-2300,
+				0,
+				0
+			],
+			"radius": 230,
+			"needsSwitch": 0
+		}
+	],
+	"attractors": [
+		{
+			"position": [
+				300,
+				-500,
+				0
+			],
+			"strength": 420,
+			"range": 1900,
+			"coreHeight": 45,
+			"movable": true
+		}
+	],
+	"boxes": [
+		{
+			"name": "Paving",
+			"center": [
+				700.0,
+				500.0,
+				-15
+			],
+			"size": [
+				7000,
+				2800,
+				30
+			],
+			"surface": "green",
+			"look": "paving",
+			"shape": "box"
+		},
+		{
+			"name": "Hedge_S",
+			"center": [
+				700.0,
+				-975.0,
+				130.0
+			],
+			"size": [
+				7300,
+				150,
+				260
+			],
+			"surface": "sand",
+			"look": "hedge",
+			"shape": "box"
+		},
+		{
+			"name": "Hedge_N",
+			"center": [
+				700.0,
+				1975.0,
+				130.0
+			],
+			"size": [
+				7300,
+				150,
+				260
+			],
+			"surface": "sand",
+			"look": "hedge",
+			"shape": "box"
+		},
+		{
+			"name": "Hedge_W",
+			"center": [
+				-2875.0,
+				500.0,
+				130.0
+			],
+			"size": [
+				150,
+				2800,
+				260
+			],
+			"surface": "sand",
+			"look": "hedge",
+			"shape": "box"
+		},
+		{
+			"name": "Hedge_E",
+			"center": [
+				4275.0,
+				500.0,
+				130.0
+			],
+			"size": [
+				150,
+				2800,
+				260
+			],
+			"surface": "sand",
+			"look": "hedge",
+			"shape": "box"
+		},
+		{
+			"name": "Screen",
+			"center": [
+				2100.0,
+				410.0,
+				130.0
+			],
+			"size": [
+				3000,
+				120,
+				260
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Hook",
+			"center": [
+				660.0,
+				760.0,
+				130.0
+			],
+			"size": [
+				120,
+				580,
+				260
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Court_N",
+			"center": [
+				2900.0,
+				1510.0,
+				130.0
+			],
+			"size": [
+				1400,
+				120,
+				260
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Court_E",
+			"center": [
+				3540.0,
+				960.0,
+				130.0
+			],
+			"size": [
+				120,
+				980,
+				260
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Court_W_Low",
+			"center": [
+				2260.0,
+				515.0,
+				130.0
+			],
+			"size": [
+				120,
+				90,
+				260
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Court_W_High",
+			"center": [
+				2260.0,
+				1405.0,
+				130.0
+			],
+			"size": [
+				120,
+				90,
+				260
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "SafePad1",
+			"center": [
+				-2300,
+				0,
+				-10
+			],
+			"size": [
+				391.0,
+				391.0,
+				20
+			],
+			"surface": "sand",
+			"look": "pad",
+			"shape": "box"
+		}
+	],
+	"switches": [
+		{
+			"position": [
+				-1300,
+				350,
+				0
+			],
+			"radius": 140
+		}
+	],
+	"gates": [
+		{
+			"name": "Gate",
+			"center": [
+				2260,
+				960,
+				110
+			],
+			"size": [
+				60,
+				800,
+				220
+			],
+			"switch": 0,
+			"openSeconds": 0.0,
+			"surface": "sand"
+		}
+	]
+}

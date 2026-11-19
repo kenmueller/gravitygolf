@@ -26,18 +26,24 @@ void AGGHUD::DrawHUD()
 	const float CX = Canvas->ClipX * 0.5f;
 	const float CY = Canvas->ClipY * 0.5f;
 
+	// Every line gets a soft dark shadow, so it reads over bright rock, sky or salt.
+	auto Shadowed = [&](const FString& Line, const FLinearColor& Color, float X, float Y, float Scale) {
+		const FLinearColor Shade(0.f, 0.f, 0.f, 0.75f * Color.A);
+		DrawText(Line, Shade, X + 1.5f * S, Y + 1.5f * S, Font, Scale);
+		DrawText(Line, Shade, X - 1.f * S, Y + 1.f * S, Font, Scale);
+		DrawText(Line, Color, X, Y, Font, Scale);
+	};
 	auto Centered = [&](const FString& Line, float Y, float Scale, const FLinearColor& Color) {
 		float W = 0.f;
 		float H = 0.f;
 		GetTextSize(Line, W, H, Font, Scale);
-		DrawText(Line, Color, CX - W * 0.5f, Y, Font, Scale);
+		Shadowed(Line, Color, CX - W * 0.5f, Y, Scale);
 	};
 
 	DrawRect(FLinearColor(1.f, 1.f, 1.f, 0.85f), CX - 1.5f * S, CY - 1.5f * S, 3.f * S, 3.f * S);
 
-	DrawText(Course->CourseName().ToUpper(), Text, 40.f * S, 32.f * S, Font, 1.5f * S);
-	DrawText(FString::Printf(TEXT("Swings %d"), Course->Strokes()), Dim, 40.f * S, 66.f * S, Font,
-		1.1f * S);
+	Shadowed(Course->CourseName().ToUpper(), Text, 40.f * S, 32.f * S, 1.5f * S);
+	Shadowed(FString::Printf(TEXT("Swings %d"), Course->Strokes()), Dim, 40.f * S, 66.f * S, 1.1f * S);
 
 	if (!Course->StatusText().IsEmpty())
 	{

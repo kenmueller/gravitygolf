@@ -63,6 +63,22 @@ struct FSafeZone
 	double Radius = 150.0;
 };
 
+/** A plate in the ground. Rolling over it presses it and opens its gates. */
+struct FSwitch
+{
+	FVec3 Center;
+	double Radius = 60.0;
+};
+
+/** A barrier that stops the ball until its switch is pressed. */
+struct FGate
+{
+	FBox Box;
+	int Switch = 0;
+	/** Seconds the gate stays open after the switch is pressed. Zero means it stays open for the rest of the swing. */
+	double OpenSeconds = 0.0;
+};
+
 struct FCourse
 {
 	std::vector<FBox> Boxes;
@@ -75,6 +91,8 @@ struct FCourse
 	/** The ball drops when it crosses the cup at or below this speed. */
 	double CupCaptureSpeed = 320.0;
 	std::vector<FSafeZone> SafeZones;
+	std::vector<FSwitch> Switches;
+	std::vector<FGate> Gates;
 	double BallRadius = 6.0;
 	/** The ball is lost below this height. */
 	double KillZ = -1000.0;
@@ -119,6 +137,10 @@ enum class EEventType : uint8_t
 	/** A machine took hold of the ball / let it go. Index is the machine. */
 	Engaged,
 	Released,
+	/** The ball pressed a switch. Index is the switch. */
+	SwitchPressed,
+	/** A timed gate ran out and closed. Index is the gate. */
+	GateClosed,
 	Bounce,
 	Land,
 	LipOut,
@@ -142,8 +164,12 @@ class FSim
 public:
 	static constexpr double Dt = 1.0 / 240.0;
 
+	/**
+	 * Start a swing. HeldSwitches lists switches already pressed on earlier legs of the hole (banked by reaching a
+	 * safe pad); they stay pressed for this swing.
+	 */
 	void Begin(const FCourse& InCourse, const std::vector<FAttractor>& InAttractors, FVec3 Start, FVec3 Launch,
-		const FPhysics& InPhysics = {});
+		const FPhysics& InPhysics = {}, const std::vector<bool>* HeldSwitches = nullptr);
 
 	/** Advance one fixed step (internally sub-stepped at high speed so thin walls can't be tunneled). */
 	void Step(std::vector<FEvent>* Events = nullptr);
@@ -153,6 +179,10 @@ public:
 	const FBall& Ball() const { return BallState; }
 
 	bool Finished() const { return BallState.State != EBallState::Moving; }
+	/** Is this gate letting the ball through right now? */
+	bool GateOpen(int Index) const;
+	/** Has this switch been pressed (on this swing, or held from an earlier leg)? */
+	bool SwitchPressed(int Index) const { return PressedAt[Index] >= 0.0; }
 
 	/** Order-sensitive hash of the full state, for determinism checks. */
 	uint64_t Hash() const;
@@ -169,5 +199,10 @@ private:
 	/** Per machine: has the ball started approaching it, and has it since been let go? */
 	std::vector<bool> Engaged;
 	std::vector<bool> Released;
+	/** Per switch: the time it was last pressed, or a negative number if never. */
+	std::vector<double> PressedAt;
+	std::vector<bool> GateWasOpen;
+
+	void Collide(const FBox& Box, FVec3 A, double H, bool bWasOnGround, ESurface& Ground, std::vector<FEvent>* Events);
 };
 } // namespace GG

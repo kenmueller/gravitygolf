@@ -84,10 +84,14 @@ def spawn(cls, location=(0, 0, 0), rotation=(0, 0, 0), label=None, folder=None):
     return actor
 
 
-def mesh(asset, location, size, rotation=(0, 0, 0), material=None, label=None, folder=None, cast_shadow=True):
-    """A static mesh actor. Size is in centimeters for the engine's 100 cm basic shapes."""
+def mesh(asset, location, size, rotation=(0, 0, 0), material=None, label=None, folder=None, cast_shadow=True,
+         solid=True):
+    """A static mesh actor. Size is in centimeters for the engine's 100 cm basic shapes. Pass solid=False for
+    scenery the player and traces should pass through (sky domes, far props, floating lights)."""
     actor = spawn(unreal.StaticMeshActor, location, rotation, label, folder)
     component = actor.static_mesh_component
+    if not solid:
+        component.set_collision_profile_name("NoCollision")
     component.set_static_mesh(unreal.load_asset(asset))
     actor.set_actor_scale3d(unreal.Vector(size[0] / 100.0, size[1] / 100.0, size[2] / 100.0))
     if material:
@@ -96,8 +100,8 @@ def mesh(asset, location, size, rotation=(0, 0, 0), material=None, label=None, f
     return actor
 
 
-def box(center, size, material, label=None, folder="Course", rotation=(0, 0, 0)):
-    return mesh(CUBE, center, size, rotation, material, label, folder)
+def box(center, size, material, label=None, folder="Course", rotation=(0, 0, 0), solid=True):
+    return mesh(CUBE, center, size, rotation, material, label, folder, solid=solid)
 
 
 def material_instance(parent_path, name, scalars=None, vectors=None, folder="/Game/Materials/Instances"):
@@ -122,6 +126,61 @@ def player_start(course):
     tee = course["tee"]["position"]
     yaw = course["tee"]["yaw"]
     spawn(unreal.PlayerStart, (tee[0] - 170, tee[1] - 45, tee[2] + 110), (0, yaw, 0), "PlayerStart", "Course")
+
+
+def night_sky(moon_pitch=-32.0, moon_yaw=40.0, moon_lux=0.35, fog_density=0.01, exposure_bias=-1.2):
+    """Night: a star dome, a moon that lights the scene, a sky light fed by the dome, thin fog."""
+    sky = unreal.load_asset("/Game/Materials/M_GG_NightSky.M_GG_NightSky")
+    mesh(SPHERE, (0, 0, 0), (80000000, 80000000, 80000000), material=sky, label="NightSky", folder="Lighting",
+         cast_shadow=False, solid=False)
+
+    moon = spawn(unreal.DirectionalLight, (0, 0, 5000), (moon_pitch, moon_yaw, 0), "Moon", "Lighting")
+    light = moon.get_component_by_class(unreal.DirectionalLightComponent)
+    light.set_mobility(unreal.ComponentMobility.MOVABLE)
+    light.set_intensity(moon_lux)
+    light.set_light_color(unreal.LinearColor(0.62, 0.74, 1.0, 1.0))
+    light.set_editor_property("light_source_angle", 0.8)
+
+    fog = spawn(unreal.ExponentialHeightFog, (0, 0, -500), label="Fog", folder="Lighting")
+    fog_component = fog.get_component_by_class(unreal.ExponentialHeightFogComponent)
+    fog_component.set_fog_density(fog_density)
+    fog_component.set_editor_property("fog_height_falloff", 0.08)
+    fog_component.set_fog_inscattering_color(unreal.LinearColor(0.02, 0.03, 0.06, 1.0))
+    fog_component.set_volumetric_fog(True)
+
+    sky_light = spawn(unreal.SkyLight, (0, 0, 1000), label="SkyLight", folder="Lighting")
+    sky_component = sky_light.get_component_by_class(unreal.SkyLightComponent)
+    sky_component.set_mobility(unreal.ComponentMobility.MOVABLE)
+    sky_component.set_editor_property("real_time_capture", True)
+    sky_component.set_intensity(2.0)
+
+    post = spawn(unreal.PostProcessVolume, (0, 0, 0), label="Post", folder="Lighting")
+    post.set_editor_property("unbound", True)
+    settings = post.settings
+    settings.set_editor_property("override_auto_exposure_method", True)
+    settings.set_editor_property("auto_exposure_method", unreal.AutoExposureMethod.AEM_HISTOGRAM)
+    settings.set_editor_property("override_auto_exposure_bias", True)
+    settings.set_editor_property("auto_exposure_bias", exposure_bias)
+    settings.set_editor_property("override_bloom_intensity", True)
+    settings.set_editor_property("bloom_intensity", 0.8)
+    settings.set_editor_property("override_lens_flare_intensity", True)
+    settings.set_editor_property("lens_flare_intensity", 0.0)
+    settings.set_editor_property("override_vignette_intensity", True)
+    settings.set_editor_property("vignette_intensity", 0.4)
+    post.set_editor_property("settings", settings)
+    return moon
+
+
+def point_light(location, color, candelas, radius, label, folder="Lighting/Lanterns"):
+    actor = spawn(unreal.PointLight, location, label=label, folder=folder)
+    light = actor.get_component_by_class(unreal.PointLightComponent)
+    light.set_mobility(unreal.ComponentMobility.MOVABLE)
+    light.set_editor_property("intensity_units", unreal.LightUnits.CANDELAS)
+    light.set_intensity(candelas)
+    light.set_light_color(unreal.LinearColor(color[0], color[1], color[2], 1.0))
+    light.set_attenuation_radius(radius)
+    light.set_editor_property("source_radius", 12.0)
+    return actor
 
 
 def sky_and_sun(sun_pitch=-8.0, sun_yaw=135.0, sun_lux=10.0, fog_density=0.015, exposure_bias=0.0, sun_kelvin=5200.0,

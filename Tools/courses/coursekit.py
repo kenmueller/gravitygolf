@@ -29,6 +29,8 @@ class Course:
         self.placement = None
         self.extra = {}
         self.solutions = []
+        self.switches = []
+        self.gates = []
 
     def box(self, name, center, size, surface="stone", look="stone", shape="box"):
         """An axis-aligned collision box. `look` tells the level script how to dress it."""
@@ -44,13 +46,25 @@ class Course:
         if court:
             self.no_machine.append({"position": [x, y, z], "radius": court, "kind": "court"})
 
-    def safe_zone(self, x, y, z=0, radius=240, pad=True):
-        """A checkpoint: a ball that rests here stays. With a pad, a soft surface catches the ball."""
-        self.safe_zones.append({"position": [x, y, z], "radius": radius})
+    def safe_zone(self, x, y, z=0, radius=240, pad=True, needs_switch=-1):
+        """A checkpoint: a ball that rests here stays, and any switch it pressed on the way stays pressed. With a
+        pad, a soft surface catches the ball. `needs_switch` tells the solver which switch the leg is for."""
+        self.safe_zones.append({"position": [x, y, z], "radius": radius, "needsSwitch": needs_switch})
         self.no_machine.append({"position": [x, y, z], "radius": radius + 60, "kind": "pad"})
         if pad:
             side = radius * 1.7
             self.box(f"SafePad{len(self.safe_zones)}", (x, y, z - 10), (side, side, 20), "sand", "pad")
+
+    def switch(self, x, y, z=0, radius=70):
+        """A plate in the ground. The ball presses it by rolling over it. Returns its index for gates."""
+        self.switches.append({"position": [x, y, z], "radius": radius})
+        self.no_machine.append({"position": [x, y, z], "radius": radius + 40, "kind": "switch"})
+        return len(self.switches) - 1
+
+    def gate(self, name, center, size, switch, open_seconds=0.0, surface="sand"):
+        """A barrier that stops the ball until its switch is pressed. With open_seconds it closes again."""
+        self.gates.append({"name": name, "center": list(center), "size": list(size), "switch": switch,
+                           "openSeconds": open_seconds, "surface": surface})
 
     def machine(self, x, y, z=0, strength=420, reach=1900, core_height=45, movable=True):
         """A gravity machine at its starting spot. Positive strength attracts, negative repels."""
@@ -72,6 +86,7 @@ class Course:
             "ballRadius": self.ball_radius, "gravity": [0, 0, -980], "killZ": self.kill_z,
             "tee": self.tee, "cup": self.cup, "noMachine": self.no_machine, "safeZones": self.safe_zones,
             "attractors": self.machines, "boxes": self.boxes,
+            "switches": self.switches, "gates": self.gates,
         }
         if self.next:
             data["next"] = self.next
@@ -98,12 +113,21 @@ class Course:
                 f.write(f"{z['position'][0]} {z['position'][1]} {z['radius']}\n")
             f.write(f"{len(self.safe_zones)}\n")
             for z in self.safe_zones:
-                f.write(f"{z['position'][0]} {z['position'][1]} {z['position'][2]} {z['radius']}\n")
+                f.write(f"{z['position'][0]} {z['position'][1]} {z['position'][2]} {z['radius']} {z['needsSwitch']}\n")
             f.write(f"{len(self.boxes)}\n")
             for b in self.boxes:
                 c, s = b["center"], b["size"]
                 f.write(" ".join(str(v) for v in (c[0] - s[0] / 2, c[1] - s[1] / 2, c[2] - s[2] / 2, c[0] + s[0] / 2,
                                                    c[1] + s[1] / 2, c[2] + s[2] / 2, SURFACES[b["surface"]])) + "\n")
+            f.write(f"{len(self.switches)}\n")
+            for sw in self.switches:
+                f.write(f"{sw['position'][0]} {sw['position'][1]} {sw['position'][2]} {sw['radius']}\n")
+            f.write(f"{len(self.gates)}\n")
+            for g in self.gates:
+                c, s = g["center"], g["size"]
+                f.write(" ".join(str(v) for v in (c[0] - s[0] / 2, c[1] - s[1] / 2, c[2] - s[2] / 2, c[0] + s[0] / 2,
+                                                   c[1] + s[1] / 2, c[2] + s[2] / 2, SURFACES[g["surface"]], g["switch"],
+                                                   g["openSeconds"])) + "\n")
             f.write(f"{len(self.solutions)}\n")
             for sol in self.solutions:
                 spots = " ".join(f"{m[0]} {m[1]}" for m in sol["machines"])

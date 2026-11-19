@@ -172,3 +172,22 @@ void GGAudio::MachineField(UObject* WorldContext, const FVector& Location, bool 
 	}
 	Play(WorldContext, Location, Tone, 0.55f);
 }
+
+void GGAudio::SwitchPress(UObject* WorldContext, const FVector& Location)
+{
+	// A stone plate sinking, then the gate answering.
+	FTone Tone(0.8f);
+	Tone.Noise(0.f, 0.03f, 900.f, 0.5f, NextSeed());
+	Tone.Sine(0.f, 0.06f, 110.f, 70.f, 0.5f);
+	Tone.Sine(0.1f, 0.4f, 392.f, 392.f, 0.18f);
+	Tone.Sine(0.16f, 0.4f, 587.33f, 587.33f, 0.16f);
+	Play(WorldContext, Location, Tone, 0.8f);
+}
+
+void GGAudio::GateShut(UObject* WorldContext, const FVector& Location)
+{
+	FTone Tone(0.5f);
+	Tone.Sine(0.f, 0.2f, 587.33f, 196.f, 0.25f);
+	Tone.Noise(0.12f, 0.03f, 600.f, 0.4f, NextSeed());
+	Play(WorldContext, Location, Tone, 0.7f);
+}

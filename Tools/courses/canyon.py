@@ -13,7 +13,7 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 from coursekit import Course  # noqa: E402
 
-c = Course("canyon", "The Narrows", "Canyon")
+c = Course("canyon", "The Narrows", "Canyon", next_level="Lantern")
 FLOOR_Z = -15
 WALL_H = 400
 

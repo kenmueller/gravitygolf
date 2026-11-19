@@ -122,6 +122,72 @@ static void TestAttractorBendsShot()
 	CHECK(Bent.Ball().Position.Y > 30.0);
 }
 
+static void TestRepulsorPushesAway()
+{
+	FCourse C = Fairway(ESurface::Green);
+	C.Cup = {0, 400, 0};
+	FSim Sim;
+	Sim.Begin(C, {{{800, -300, 45}, -420.0, 1300}}, C.Tee, {600, 0, 0});
+	Sim.Run();
+	CHECK(Sim.Ball().Position.Y > 30.0); // pushed to the far side of a repulsor on its right
+}
+
+static void TestAttractorReleases()
+{
+	// Aimed straight through a machine, the ball must come out the other side, not get parked under it.
+	FCourse C = Fairway(ESurface::Green);
+	C.Cup = {0, 400, 0};
+	std::vector<FEvent> Events;
+	FSim Sim;
+	Sim.Begin(C, {{{1000, 0, 45}, 420.0, 900}}, C.Tee, {700, 0, 0});
+	Sim.Run(&Events);
+	int Engaged = 0;
+	int Released = 0;
+	for (const FEvent& E : Events)
+	{
+		Engaged += E.Type == EEventType::Engaged;
+		Released += E.Type == EEventType::Released;
+	}
+	CHECK(Engaged == 1 && Released == 1);
+	CHECK(Sim.Ball().Position.X > 1400);
+}
+
+static void TestGateAndSwitch()
+{
+	// A gate across the fairway at x = 1500, a switch off to the side at (800, 250).
+	FCourse C = Fairway(ESurface::Green);
+	C.Cup = {2600, 0, 0};
+	C.CupRadius = 42;
+	C.CupCaptureSpeed = 650;
+	C.Switches.push_back({{800, 250, 0}, 70});
+	C.Gates.push_back({{{1500, -500, 0}, {1540, 500, 200}, ESurface::Sand}, 0, 0.0});
+
+	FSim Blocked;
+	Blocked.Begin(C, {}, C.Tee, {900, 0, 0});
+	CHECK(Blocked.Run() != EBallState::Sunk);
+	CHECK(Blocked.Ball().Position.X < 1500);
+
+	// Rolling over the switch first opens the gate for good.
+	std::vector<FEvent> Events;
+	FSim Opened;
+	Opened.Begin(C, {}, C.Tee, {800, 250, 0});
+	Opened.Run(&Events);
+	bool bPressed = false;
+	for (const FEvent& E : Events)
+	{
+		bPressed |= E.Type == EEventType::SwitchPressed;
+	}
+	CHECK(bPressed);
+	CHECK(Opened.Ball().Position.X > 1540);
+
+	// A timed gate that closes before a slow ball arrives.
+	C.Gates[0].OpenSeconds = 0.4;
+	FSim Late;
+	Late.Begin(C, {}, C.Tee, {800, 250, 0});
+	Late.Run();
+	CHECK(Late.Ball().Position.X < 1500);
+}
+
 static void TestDeterminism()
 {
 	const FCourse C = Fairway(ESurface::Grass);
@@ -144,6 +210,9 @@ int main()
 	TestChipBouncesAndStops();
 	TestWallAndLoss();
 	TestAttractorBendsShot();
+	TestRepulsorPushesAway();
+	TestAttractorReleases();
+	TestGateAndSwitch();
 	TestDeterminism();
 	std::printf(Failures ? "%d FAILED\n" : "all passed\n", Failures);
 	return Failures ? 1 : 0;

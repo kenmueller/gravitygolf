@@ -208,5 +208,8 @@
 			"look": "rock",
 			"shape": "box"
 		}
-	]
+	],
+	"switches": [],
+	"gates": [],
+	"next": "Lantern"
 }

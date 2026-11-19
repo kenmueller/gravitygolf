@@ -54,7 +54,8 @@
 				-640,
 				0
 			],
-			"radius": 180
+			"radius": 180,
+			"needsSwitch": -1
 		}
 	],
 	"attractors": [
@@ -200,5 +201,7 @@
 			"shape": "box"
 		}
 	],
+	"switches": [],
+	"gates": [],
 	"next": "Canyon"
 }

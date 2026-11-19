@@ -117,6 +117,9 @@ private:
 	bool bFieldEmphasis = false;
 	float FieldLevel = 0.f;
 	TArray<float> MachineFlash;
+	/** Switches banked on earlier legs of this hole. */
+	std::vector<bool> HeldSwitches;
+	TArray<float> GateLevel;
 	TArray<FVector> NoMachineZones; // x, y, radius
 	double CoreHeight = 45.0;
 	double Accumulator = 0.0;
@@ -147,6 +150,18 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UInstancedStaticMeshComponent> FieldRing;
+
+	UPROPERTY()
+	TObjectPtr<UInstancedStaticMeshComponent> FieldPushDots;
+
+	UPROPERTY()
+	TObjectPtr<UInstancedStaticMeshComponent> FieldPushRing;
+
+	UPROPERTY()
+	TArray<TObjectPtr<UMaterialInstanceDynamic>> SwitchMaterials;
+
+	UPROPERTY()
+	TArray<TObjectPtr<USceneComponent>> GateBars;
 
 	UPROPERTY()
 	TObjectPtr<UMaterialInterface> GlowBase;
