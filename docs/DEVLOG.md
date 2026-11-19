@@ -22,8 +22,11 @@ between holes.** (Keys 1 to 9 now.)
    typing this machine's address there. (I tested it with two copies on this Mac: `Tools/hosttest.sh`.)
 
 **What I need from you** (things I cannot judge)
-1. **Swing feel and sound.** I have never heard the game. Footsteps, strike, bounce, cup, machine hum, gate: are
-   they good, bad or missing?
+1. **Swing feel and sound.** I have never heard the game, but I can now measure it (`Tools/sounds.sh`): every
+   sound exists, none clips, and their levels sit within 10 dB of each other. Measuring showed the footsteps were
+   as bright as cymbals (fixed) and that the worlds were silent between events (each place now has a quiet bed of
+   air: wind, canyon wind, night with crickets, water, and a hum in the Workshop). Whether any of it sounds good is
+   still yours to say.
 2. **Do the holes make you think?** Holes 1 to 4 teach, 5 to 7 examine. Which felt like a puzzle and which felt
    like aiming?
 3. **The Workshop with real hands.** I drove every tool through the game's own input code (console strokes, fake
@@ -88,19 +91,20 @@ between holes.** (Keys 1 to 9 now.)
   All eight holes boot and their recorded answers sink the ball there, with the same swing counts as on the desktop.
 - `Tools/hosttest.sh`: two standalone copies of the game; the joiner connects by address and loads the host's hole.
 - `Tools/smoke.sh` (seven holes), `Tools/nettest.sh` (13 of 13), sim tests: all pass after the changes.
-- Frame rate from the tee, the first eight holes, after a performance pass: 58, 83, 84, 75, 79, 85, 73 and 78 fps
-  (they were 48, 75, 73, 67, 68, about 70, 63 and 68). Workshop 80 fps. What did it: bounced light one notch below
+- Frame rate from the tee after a performance pass, holes 1 to 9: 58, 81, 83, 78, 77, 86, 75, 82 and 74 fps
+  (the first eight were 48, 75, 73, 67, 68, about 70, 63 and 68). Workshop 80 fps. What did it: bounced light one notch below
   the engine's maximum (a split-screen comparison showed no visible seam; about 2 ms everywhere); shrubs taken out of
   the ray-traced scene; on hole 1, no shadows from the pines whose shadows fall off the terrace, and heather that
   stands still. Hole 1 is still a hair under the 60 fps budget.
 - The saved picture quality is now applied when the game starts. It was only ever applied when you changed it.
   The game also sets its own rendering resolution now (70% of the window at the highest quality, sharpened up by
   the engine's upscaler): a packaged game would otherwise draw at 100%, twice the pixels everything was measured at.
-- **Caveat on those frame rates.** They were taken when the Mac was quiet. At the end of the session every hole
-  measured about 40% lower, with a load average of 31: macOS's media analysis, video decoding and a backup upload
-  were all running (probably working through the builds and screenshots this session made). I could not get a
-  quiet re-measurement after the last few changes (the fast-forward, hole 1's hedges, the resolution setting).
-  None of those should cost frames, but that is a belief, not a measurement.
+- **A false alarm about those frame rates, and its real cause.** Late in the session every hole measured about 40%
+  lower. I first blamed the Mac (its load average was 31: media analysis, a backup upload) and wrote that down. That
+  was wrong. The editor was still set to two players after the co-op tests, so every later run drew the game twice;
+  it also crashed the editor once when play stopped. `Tools/play.sh` now sets the player count itself before every
+  start. Measured again afterwards, with the Mac still busy: 58, 81, 83, 78, 77, 86, 75, 82 and 74 fps for holes 1
+  to 9.
 
 **Critique**
 - **The in-game proof is still weaker than the solver's, though less so.** It proves "impossible without the

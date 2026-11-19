@@ -221,10 +221,11 @@ console and read the pass list in the log before guessing.
   thing owns it: clouds 2.7 ms, the 19 pines 4.3 (half of it their shadows), 164 shrubs 2.2 (their ray-tracing
   skinning), bounced light 2.9. Metal's ProfileGPU reports most passes as 0 ms, so measure by switching things off
   from Python in play (`set_cast_shadow`, `set_visible_in_ray_tracing`, `set_actor_hidden_in_game`) and `GGPerf`.
-- Frame rates measured while `Tools/web.sh` is running are about 10 fps low, and macOS's own background work
-  (`mediaanalysisd`, a backup upload) can take 40% off every hole for an hour. Before believing a frame-rate
-  regression, look at `uptime` and `ps -axo pcpu,comm | sort -rn | head`: a load average above about 8 means the
-  number is not about the game. (It has three times sent me looking for a regression that was not there.)
+- Frame rates measured while `Tools/web.sh` is running are about 10 fps low.
+- If every hole suddenly measures 40% slower, the editor is probably still set to two players (the game is being
+  drawn twice). `Tools/play.sh` sets the count before every start (`GG_PLAYERS=2` for the co-op tests); anything
+  that starts play another way must do the same. I once blamed this on the Mac's background load and was wrong:
+  the numbers came straight back with a load average of 27.
 - `r.ScreenPercentage` set from the console stays set for the editor session. Play defaults to about two thirds on
   this display; setting 100 "to restore it" made every later measurement 30% worse until the editor restarted.
 - Megaplants are skeletal meshes that sway. Anything that sways redraws its shadow every frame: 26 pines cost 12 ms
