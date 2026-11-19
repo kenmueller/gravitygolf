@@ -109,6 +109,15 @@ Holes 1 to 4 are the tutorial. Hole 5 is the first exam: everything so far, on b
   idea. A co-op bot can also take instructions ("hold that", "stand there").
 - **Daily Hole, Build-off, Streamer Cup:** as in the first proposal.
 
+**Built so far (2026-11-19):**
+- Co-op plumbing: a listen server and clients share one hole, kept in step by commands on a deterministic
+  simulation. Anyone can carry a machine or swing. Players see each other as hovering caddies in their own colour.
+  Verified with two players in the editor (`Tools/nettest.sh`). Not built: holes that need two people, a way to find
+  and join a friend, more than the starting state for someone who joins late, networking on the web.
+- A rival bot (Settings, "Rival to race": easy, medium, hard): another caddie works the same hole in a ghost copy
+  of its own, starting from the verified answer with error that shrinks on every miss. On hole 3 it takes about
+  2, 3 and 10 minutes. Not built: bots as co-op partners, bots in a shared hole.
+
 ### Beautiful
 - **Look:** monumental and serene. Sunlit natural landscapes inhabited by vast, weathered structures of an unknown
   civilization: warm stone, bronze, and inlaid glyph lines that glow where gravity bends.

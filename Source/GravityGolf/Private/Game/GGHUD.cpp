@@ -7,7 +7,9 @@
 #include "Fonts/SlateFontInfo.h"
 #include "Game/GGCourse.h"
 #include "Game/GGGameMode.h"
+#include "EngineUtils.h"
 #include "Game/GGGolfer.h"
+#include "Game/GGRival.h"
 #include "Game/GGSave.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
@@ -111,6 +113,11 @@ void AGGHUD::DrawPlay(const AGGGolfer* Golfer, const AGGCourse* Course)
 
 	Label(Course->CourseName().ToUpper(), 40.f * S, 30.f * S, 26.f * S, Ink, false, true);
 	Label(FString::Printf(TEXT("Swings %d"), Course->Strokes()), 40.f * S, 68.f * S, 19.f * S, Dim);
+	// A rival, when one is playing: what it is up to, under the swing count.
+	if (TActorIterator<AGGRival> Rival(GetWorld()); Rival)
+	{
+		Label(Rival->StatusLine(), 40.f * S, 100.f * S, 19.f * S, Rival->Solved() ? FLinearColor(1.f, 0.45f, 0.65f) : Dim);
+	}
 
 	if (Course->Phase() == EGGPhase::Sunk)
 	{
@@ -314,6 +321,8 @@ void AGGHUD::BuildMenu()
 		Add(TEXT("Look up and down"), TEXT("Invert"), Save.bInvertLook ? TEXT("Inverted") : TEXT("Normal"));
 		Add(TEXT("Sound"), TEXT("Volume"), FString::Printf(TEXT("%d%%"), FMath::RoundToInt32(Save.Volume * 100.f)));
 		Add(TEXT("Picture quality"), TEXT("Quality"), Qualities[FMath::Clamp(Save.Quality, 0, 3)]);
+		static const TCHAR* Rivals[] = {TEXT("None"), TEXT("Easy"), TEXT("Medium"), TEXT("Hard")};
+		Add(TEXT("Rival to race"), TEXT("Rival"), Rivals[FMath::Clamp(Save.Rival, 0, 3)]);
 		Add(TEXT("Back"), TEXT("Back"));
 		break;
 	}
@@ -489,6 +498,11 @@ void AGGHUD::RunAction(const FItem& Item, int32 Direction)
 		{
 			Save.Quality = (Save.Quality + Step + 4) % 4;
 			Save.ApplyQuality();
+		}
+		else if (Action == TEXT("Rival"))
+		{
+			// Takes effect on the next hole, or when this one is started again from the hole list.
+			Save.Rival = (Save.Rival + Step + 4) % 4;
 		}
 		UGGSave::Store();
 		BuildMenu();

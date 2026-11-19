@@ -67,6 +67,15 @@ public:
 	/** A player sets a carried machine down. False (with a message) where machines can't stand. */
 	bool PlaceMachine(int32 Index, const FVector& Base, AGGGolfer* Carrier);
 	AGGGolfer* CarrierOf(int32 Index) const;
+	// For a rival playing its own copy of the hole: the rules, and how the hole starts.
+	const GG::FCourse& Rules() const { return Course; }
+	const GG::FPhysics& PhysicsRules() const { return Physics; }
+	const std::vector<GG::FAttractor>& MachineFields() const { return Attractors; }
+	const TArray<FVector>& StartingBases() const { return InitialBases; }
+	double MachineCoreHeight() const { return CoreHeight; }
+	/** Seconds the player has spent on this hole so far (it stops when the ball is sunk). */
+	double PlayTime() const { return Clock; }
+
 	/** This machine's copy of the hole in one line, for checking that every player's copy agrees. */
 	FString Describe() const;
 
@@ -189,6 +198,7 @@ private:
 	TArray<FVector> NoMachineZones; // x, y, radius
 	double CoreHeight = 45.0;
 	double Accumulator = 0.0;
+	double Clock = 0.0;
 	double PhaseTime = 0.0;
 	int32 StrokeCount = 0;
 	TArray<FVector> Trail;

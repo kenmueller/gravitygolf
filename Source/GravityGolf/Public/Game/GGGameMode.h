@@ -68,6 +68,10 @@ public:
 	UFUNCTION(Exec)
 	void GGMenu(const FString& Screen);
 
+	/** Console: start a rival bot on this hole now (1 easy, 2 medium, 3 hard), or remove it (0). */
+	UFUNCTION(Exec)
+	void GGRival(int32 Skill);
+
 	/** Console: log where the player is, which way they face and what they are doing. */
 	UFUNCTION(Exec)
 	void GGWhere();

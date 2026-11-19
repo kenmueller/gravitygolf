@@ -17,9 +17,11 @@
 #include "Serialization/JsonSerializer.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/World.h"
+#include "EngineUtils.h"
 #include "Game/GGCourse.h"
 #include "Game/GGGolfer.h"
 #include "Game/GGHUD.h"
+#include "Game/GGRival.h"
 #include "Game/GGSave.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
@@ -75,6 +77,14 @@ void AGGGameMode::BeginPlay()
 		Course->Destroy();
 		Course = nullptr;
 		return;
+	}
+
+	// A bot to race, if the player has asked for one. Alone only: it plays its own ghost copy of the hole.
+	int32 RivalSkill = UGGSave::Get().Rival;
+	FParse::Value(FCommandLine::Get(), TEXT("GGRival="), RivalSkill);
+	if (RivalSkill > 0 && GetNetMode() == NM_Standalone)
+	{
+		GetWorld()->SpawnActor<AGGRival>()->Begin(Course, RivalSkill);
 	}
 
 	const TArray<double> Attractor = ParseNumbers(TEXT("GGAttractor="));
@@ -191,6 +201,18 @@ void AGGGameMode::GGMenu(const FString& Screen)
 	{
 		Hud->OpenMenu(Screen == TEXT("title") ? EGGMenu::Title : Screen == TEXT("pause") ? EGGMenu::Pause
 			: Screen == TEXT("holes") ? EGGMenu::Holes : Screen == TEXT("settings") ? EGGMenu::Settings : EGGMenu::None);
+	}
+}
+
+void AGGGameMode::GGRival(int32 Skill)
+{
+	for (TActorIterator<AGGRival> It(GetWorld()); It; ++It)
+	{
+		It->Destroy();
+	}
+	if (Course && Skill > 0)
+	{
+		GetWorld()->SpawnActor<AGGRival>()->Begin(Course, Skill);
 	}
 }
 

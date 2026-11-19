@@ -41,6 +41,10 @@ public:
 	UPROPERTY()
 	int32 Quality = 3;
 
+	/** A bot to race on every hole: 0 none, 1 easy, 2 medium, 3 hard. */
+	UPROPERTY()
+	int32 Rival = 0;
+
 	/** The one save, loaded on first use. */
 	static UGGSave& Get();
 	/** Write it to disk. */

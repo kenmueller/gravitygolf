@@ -59,6 +59,7 @@ Source/GravityGolf/
   */Game/GGAudio.*            runtime-synthesized sounds (footsteps, strike, bounce, cup, machine)
   */Game/GGHUD.*              play HUD, touch controls, solved card and the menus (title, pause, holes, settings)
   */Game/GGSave.*             saved progress and settings; the list of holes in play order
+  */Game/GGRival.*            the bot to race: plays the hole in a ghost copy of its own, at three skills
 Content/Courses/*.json        collision boxes + rules, written by Tools/courses/<level>.py (plain Python)
 Tools/levels/<level>.py       builds the level in the editor from the course JSON plus dressing (common.py helpers)
 Tools/build_materials.py      generates /Game/Materials (custom HLSL: triplanar scans, ocean, ball, glow)
@@ -80,6 +81,7 @@ Tools/py.sh <file.py>         run Python in the open editor; the value of the la
 Tools/web.sh [config] [host]  package for the web (Wasm + WebGPU) with the source engine at ~/UE59; see docs/WEB.md
 Tools/webtest.sh [play|phone|tour]   run the web build in Chrome with screenshots (tour: every hole's solution)
 Tools/nettest.sh              two players in the editor; compares both copies of the hole after every step
+Tools/rivaltest.sh [Level ...]   the rival bot plays a hole at each skill, time sped up; reports time and swings
 Tools/net.sh <player|all> "<cmd>"    run a console command on one player's machine (GGNet where|carry|place|swing...)
 ```
 

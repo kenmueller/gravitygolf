@@ -680,6 +680,7 @@ void AGGCourse::ResetHole()
 void AGGCourse::NetResetHole_Implementation()
 {
 	bAssisted = false;
+	Clock = 0.0;
 	Lie = Course.Tee;
 	LastSafe = Course.Tee;
 	HeldSwitches.assign(Course.Switches.size(), false);
@@ -930,6 +931,10 @@ void AGGCourse::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	PhaseTime += DeltaSeconds;
+	if (CurrentPhase != EGGPhase::Sunk)
+	{
+		Clock += DeltaSeconds;
+	}
 	if (NoticeTime > 0.0)
 	{
 		NoticeTime -= DeltaSeconds;
