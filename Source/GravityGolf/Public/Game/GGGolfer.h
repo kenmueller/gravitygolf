@@ -9,6 +9,16 @@ class AGGCourse;
 class UCameraComponent;
 class UStaticMeshComponent;
 
+/** A round button drawn on screen for touch play. Center and radius are in viewport pixels. */
+struct FGGTouchButton
+{
+	FName Id;
+	FVector2D Center = FVector2D::ZeroVector;
+	float Radius = 0.f;
+	FString Label;
+	bool bDown = false;
+};
+
 /** The player on foot: walk the course, carry gravity machines, swing from beside the ball. */
 UCLASS()
 class GRAVITYGOLF_API AGGGolfer : public ACharacter
@@ -29,6 +39,25 @@ public:
 	bool IsCarrying() const { return Carried != INDEX_NONE; }
 	bool CanPickUp() const;
 	double DistanceToBall() const;
+
+	// Touch play (phones and tablets): a movement stick under the left thumb, drag anywhere else to look, and round
+	// buttons for everything the keys do. It switches on with the first touch.
+	bool UsingTouch() const { return bTouchMode; }
+	/** The buttons to show right now, for a viewport of this size. */
+	void TouchButtons(const FVector2D& Viewport, TArray<FGGTouchButton>& Out) const;
+	/** The movement stick: where the thumb went down and where it is now. False while no thumb is on it. */
+	bool TouchStick(FVector2D& OutOrigin, FVector2D& OutKnob) const;
+	/** One touch event in viewport pixels. Phase 0 is down, 1 is moved, 2 is up. Also the entry point for tests. */
+	void HandleTouch(int32 Finger, int32 Phase, const FVector2D& At);
+	FVector2D ViewportSize() const;
+
+	// Things the menus and the touch buttons also do.
+	void ResetHole();
+	void ReturnBall();
+	void GoToBall();
+	void ShowSolution();
+	class AGGHUD* Hud() const;
+	bool MenuOpen() const;
 
 	// Hooks for automated play tests. They drive the same code paths as the keys.
 	/** Pick up the nearest machine wherever it is and try to set it down at a ground point. */
@@ -62,18 +91,33 @@ private:
 	void SwingPressed();
 	void SwingReleased();
 	void Interact();
-	void ResetHole();
-	void ReturnBall();
-	void GoToBall();
 	void WatchPressed() { bWatching = true; }
 	void WatchReleased() { bWatching = false; }
-	void ShowSolution();
 	void JumpToHole(int32 Number);
+	void MenuToggle();
+	void MenuUp();
+	void MenuDown();
+	void MenuLeft();
+	void MenuRight();
+	/** Enter and the gamepad's bottom button: choose in a menu, jump in the world. */
+	void AcceptOrJump();
 	void Hole1() { JumpToHole(1); }
 	void Hole2() { JumpToHole(2); }
 	void Hole3() { JumpToHole(3); }
 	void Hole4() { JumpToHole(4); }
 	void Hole5() { JumpToHole(5); }
+
+	void TouchPressed(ETouchIndex::Type Finger, FVector Location) { HandleTouch(static_cast<int32>(Finger), 0, FVector2D(Location)); }
+	void TouchMoved(ETouchIndex::Type Finger, FVector Location) { HandleTouch(static_cast<int32>(Finger), 1, FVector2D(Location)); }
+	void TouchReleased(ETouchIndex::Type Finger, FVector Location) { HandleTouch(static_cast<int32>(Finger), 2, FVector2D(Location)); }
+	void PressButton(FName Id);
+	void ReleaseButton(FName Id);
+	void PadForward(float Value);
+	void PadRight(float Value);
+	void PadTurn(float Value);
+	void PadLookUp(float Value);
+	/** Turn the view by a number of degrees, keeping the pitch within what a neck can do. */
+	void AddLook(float YawDegrees, float PitchDegrees);
 
 	FVector SwingDirection() const;
 	FVector HoldPoint() const;
@@ -95,6 +139,15 @@ private:
 	/** -1 at the top of the backswing, 0 at address, +1 at the end of the follow-through. */
 	float ClubPhase = 0.f;
 	float ClubRaise = 0.f;
+
+	bool bTouchMode = false;
+	int32 MoveFinger = INDEX_NONE;
+	int32 LookFinger = INDEX_NONE;
+	FVector2D MoveOrigin = FVector2D::ZeroVector;
+	FVector2D MoveAt = FVector2D::ZeroVector;
+	/** Per finger: the button it holds, and where it was last seen. */
+	TMap<int32, FName> HeldButtons;
+	TMap<int32, FVector2D> LastTouch;
 
 	bool bWatching = false;
 	double StepDistance = 0.0;

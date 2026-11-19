@@ -6,6 +6,7 @@
 #include "Game/GGCourse.h"
 #include "Game/GGGolfer.h"
 #include "Game/GGHUD.h"
+#include "Game/GGSave.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/CommandLine.h"
@@ -150,10 +151,46 @@ void AGGGameMode::GGView(const FString& XYZPitchYaw)
 
 void AGGGameMode::GGHole(int32 Number)
 {
-	static const TCHAR* Holes[] = {TEXT("Terraces"), TEXT("SaltMirror"), TEXT("Canyon"), TEXT("Lantern"), TEXT("Returning")};
-	if (Number >= 1 && Number <= UE_ARRAY_COUNT(Holes))
+	const TArray<FGGHoleInfo>& Holes = UGGSave::Holes();
+	if (Holes.IsValidIndex(Number - 1))
 	{
-		UGameplayStatics::OpenLevel(this, FName(*(FString(TEXT("/Game/Levels/")) + Holes[Number - 1])));
+		UGameplayStatics::OpenLevel(this, FName(*(FString(TEXT("/Game/Levels/")) + Holes[Number - 1].Level)));
+	}
+}
+
+void AGGGameMode::GGTouch(const FString& FingerPhaseXY)
+{
+	const TArray<double> N = Numbers(FingerPhaseXY);
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	AGGGolfer* Golfer = PC ? Cast<AGGGolfer>(PC->GetPawn()) : nullptr;
+	if (Golfer && N.Num() == 4)
+	{
+		const FVector2D View = Golfer->ViewportSize();
+		Golfer->HandleTouch(static_cast<int32>(N[0]), static_cast<int32>(N[1]), FVector2D(N[2] * View.X, N[3] * View.Y));
+	}
+}
+
+void AGGGameMode::GGMenu(const FString& Screen)
+{
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (AGGHUD* Hud = PC ? Cast<AGGHUD>(PC->GetHUD()) : nullptr)
+	{
+		Hud->OpenMenu(Screen == TEXT("title") ? EGGMenu::Title : Screen == TEXT("pause") ? EGGMenu::Pause
+			: Screen == TEXT("holes") ? EGGMenu::Holes : Screen == TEXT("settings") ? EGGMenu::Settings : EGGMenu::None);
+	}
+}
+
+void AGGGameMode::GGWhere()
+{
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	const AGGGolfer* Golfer = PC ? Cast<AGGGolfer>(PC->GetPawn()) : nullptr;
+	if (Golfer && Course)
+	{
+		const FVector At = Golfer->GetActorLocation();
+		const FRotator Look = PC->GetControlRotation().GetNormalized();
+		UE_LOG(LogGGMode, Log, TEXT("Where: at %.0f,%.0f,%.0f yaw %.1f pitch %.1f phase %d swings %d carrying %d charging %d touch %d"),
+			At.X, At.Y, At.Z, Look.Yaw, Look.Pitch, static_cast<int32>(Course->Phase()), Course->Strokes(), Golfer->IsCarrying() ? 1 : 0,
+			Golfer->IsCharging() ? 1 : 0, Golfer->UsingTouch() ? 1 : 0);
 	}
 }
 
@@ -169,6 +206,7 @@ void AGGGameMode::GGDemo()
 	if (Course && Course->Phase() == EGGPhase::Ready)
 	{
 		bDemo = true;
+		Course->MarkAssisted();
 		bDemoSwung = false;
 		DemoLeg = -1;
 		DemoWait = 0.6;
@@ -241,6 +279,17 @@ void AGGGameMode::PlacePlayer()
 	bPlayerPlaced = true;
 	PC->SetInputMode(FInputModeGameOnly());
 	PC->bShowMouseCursor = false;
+
+	// A real launch (not Play-In-Editor) opens on the title screen, once per run of the game.
+	static bool bTitleShown = false;
+	if (!bTitleShown && GetWorld()->WorldType == EWorldType::Game && CapturePath.IsEmpty() && !bHasShot)
+	{
+		bTitleShown = true;
+		if (AGGHUD* Hud = Cast<AGGHUD>(PC->GetHUD()))
+		{
+			Hud->OpenMenu(EGGMenu::Title);
+		}
+	}
 
 	const TArray<double> View = ParseNumbers(TEXT("GGView="));
 	if (View.Num() == 5)

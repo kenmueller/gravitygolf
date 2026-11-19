@@ -1,5 +1,6 @@
 #include "Game/GGAudio.h"
 
+#include "Game/GGSave.h"
 #include "Components/AudioComponent.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
@@ -70,6 +71,7 @@ void Play(UObject* WorldContext, const FVector& Location, const FTone& Tone, flo
 	Wave->QueueAudio(reinterpret_cast<const uint8*>(Pcm.GetData()), Pcm.Num() * sizeof(int16));
 
 	// A procedural wave never reports that it finished, so stop its voice ourselves.
+	Volume *= UGGSave::Get().Volume;
 	if (UAudioComponent* Voice = UGameplayStatics::SpawnSoundAtLocation(World, Wave, Location, FRotator::ZeroRotator, Volume))
 	{
 		FTimerHandle Handle;

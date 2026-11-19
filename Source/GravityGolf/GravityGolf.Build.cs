@@ -16,6 +16,7 @@ public class GravityGolf : ModuleRules
 			"ProceduralMeshComponent",
 			"RenderCore",
 			"RHI",
+			"SlateCore",
 		});
 	}
 }

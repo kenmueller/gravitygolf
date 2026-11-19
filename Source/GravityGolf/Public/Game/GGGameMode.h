@@ -59,6 +59,19 @@ public:
 	UFUNCTION(Exec)
 	void GGHole(int32 Number);
 
+	/** Console: one touch event, for testing touch play without a phone. "finger,phase,x,y" with phase 0 down, 1 moved,
+	 *  2 up, and x,y as fractions of the screen (0,0 is the top left). */
+	UFUNCTION(Exec)
+	void GGTouch(const FString& FingerPhaseXY);
+
+	/** Console: open a screen (title, pause, holes, settings) or close it (none). */
+	UFUNCTION(Exec)
+	void GGMenu(const FString& Screen);
+
+	/** Console: log where the player is, which way they face and what they are doing. */
+	UFUNCTION(Exec)
+	void GGWhere();
+
 	/** Console: measure frame times for a number of seconds and log the result (GGPerf 5). */
 	UFUNCTION(Exec)
 	void GGPerf(float Seconds);

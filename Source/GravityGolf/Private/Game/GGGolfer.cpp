@@ -9,6 +9,8 @@
 #include "Game/GGAudio.h"
 #include "Game/GGCourse.h"
 #include "Game/GGGameMode.h"
+#include "Game/GGHUD.h"
+#include "Game/GGSave.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "HAL/IConsoleManager.h"
@@ -159,13 +161,362 @@ void AGGGolfer::SetupPlayerInputComponent(UInputComponent* Input)
 	Input->BindKey(EKeys::B, IE_Pressed, this, &AGGGolfer::GoToBall);
 	Input->BindKey(EKeys::RightMouseButton, IE_Pressed, this, &AGGGolfer::WatchPressed);
 	Input->BindKey(EKeys::RightMouseButton, IE_Released, this, &AGGGolfer::WatchReleased);
-	// Testing aids until there is a menu: watch the solution, or jump between holes.
+	// The menu: Tab, P or Escape opens and closes it; arrows and Enter work it. (In the editor, Escape ends play.)
+	Input->BindKey(EKeys::Tab, IE_Pressed, this, &AGGGolfer::MenuToggle);
+	Input->BindKey(EKeys::P, IE_Pressed, this, &AGGGolfer::MenuToggle);
+	Input->BindKey(EKeys::Escape, IE_Pressed, this, &AGGGolfer::MenuToggle);
+	Input->BindKey(EKeys::Up, IE_Pressed, this, &AGGGolfer::MenuUp);
+	Input->BindKey(EKeys::Down, IE_Pressed, this, &AGGGolfer::MenuDown);
+	Input->BindKey(EKeys::Left, IE_Pressed, this, &AGGGolfer::MenuLeft);
+	Input->BindKey(EKeys::Right, IE_Pressed, this, &AGGGolfer::MenuRight);
+	Input->BindKey(EKeys::Enter, IE_Pressed, this, &AGGGolfer::AcceptOrJump);
+	// Testing aids: watch the solution, or jump straight to a hole.
 	Input->BindKey(EKeys::F1, IE_Pressed, this, &AGGGolfer::ShowSolution);
 	Input->BindKey(EKeys::One, IE_Pressed, this, &AGGGolfer::Hole1);
 	Input->BindKey(EKeys::Two, IE_Pressed, this, &AGGGolfer::Hole2);
 	Input->BindKey(EKeys::Three, IE_Pressed, this, &AGGGolfer::Hole3);
 	Input->BindKey(EKeys::Four, IE_Pressed, this, &AGGGolfer::Hole4);
 	Input->BindKey(EKeys::Five, IE_Pressed, this, &AGGGolfer::Hole5);
+
+	// Gamepad: left stick walks (click it to run), right stick looks, right trigger swings.
+	Input->BindAxisKey(EKeys::Gamepad_LeftY, this, &AGGGolfer::PadForward);
+	Input->BindAxisKey(EKeys::Gamepad_LeftX, this, &AGGGolfer::PadRight);
+	Input->BindAxisKey(EKeys::Gamepad_RightX, this, &AGGGolfer::PadTurn);
+	Input->BindAxisKey(EKeys::Gamepad_RightY, this, &AGGGolfer::PadLookUp);
+	Input->BindKey(EKeys::Gamepad_RightTrigger, IE_Pressed, this, &AGGGolfer::SwingPressed);
+	Input->BindKey(EKeys::Gamepad_RightTrigger, IE_Released, this, &AGGGolfer::SwingReleased);
+	Input->BindKey(EKeys::Gamepad_LeftTrigger, IE_Pressed, this, &AGGGolfer::WatchPressed);
+	Input->BindKey(EKeys::Gamepad_LeftTrigger, IE_Released, this, &AGGGolfer::WatchReleased);
+	Input->BindKey(EKeys::Gamepad_FaceButton_Bottom, IE_Pressed, this, &AGGGolfer::AcceptOrJump);
+	Input->BindKey(EKeys::Gamepad_Special_Right, IE_Pressed, this, &AGGGolfer::MenuToggle);
+	Input->BindKey(EKeys::Gamepad_DPad_Up, IE_Pressed, this, &AGGGolfer::MenuUp);
+	Input->BindKey(EKeys::Gamepad_DPad_Down, IE_Pressed, this, &AGGGolfer::MenuDown);
+	Input->BindKey(EKeys::Gamepad_DPad_Left, IE_Pressed, this, &AGGGolfer::MenuLeft);
+	Input->BindKey(EKeys::Gamepad_DPad_Right, IE_Pressed, this, &AGGGolfer::MenuRight);
+	Input->BindKey(EKeys::Gamepad_FaceButton_Left, IE_Pressed, this, &AGGGolfer::Interact);
+	Input->BindKey(EKeys::Gamepad_FaceButton_Top, IE_Pressed, this, &AGGGolfer::GoToBall);
+	Input->BindKey(EKeys::Gamepad_FaceButton_Right, IE_Pressed, this, &AGGGolfer::ReturnBall);
+	Input->BindKey(EKeys::Gamepad_Special_Left, IE_Pressed, this, &AGGGolfer::ResetHole);
+
+	// Touch: every finger goes through HandleTouch.
+	Input->BindTouch(IE_Pressed, this, &AGGGolfer::TouchPressed);
+	Input->BindTouch(IE_Repeat, this, &AGGGolfer::TouchMoved);
+	Input->BindTouch(IE_Released, this, &AGGGolfer::TouchReleased);
+}
+
+AGGHUD* AGGGolfer::Hud() const
+{
+	const APlayerController* PC = Cast<APlayerController>(GetController());
+	return PC ? Cast<AGGHUD>(PC->GetHUD()) : nullptr;
+}
+
+bool AGGGolfer::MenuOpen() const
+{
+	const AGGHUD* Screen = Hud();
+	return Screen && Screen->MenuOpen();
+}
+
+void AGGGolfer::MenuToggle()
+{
+	if (AGGHUD* Screen = Hud())
+	{
+		if (Screen->MenuOpen())
+		{
+			Screen->MenuBack();
+		}
+		else
+		{
+			bCharging = false;
+			Screen->OpenMenu(EGGMenu::Pause);
+		}
+	}
+}
+
+void AGGGolfer::MenuUp()
+{
+	if (AGGHUD* Screen = Hud())
+	{
+		Screen->MenuMove(-1, 0);
+	}
+}
+
+void AGGGolfer::MenuDown()
+{
+	if (AGGHUD* Screen = Hud())
+	{
+		Screen->MenuMove(1, 0);
+	}
+}
+
+void AGGGolfer::MenuLeft()
+{
+	if (AGGHUD* Screen = Hud())
+	{
+		Screen->MenuMove(0, -1);
+	}
+}
+
+void AGGGolfer::MenuRight()
+{
+	if (AGGHUD* Screen = Hud())
+	{
+		Screen->MenuMove(0, 1);
+	}
+}
+
+void AGGGolfer::AcceptOrJump()
+{
+	if (MenuOpen())
+	{
+		Hud()->MenuActivate();
+	}
+	else
+	{
+		Jump();
+	}
+}
+
+void AGGGolfer::AddLook(float YawDegrees, float PitchDegrees)
+{
+	if (MenuOpen())
+	{
+		return;
+	}
+	// The player's own look speed and up/down preference apply to every way of looking.
+	const UGGSave& Save = UGGSave::Get();
+	YawDegrees *= Save.LookSensitivity;
+	PitchDegrees *= Save.LookSensitivity * (Save.bInvertLook ? -1.f : 1.f);
+	if (AController* PC = GetController())
+	{
+		FRotator Look = PC->GetControlRotation();
+		Look.Yaw += YawDegrees;
+		Look.Pitch = FMath::ClampAngle(Look.Pitch + PitchDegrees, -80.f, 80.f);
+		PC->SetControlRotation(Look);
+	}
+}
+
+void AGGGolfer::PadForward(float Value)
+{
+	if (!MenuOpen())
+	{
+		AddMovementInput(GetActorForwardVector(), Value);
+	}
+}
+
+void AGGGolfer::PadRight(float Value)
+{
+	if (!MenuOpen())
+	{
+		AddMovementInput(GetActorRightVector(), Value);
+	}
+}
+
+void AGGGolfer::PadTurn(float Value)
+{
+	AddLook(Value * 150.f * GetWorld()->GetDeltaSeconds(), 0.f);
+}
+
+void AGGGolfer::PadLookUp(float Value)
+{
+	AddLook(0.f, Value * 95.f * GetWorld()->GetDeltaSeconds());
+}
+
+FVector2D AGGGolfer::ViewportSize() const
+{
+	int32 X = 0;
+	int32 Y = 0;
+	if (const APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		PC->GetViewportSize(X, Y);
+	}
+	return FVector2D(X, Y);
+}
+
+void AGGGolfer::TouchButtons(const FVector2D& View, TArray<FGGTouchButton>& Out) const
+{
+	const AGGCourse* C = Course();
+	if (!C)
+	{
+		return;
+	}
+	// Everything is sized from the screen's height, so it fits a phone held either way.
+	const float U = static_cast<float>(View.Y) * 0.01f;
+	auto Add = [&](FName Id, float FromRight, float FromBottom, float Radius, const TCHAR* Label) {
+		FGGTouchButton Button;
+		Button.Id = Id;
+		Button.Center = FVector2D(View.X - FromRight * U, View.Y - FromBottom * U);
+		Button.Radius = Radius * U;
+		Button.Label = Label;
+		for (const TPair<int32, FName>& Held : HeldButtons)
+		{
+			Button.bDown |= Held.Value == Id;
+		}
+		Out.Add(Button);
+	};
+	const EGGPhase Phase = C->Phase();
+	// Under the right thumb: the one big thing you can do now.
+	if (Phase == EGGPhase::Sunk)
+	{
+		Add(TEXT("Swing"), 17.f, 19.f, 10.5f, C->HasNext() ? TEXT("NEXT") : TEXT("AGAIN"));
+	}
+	else if (Phase == EGGPhase::Flying)
+	{
+		Add(TEXT("Watch"), 17.f, 19.f, 9.f, TEXT("WATCH"));
+	}
+	else if (CanSwing() || bCharging)
+	{
+		Add(TEXT("Swing"), 17.f, 19.f, 10.5f, TEXT("SWING"));
+	}
+	if (IsCarrying() || CanPickUp())
+	{
+		Add(TEXT("Grab"), 39.f, 12.f, 7.5f, IsCarrying() ? TEXT("PLACE") : TEXT("GRAB"));
+	}
+	// Along the top, out of the way: the things you do now and then.
+	if (Phase == EGGPhase::Ready || Phase == EGGPhase::Penalty)
+	{
+		const TCHAR* Labels[] = {TEXT("RETURN"), TEXT("BALL")};
+		const TCHAR* Ids[] = {TEXT("Return"), TEXT("Ball")};
+		for (int32 I = 0; I < 2; ++I)
+		{
+			Add(Ids[I], 19.5f + 11.5f * I, 100.f - 8.5f, 4.8f, Labels[I]);
+		}
+	}
+	// The menu is always within reach.
+	Add(TEXT("Menu"), 8.f, 100.f - 8.5f, 4.8f, TEXT("MENU"));
+}
+
+bool AGGGolfer::TouchStick(FVector2D& OutOrigin, FVector2D& OutKnob) const
+{
+	OutOrigin = MoveOrigin;
+	OutKnob = MoveAt;
+	return MoveFinger != INDEX_NONE;
+}
+
+void AGGGolfer::PressButton(FName Id)
+{
+	if (Id == TEXT("Swing"))
+	{
+		SwingPressed();
+	}
+	else if (Id == TEXT("Grab"))
+	{
+		Interact();
+	}
+	else if (Id == TEXT("Watch"))
+	{
+		bWatching = true;
+	}
+	else if (Id == TEXT("Ball"))
+	{
+		GoToBall();
+	}
+	else if (Id == TEXT("Return"))
+	{
+		ReturnBall();
+	}
+	else if (Id == TEXT("Menu"))
+	{
+		MenuToggle();
+	}
+}
+
+void AGGGolfer::ReleaseButton(FName Id)
+{
+	if (Id == TEXT("Swing"))
+	{
+		SwingReleased();
+	}
+	else if (Id == TEXT("Watch"))
+	{
+		bWatching = false;
+	}
+}
+
+void AGGGolfer::HandleTouch(int32 Finger, int32 Phase, const FVector2D& At)
+{
+	bTouchMode = true;
+	if (MenuOpen())
+	{
+		// In a menu a tap is a choice.
+		if (Phase == 0)
+		{
+			Hud()->MenuPointer(At, true);
+		}
+		MoveFinger = LookFinger = INDEX_NONE;
+		return;
+	}
+	const FVector2D View = ViewportSize();
+	if (View.Y <= 0.0)
+	{
+		return;
+	}
+	const double U = View.Y * 0.01;
+	if (Phase == 0)
+	{
+		LastTouch.Add(Finger, At);
+		TArray<FGGTouchButton> Buttons;
+		TouchButtons(View, Buttons);
+		for (const FGGTouchButton& Button : Buttons)
+		{
+			// A little slack around each button: thumbs are not precise.
+			if (FVector2D::Distance(At, Button.Center) <= Button.Radius * 1.2)
+			{
+				HeldButtons.Add(Finger, Button.Id);
+				PressButton(Button.Id);
+				return;
+			}
+		}
+		// The left part of the screen is the movement stick, wherever the thumb lands. Anything else looks around.
+		if (MoveFinger == INDEX_NONE && At.X < View.X * 0.42 && At.Y > 16.0 * U)
+		{
+			MoveFinger = Finger;
+			MoveOrigin = MoveAt = At;
+		}
+		else if (LookFinger == INDEX_NONE)
+		{
+			LookFinger = Finger;
+		}
+	}
+	else if (Phase == 1)
+	{
+		const FVector2D Delta = At - LastTouch.FindRef(Finger);
+		LastTouch.Add(Finger, At);
+		if (Finger == MoveFinger)
+		{
+			MoveAt = At;
+		}
+		else if (Finger == LookFinger)
+		{
+			// A swipe across the screen's height turns half a circle.
+			AddLook(static_cast<float>(Delta.X / View.Y * 180.0), static_cast<float>(-Delta.Y / View.Y * 120.0));
+		}
+		else if (const FName* Held = HeldButtons.Find(Finger))
+		{
+			// Sliding the thumb that holds SWING trims the aim, so one hand can charge and steer.
+			if (*Held == TEXT("Swing"))
+			{
+				AddLook(static_cast<float>(Delta.X / View.Y * 60.0), 0.f);
+			}
+		}
+	}
+	else
+	{
+		if (const FName* Held = HeldButtons.Find(Finger))
+		{
+			const FName Id = *Held;
+			HeldButtons.Remove(Finger);
+			ReleaseButton(Id);
+		}
+		if (Finger == MoveFinger)
+		{
+			MoveFinger = INDEX_NONE;
+		}
+		if (Finger == LookFinger)
+		{
+			LookFinger = INDEX_NONE;
+		}
+		LastTouch.Remove(Finger);
+	}
 }
 
 AGGCourse* AGGGolfer::Course() const
@@ -179,24 +530,31 @@ void AGGGolfer::MoveForward(float Value)
 	// W is bound as an axis key (1 while held); S is read directly so one binding covers both.
 	const APlayerController* PC = Cast<APlayerController>(GetController());
 	const float Back = PC && PC->IsInputKeyDown(EKeys::S) ? 1.f : 0.f;
-	AddMovementInput(GetActorForwardVector(), Value - Back);
+	if (!MenuOpen())
+	{
+		AddMovementInput(GetActorForwardVector(), Value - Back);
+	}
 }
 
 void AGGGolfer::MoveRight(float Value)
 {
 	const APlayerController* PC = Cast<APlayerController>(GetController());
 	const float Left = PC && PC->IsInputKeyDown(EKeys::A) ? 1.f : 0.f;
-	AddMovementInput(GetActorRightVector(), Value - Left);
+	if (!MenuOpen())
+	{
+		AddMovementInput(GetActorRightVector(), Value - Left);
+	}
 }
 
 void AGGGolfer::Turn(float Value)
 {
-	AddControllerYawInput(Value * 0.55f);
+	// The engine turns mouse counts into degrees at 2.5 per unit of yaw input; AddLook works in degrees.
+	AddLook(Value * 0.55f * 2.5f, 0.f);
 }
 
 void AGGGolfer::LookUp(float Value)
 {
-	AddControllerPitchInput(-Value * 0.55f);
+	AddLook(0.f, Value * 0.55f * 2.5f);
 }
 
 double AGGGolfer::DistanceToBall() const
@@ -230,6 +588,22 @@ FVector AGGGolfer::SwingDirection() const
 
 void AGGGolfer::SwingPressed()
 {
+	if (MenuOpen())
+	{
+		float X = 0.f;
+		float Y = 0.f;
+		const APlayerController* PC = Cast<APlayerController>(GetController());
+		// A click chooses what the mouse is over; a gamepad trigger chooses the highlighted row.
+		if (PC && PC->IsInputKeyDown(EKeys::LeftMouseButton) && PC->GetMousePosition(X, Y))
+		{
+			Hud()->MenuPointer(FVector2D(X, Y), true);
+		}
+		else
+		{
+			Hud()->MenuActivate();
+		}
+		return;
+	}
 	AGGCourse* C = Course();
 	if (C && C->Phase() == EGGPhase::Sunk)
 	{
@@ -299,7 +673,7 @@ bool AGGGolfer::PlaceCarried(const FVector& Ground)
 void AGGGolfer::Interact()
 {
 	AGGCourse* C = Course();
-	if (!C || C->Phase() == EGGPhase::Flying)
+	if (!C || C->Phase() == EGGPhase::Flying || MenuOpen())
 	{
 		return;
 	}
@@ -498,9 +872,24 @@ void AGGGolfer::Tick(float DeltaSeconds)
 		return;
 	}
 
-	// Hold Shift to run.
+	// The touch stick: how far the thumb is from where it went down, out to a thumb's reach.
+	FVector2D Stick = FVector2D::ZeroVector;
+	if (MoveFinger != INDEX_NONE && !MenuOpen())
+	{
+		const double Reach = FMath::Max(ViewportSize().Y * 0.09, 1.0);
+		Stick = (MoveAt - MoveOrigin) / Reach;
+		if (Stick.SizeSquared() > 1.0)
+		{
+			Stick.Normalize();
+		}
+		AddMovementInput(GetActorForwardVector(), static_cast<float>(-Stick.Y));
+		AddMovementInput(GetActorRightVector(), static_cast<float>(Stick.X));
+	}
+
+	// Run: hold Shift, click the left stick, or push the touch stick all the way.
 	const APlayerController* Player = Cast<APlayerController>(GetController());
-	const bool bSprint = Player && Player->IsInputKeyDown(EKeys::LeftShift) && !bCharging;
+	const bool bRunKey = Player && (Player->IsInputKeyDown(EKeys::LeftShift) || Player->IsInputKeyDown(EKeys::Gamepad_LeftThumbstick));
+	const bool bSprint = (bRunKey || Stick.SizeSquared() > 0.9) && !bCharging;
 	GetCharacterMovement()->MaxWalkSpeed = bSprint ? SprintSpeed : WalkSpeed;
 
 	// Fell off the world: back to the ball.

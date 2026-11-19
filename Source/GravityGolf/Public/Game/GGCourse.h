@@ -95,6 +95,13 @@ public:
 	int32 Strokes() const { return StrokeCount; }
 	int32 Par() const { return Course.Par; }
 	const FString& CourseName() const { return Name; }
+	/** The course file's name, which is also the key its best score is saved under. */
+	const FString& CourseId() const { return Id; }
+	/** Watching the solution doesn't count as solving: a hole solved after its solution was shown isn't recorded. */
+	void MarkAssisted() { bAssisted = true; }
+	bool Assisted() const { return bAssisted; }
+	/** Swings in a perfect solve: one per leg. */
+	int32 PerfectSwings() const { return static_cast<int32>(Course.SafeZones.size()) + 1; }
 	const FString& StatusText() const { return Status; }
 
 	UPROPERTY(EditAnywhere, Category = "Gravity Golf")
@@ -119,6 +126,8 @@ private:
 
 	FString Name;
 	FString Status;
+	FString Id;
+	bool bAssisted = false;
 	float TeeYawDegrees = 0.f;
 	EGGPhase CurrentPhase = EGGPhase::Ready;
 	GG::FVec3 Lie;

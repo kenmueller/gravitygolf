@@ -8,6 +8,7 @@
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "Game/GGAudio.h"
+#include "Game/GGSave.h"
 #include "HAL/IConsoleManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/PackageName.h"
@@ -105,6 +106,7 @@ bool AGGCourse::Load(const FString& CourseId)
 	}
 
 	Course = GG::FCourse();
+	Id = CourseId.ToLower();
 	Name = Json->GetStringField(TEXT("name"));
 	NextLevel.Reset();
 	Json->TryGetStringField(TEXT("next"), NextLevel);
@@ -439,6 +441,7 @@ void AGGCourse::ReturnBall()
 
 void AGGCourse::ResetHole()
 {
+	bAssisted = false;
 	Lie = Course.Tee;
 	LastSafe = Course.Tee;
 	HeldSwitches.assign(Course.Switches.size(), false);
@@ -562,6 +565,10 @@ void AGGCourse::FinishStroke(GG::EBallState State)
 			const int32 Legs = static_cast<int32>(Course.SafeZones.size()) + 1;
 			Status = StrokeCount <= Legs ? FString::Printf(TEXT("Solved. Perfect: %d swing%s"), StrokeCount, StrokeCount == 1 ? TEXT("") : TEXT("s"))
 										 : FString::Printf(TEXT("Solved in %d swings (perfect is %d)"), StrokeCount, Legs);
+			if (!bAssisted)
+			{
+				UGGSave::Get().RecordSolve(Id, StrokeCount);
+			}
 		}
 		break;
 	case GG::EBallState::AtRest:
