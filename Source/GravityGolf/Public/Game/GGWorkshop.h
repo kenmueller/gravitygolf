@@ -23,6 +23,7 @@ enum class EGGTool : uint8
 	Gate,
 	Pull,
 	Push,
+	Mirror,
 	Erase,
 	Count,
 };
@@ -59,6 +60,9 @@ struct FGGDesign
 	{
 		FIntPoint At = FIntPoint::ZeroValue;
 		bool bPush = false;
+		/** A mirror instead of a field, and which of its two diagonals it stands on. */
+		bool bMirror = false;
+		int32 Turn = 0;
 	};
 
 	FString Name = TEXT("My hole");

@@ -379,6 +379,14 @@ bool AGGCourse::LoadText(const FString& Text, const FString& CourseId)
 				const TArray<TSharedPtr<FJsonValue>>& XY = Spot->AsArray();
 				Solution.Machines.Add(FVector(XY[0]->AsNumber(), XY[1]->AsNumber(), 0.0));
 			}
+			const TArray<TSharedPtr<FJsonValue>>* TurnValues = nullptr;
+			if (A->TryGetArrayField(TEXT("turns"), TurnValues))
+			{
+				for (const TSharedPtr<FJsonValue>& Turn : *TurnValues)
+				{
+					Solution.Turns.Add(FMath::RoundToInt32(Turn->AsNumber()));
+				}
+			}
 			Solutions.Add(Solution);
 		}
 	}
@@ -405,11 +413,27 @@ bool AGGCourse::LoadText(const FString& Text, const FString& CourseId)
 		const TSharedPtr<FJsonObject> A = Value->AsObject();
 		const GG::FVec3 Base = ReadVec(A, TEXT("position"));
 		CoreHeight = A->GetNumberField(TEXT("coreHeight"));
-		Attractors.push_back({Base + GG::FVec3{0, 0, CoreHeight}, A->GetNumberField(TEXT("strength")), A->GetNumberField(TEXT("range"))});
+		GG::FAttractor Machine{Base + GG::FVec3{0, 0, CoreHeight}, A->GetNumberField(TEXT("strength")), A->GetNumberField(TEXT("range"))};
+		FString Kind;
+		if (A->TryGetStringField(TEXT("kind"), Kind) && Kind == TEXT("mirror"))
+		{
+			// A mirror: no field, and one of two diagonals.
+			int32 Turn = 0;
+			A->TryGetNumberField(TEXT("turn"), Turn);
+			Machine.Strength = 0.0;
+			Machine.Range = 0.0;
+			Machine.Turn = Turn ? 1 : 0;
+		}
+		Attractors.push_back(Machine);
 		Movable.Add(A->GetBoolField(TEXT("movable")));
 		MachineBases.Add(ToUnreal(Base));
 	}
 	InitialBases = MachineBases;
+	InitialTurns.Reset();
+	for (const GG::FAttractor& Machine : Attractors)
+	{
+		InitialTurns.Add(Machine.Turn);
+	}
 	Carriers.Init(nullptr, MachineBases.Num());
 
 	BuildActors();
@@ -448,7 +472,7 @@ GG::FSetup AGGCourse::MakeSetup() const
 	}
 	for (int32 I = 0; I < MachineBases.Num(); ++I)
 	{
-		Setup.Machines.push_back({Attractors[I].Strength, Attractors[I].Range, CoreHeight, InitialBases[I].X, InitialBases[I].Y});
+		Setup.Machines.push_back({Attractors[I].Strength, Attractors[I].Range, CoreHeight, InitialBases[I].X, InitialBases[I].Y, Attractors[I].Turn >= 0});
 	}
 	for (const FVector& Zone : NoMachineZones)
 	{
@@ -468,6 +492,10 @@ GG::FSetup AGGCourse::MakeSetup() const
 		for (const FVector& Spot : Answer.Machines)
 		{
 			Hint.Spots.push_back({Spot.X, Spot.Y, 0.0});
+		}
+		for (int32 I = 0; I < Answer.Machines.Num(); ++I)
+		{
+			Hint.Turns.push_back(Answer.Turns.IsValidIndex(I) ? Answer.Turns[I] : 0);
 		}
 		Setup.Hints.push_back(Hint);
 	}
@@ -732,8 +760,82 @@ void AGGCourse::BuildActors()
 	MachineFlash.Init(0.f, MachineBases.Num());
 }
 
+void AGGCourse::BuildMirror(int32 Index)
+{
+	// A tall glass in a bronze frame, on two feet. It stands along the machine's own X axis; turning the machine a
+	// quarter-turn of the compass puts it on its other diagonal.
+	UStaticMesh* Cube = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube"));
+	UMaterialInterface* SurfaceBase = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/M_GG_Surface.M_GG_Surface"));
+	UMaterialInstanceDynamic* Bronze = UMaterialInstanceDynamic::Create(SurfaceBase, this);
+	Bronze->SetVectorParameterValue(TEXT("BaseColor"), FLinearColor(0.42f, 0.26f, 0.11f));
+	Bronze->SetScalarParameterValue(TEXT("Metallic"), 1.f);
+	Bronze->SetScalarParameterValue(TEXT("Roughness"), 0.38f);
+	UMaterialInstanceDynamic* Glass = UMaterialInstanceDynamic::Create(SurfaceBase, this);
+	Glass->SetVectorParameterValue(TEXT("BaseColor"), FLinearColor(0.82f, 0.86f, 0.9f));
+	Glass->SetScalarParameterValue(TEXT("Metallic"), 1.f);
+	Glass->SetScalarParameterValue(TEXT("Roughness"), 0.03f);
+
+	USceneComponent* Machine = NewObject<USceneComponent>(this);
+	Machine->SetMobility(EComponentMobility::Movable);
+	Machine->SetupAttachment(Root);
+	Machine->RegisterComponent();
+	Machines.Add(Machine);
+	auto Part = [&](UMaterialInterface* Material, const FVector& At, const FVector& Size) {
+		return AddMesh(Cube, Material, FTransform(FRotator::ZeroRotator, At, Size / 100.0), Machine);
+	};
+	const double Length = Physics.MirrorHalfLength * 2.0;
+	const double Top = CoreHeight + Physics.MirrorHalfHeight;
+	Part(Glass, FVector(0, 0, Top * 0.5 + 4.0), FVector(Length - 6.0, 5.0, Top - 8.0));
+	Part(Bronze, FVector(0, 0, 4.0), FVector(Length + 6.0, 12.0, 8.0));
+	Part(Bronze, FVector(0, 0, Top + 2.0), FVector(Length + 6.0, 10.0, 5.0));
+	for (const double Side : {-1.0, 1.0})
+	{
+		Part(Bronze, FVector(Side * Length * 0.5, 0, Top * 0.5), FVector(6.0, 10.0, Top));
+		Part(Bronze, FVector(Side * Length * 0.36, 0, 2.5), FVector(9.0, 64.0, 5.0));
+	}
+	// A line of light along its top edge, so it can be found and read at night.
+	Part(Glow(FLinearColor(0.75f, 0.88f, 1.f), 5.f), FVector(0, 0, Top + 5.5), FVector(Length, 3.0, 2.0))->SetCastShadow(false);
+	// (No core and no light of its own: the lists stay in step with the machines by holding nothing for it.)
+	MachineCores.Add(nullptr);
+	MachineLights.Add(nullptr);
+	ApplyTurn(Index);
+}
+
+void AGGCourse::ApplyTurn(int32 Index)
+{
+	if (IsMirror(Index) && Machines.IsValidIndex(Index) && Machines[Index])
+	{
+		// Turn 0 lies along +X+Y, turn 1 along +X-Y (see GG::FAttractor).
+		Machines[Index]->SetWorldRotation(FRotator(0.0, Attractors[Index].Turn == 0 ? 45.0 : -45.0, 0.0));
+	}
+}
+
+void AGGCourse::TurnMachine(int32 Index)
+{
+	if (HasAuthority() && IsMirror(Index))
+	{
+		NetTurn(Index, 1 - Attractors[Index].Turn);
+	}
+}
+
+void AGGCourse::NetTurn_Implementation(int32 Index, int32 Turn)
+{
+	Flush();
+	if (IsMirror(Index))
+	{
+		Attractors[Index].Turn = Turn ? 1 : 0;
+		ApplyTurn(Index);
+		GGAudio::MachinePickUp(this, MachineBase(Index));
+	}
+}
+
 void AGGCourse::BuildMachine(int32 Index)
 {
+	if (IsMirror(Index))
+	{
+		BuildMirror(Index);
+		return;
+	}
 	// A tangible device, not an orb: three bronze legs, a housing, a ring, and the field's glowing heart above.
 	UStaticMesh* Sphere = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Sphere.Sphere"));
 	UStaticMesh* Cylinder = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
@@ -911,6 +1013,10 @@ FString AGGCourse::Describe() const
 	for (int32 I = 0; I < MachineBases.Num(); ++I)
 	{
 		Where += Carriers[I].IsValid() ? FString(TEXT(" carried")) : FString::Printf(TEXT(" (%.0f,%.0f)"), MachineBases[I].X, MachineBases[I].Y);
+		if (IsMirror(I))
+		{
+			Where += Attractors[I].Turn == 0 ? TEXT("/") : TEXT("\\");
+		}
 	}
 	FString Held;
 	for (const bool bHeld : HeldSwitches)
@@ -994,6 +1100,11 @@ void AGGCourse::NetResetHole_Implementation()
 		}
 		Carriers[I] = nullptr;
 		MoveMachine(I, InitialBases[I], false);
+		if (IsMirror(I) && InitialTurns.IsValidIndex(I))
+		{
+			Attractors[I].Turn = InitialTurns[I];
+			ApplyTurn(I);
+		}
 	}
 }
 
@@ -1149,6 +1260,10 @@ void AGGCourse::NetSwing_Implementation(FVector Velocity, AGGGolfer* Swinger)
 	for (const bool bHeld : HeldSwitches)
 	{
 		Pending.Held.Add(bHeld);
+	}
+	for (const GG::FAttractor& Machine : Attractors)
+	{
+		Pending.Turns.Add(FMath::Max(Machine.Turn, 0));
 	}
 	bPendingValid = true;
 	for (int32 I = 0; I < Carriers.Num(); ++I)
@@ -1381,6 +1496,11 @@ void AGGCourse::UpdateFieldPreview(float DeltaSeconds)
 	const double SizeScale = CVarFieldSize.GetValueOnGameThread();
 	for (int32 Index = 0; Index < MachineBases.Num(); ++Index)
 	{
+		if (IsMirror(Index))
+		{
+			// A mirror has no field to draw.
+			continue;
+		}
 		const FVector Base = MachineBases[Index];
 		const double Range = Attractors[Index].Range;
 		const bool bPull = Attractors[Index].Strength > 0.0;
@@ -1479,6 +1599,11 @@ void AGGCourse::UpdateFieldPreview(float DeltaSeconds)
 	// A machine flashes when it takes hold of the ball and again when it lets go.
 	for (int32 Index = 0; Index < MachineCores.Num(); ++Index)
 	{
+		if (!MachineCores[Index])
+		{
+			// A mirror: nothing to pulse.
+			continue;
+		}
 		MachineFlash[Index] = FMath::Max(0.f, MachineFlash[Index] - DeltaSeconds * 2.2f);
 		const float Pulse = 1.f + 0.08f * FMath::Sin(Time * 2.2f) + 1.6f * MachineFlash[Index] * MachineFlash[Index];
 		MachineCores[Index]->SetRelativeScale3D(FVector(0.14f * Pulse));
@@ -1487,7 +1612,7 @@ void AGGCourse::UpdateFieldPreview(float DeltaSeconds)
 		{
 			CoreGlow->SetScalarParameterValue(TEXT("Strength"), CVarMachineCore.GetValueOnGameThread() * Flash);
 		}
-		if (MachineLights.IsValidIndex(Index))
+		if (MachineLights.IsValidIndex(Index) && MachineLights[Index])
 		{
 			MachineLights[Index]->SetIntensity(CVarMachineLight.GetValueOnGameThread() * Flash);
 		}

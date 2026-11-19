@@ -150,6 +150,11 @@ std::vector<GG::FAttractor> AGGRival::Fields() const
 	for (int32 I = 0; I < Bases.Num() && I < static_cast<int32>(Out.size()); ++I)
 	{
 		Out[I].Position = ToSim(Bases[I] + FVector(0.0, 0.0, Course->MachineCoreHeight()));
+		if (Out[I].Turn >= 0 && Turns.IsValidIndex(I))
+		{
+			// A mirror, turned the way the rival last set it.
+			Out[I].Turn = Turns[I];
+		}
 	}
 	return Out;
 }
@@ -165,9 +170,16 @@ void AGGRival::PlanAttempt()
 	{
 		// What the right answer presses on the way: an attempt that reaches a pad without it has not done the leg.
 		std::vector<GG::FAttractor> Exact = Course->MachineFields();
+		Turns.SetNumZeroed(static_cast<int32>(Exact.size()));
 		for (int32 I = 0; I < Answer->Machines.Num() && I < static_cast<int32>(Exact.size()); ++I)
 		{
 			Exact[I].Position = ToSim(Answer->Machines[I] + FVector(0.0, 0.0, Course->MachineCoreHeight()));
+			if (Exact[I].Turn >= 0)
+			{
+				// The rival always turns a mirror the right way: its mistakes are in where it stands and how it swings.
+				Turns[I] = Answer->Turns.IsValidIndex(I) ? Answer->Turns[I] : 0;
+				Exact[I].Turn = Turns[I];
+			}
 		}
 		std::vector<bool> Held = Banked;
 		GG::HoldWeightPlates(Course->Rules(), Exact, Held);

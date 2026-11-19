@@ -188,6 +188,57 @@ static void TestGateAndSwitch()
 	CHECK(Late.Ball().Position.X < 1500);
 }
 
+static void TestMirrorTurnsTheBall()
+{
+	// A wide green with no walls. A ball rolling east meets a mirror standing at 45 degrees.
+	FCourse C;
+	C.Boxes.push_back({{-2000, -2000, -100}, {4000, 2000, 0}, ESurface::Green});
+	C.Tee = {0, 0, 6};
+	C.Cup = {9000, 9000, 0};
+	for (int Turn = 0; Turn < 2; ++Turn)
+	{
+		const std::vector<FAttractor> Mirror = {{{1000, 0, 45}, 0.0, 0.0, Turn}};
+		FSim Sim;
+		std::vector<FEvent> Events;
+		Sim.Begin(C, Mirror, C.Tee, {900, 0, 0});
+		FVec3 After{};
+		bool bBounced = false;
+		while (!Sim.Finished())
+		{
+			Events.clear();
+			Sim.Step(&Events);
+			for (const FEvent& E : Events)
+			{
+				if (E.Type == EEventType::Bounce && !bBounced)
+				{
+					bBounced = true;
+					After = Sim.Ball().Velocity;
+					CHECK(E.Surface == ESurface::Mirror);
+				}
+			}
+		}
+		CHECK(bBounced);
+		// "/" (turn 0) sends an eastbound ball north, "\" (turn 1) south, at a right angle: nothing left of its
+		// eastward speed, and four fifths of its speed kept.
+		CHECK(std::fabs(After.X) < 1.0);
+		CHECK(Turn == 0 ? After.Y > 0.0 : After.Y < 0.0);
+		const double Before = 900.0 - 0.09 * 980.0 * (1000.0 / 900.0);
+		CHECK(std::fabs(std::fabs(After.Y) - 0.8 * Before) < 25.0);
+		// And it ends up well off to that side, having gone no further east than the mirror.
+		CHECK(Turn == 0 ? Sim.Ball().Position.Y > 800.0 : Sim.Ball().Position.Y < -800.0);
+		CHECK(std::fabs(Sim.Ball().Position.X - 1000.0) < 60.0);
+	}
+	// A ball that misses the mirror is not touched by it: the same roll, with a mirror far off to the side and with
+	// none, ends in the same place to the last bit.
+	FSim With;
+	FSim Without;
+	With.Begin(C, {{{1000, 600, 45}, 0.0, 0.0, 0}}, C.Tee, {900, 0, 0});
+	Without.Begin(C, {}, C.Tee, {900, 0, 0});
+	With.Run();
+	Without.Run();
+	CHECK(With.Hash() == Without.Hash());
+}
+
 static void TestDeterminism()
 {
 	const FCourse C = Fairway(ESurface::Grass);
@@ -213,6 +264,7 @@ int main()
 	TestRepulsorPushesAway();
 	TestAttractorReleases();
 	TestGateAndSwitch();
+	TestMirrorTurnsTheBall();
 	TestDeterminism();
 	std::printf(Failures ? "%d FAILED\n" : "all passed\n", Failures);
 	return Failures ? 1 : 0;

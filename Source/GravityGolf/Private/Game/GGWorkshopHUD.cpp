@@ -139,6 +139,12 @@ void AGGHUD::DrawTool(int32 Tool, const FVector2D& Center, float Size)
 		}
 		break;
 	}
+	case EGGTool::Mirror:
+		// A glass on its diagonal, and a ball's path turning a right angle off it.
+		Line(-0.62f, 0.62f, 0.62f, -0.62f, FLinearColor(0.82f, 0.9f, 1.f), Stroke * 1.5f);
+		Line(-0.8f, 0.05f, -0.08f, 0.05f, ShopDim, Stroke * 0.6f);
+		Line(-0.05f, 0.08f, -0.05f, 0.8f, ShopDim, Stroke * 0.6f);
+		break;
 	case EGGTool::Erase:
 		Line(-0.6f, -0.6f, 0.6f, 0.6f, ShopBad, Stroke * 1.3f);
 		Line(-0.6f, 0.6f, 0.6f, -0.6f, ShopBad, Stroke * 1.3f);

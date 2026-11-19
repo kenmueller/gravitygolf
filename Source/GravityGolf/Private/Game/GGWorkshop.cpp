@@ -319,8 +319,13 @@ FString FGGDesign::ToJson() const
 	{
 		const TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
 		Object->SetArrayField(TEXT("position"), Nums({double(Machine.At.X), double(Machine.At.Y), 0}));
-		Object->SetNumberField(TEXT("strength"), Machine.bPush ? PushStrength : PullStrength);
-		Object->SetNumberField(TEXT("range"), Machine.bPush ? PushReach : PullReach);
+		Object->SetNumberField(TEXT("strength"), Machine.bMirror ? 0.0 : Machine.bPush ? PushStrength : PullStrength);
+		Object->SetNumberField(TEXT("range"), Machine.bMirror ? 0.0 : Machine.bPush ? PushReach : PullReach);
+		if (Machine.bMirror)
+		{
+			Object->SetStringField(TEXT("kind"), TEXT("mirror"));
+			Object->SetNumberField(TEXT("turn"), Machine.Turn);
+		}
 		Object->SetNumberField(TEXT("coreHeight"), MachineCore);
 		Object->SetBoolField(TEXT("movable"), true);
 		MachineValues.Add(MakeShared<FJsonValueObject>(Object));
@@ -346,6 +351,12 @@ FString FGGDesign::ToJson() const
 			HeldValues.Add(MakeShared<FJsonValueNumber>(bHeld ? 1 : 0));
 		}
 		Object->SetArrayField(TEXT("held"), HeldValues);
+		TArray<TSharedPtr<FJsonValue>> TurnValues;
+		for (const int32 Turn : Answer.Turns)
+		{
+			TurnValues.Add(MakeShared<FJsonValueNumber>(Turn));
+		}
+		Object->SetArrayField(TEXT("turns"), TurnValues);
 		Answers.Add(MakeShared<FJsonValueObject>(Object));
 	}
 	Root->SetArrayField(TEXT("solutions"), Answers);
@@ -451,7 +462,16 @@ bool FGGDesign::FromJson(const FString& Text)
 			if (ReadNumbers(Value->AsObject(), TEXT("position"), 2, A) && Value->AsObject()->TryGetNumberField(TEXT("strength"), Strength)
 				&& Design.Machines.Num() < 4)
 			{
-				Design.Machines.Add({SpotOf(A[0], A[1]), Strength < 0.0});
+				FMachine Machine{SpotOf(A[0], A[1]), Strength < 0.0};
+				FString Kind;
+				if (Value->AsObject()->TryGetStringField(TEXT("kind"), Kind) && Kind == TEXT("mirror"))
+				{
+					Machine.bPush = false;
+					Machine.bMirror = true;
+					Value->AsObject()->TryGetNumberField(TEXT("turn"), Machine.Turn);
+					Machine.Turn = Machine.Turn ? 1 : 0;
+				}
+				Design.Machines.Add(Machine);
 			}
 		}
 	}
@@ -486,6 +506,13 @@ bool FGGDesign::FromJson(const FString& Text)
 				for (const double Held : A)
 				{
 					Solution.Held.Add(Held != 0.0);
+				}
+			}
+			if (ReadNumbers(Answer, TEXT("turns"), 0, A))
+			{
+				for (const double Turn : A)
+				{
+					Solution.Turns.Add(Turn != 0.0 ? 1 : 0);
 				}
 			}
 			if (bGood)
@@ -538,7 +565,7 @@ AGGGolfer* AGGWorkshop::Golfer() const
 const TCHAR* AGGWorkshop::ToolName(EGGTool Tool)
 {
 	static const TCHAR* Names[] = {TEXT("Move"), TEXT("Ground"), TEXT("Sand"), TEXT("Wall"), TEXT("Soft wall"), TEXT("Safe pad"), TEXT("Light plate"),
-		TEXT("Weight plate"), TEXT("Gate"), TEXT("Attractor"), TEXT("Repulsor"), TEXT("Erase")};
+		TEXT("Weight plate"), TEXT("Gate"), TEXT("Attractor"), TEXT("Repulsor"), TEXT("Mirror"), TEXT("Erase")};
 	return Names[FMath::Clamp(static_cast<int32>(Tool), 0, static_cast<int32>(EGGTool::Count) - 1)];
 }
 
@@ -556,6 +583,7 @@ const TCHAR* AGGWorkshop::ToolHelp(EGGTool Tool)
 		TEXT("Drag to bar a gap. It opens with the plate placed last; click a gate to give it another plate"),
 		TEXT("Bends the ball toward it as the ball comes, then lets it go"),
 		TEXT("Pushes the ball away"),
+		TEXT("The ball bounces off it at a right angle. Click a mirror to turn it to its other diagonal"),
 		TEXT("Click a thing to remove it, or drag across ground to clear it"),
 	};
 	return Help[FMath::Clamp(static_cast<int32>(Tool), 0, static_cast<int32>(EGGTool::Count) - 1)];
@@ -893,6 +921,13 @@ void AGGWorkshop::Press(const FVector2D& World)
 		}
 		Changed(StrokeBefore);
 	}
+	else if (CurrentTool == EGGTool::Mirror && Pick == EPick::Machine && Current.Machines[Index].bMirror)
+	{
+		// Clicking a mirror turns it to its other diagonal.
+		bPressed = false;
+		Current.Machines[Index].Turn = 1 - Current.Machines[Index].Turn;
+		Changed(StrokeBefore);
+	}
 	else if (CurrentTool == EGGTool::Gate && Pick == EPick::Gate)
 	{
 		// Clicking a gate hands it to the next plate.
@@ -1090,6 +1125,18 @@ void AGGWorkshop::Release()
 			return;
 		}
 		Current.Machines.Add({At, CurrentTool == EGGTool::Push});
+		break;
+	case EGGTool::Mirror:
+		if (!NeedsGround())
+		{
+			return;
+		}
+		if (Current.Machines.Num() >= 4)
+		{
+			Say(TEXT("Four machines is the most a hole can have."));
+			return;
+		}
+		Current.Machines.Add({At, false, true, 0});
 		break;
 	default:
 		return;
@@ -1425,6 +1472,11 @@ FString AGGWorkshop::ShareCode() const
 	}
 	for (const FGGDesign::FMachine& Machine : Current.Machines)
 	{
+		if (Machine.bMirror)
+		{
+			Code += FString::Printf(TEXT(";m%d,%d,%d"), SquareOf(Machine.At).X, SquareOf(Machine.At).Y, Machine.Turn);
+			continue;
+		}
 		Code += FString::Printf(TEXT(";%c%d,%d"), Machine.bPush ? TEXT('r') : TEXT('a'), SquareOf(Machine.At).X, SquareOf(Machine.At).Y);
 	}
 	return Code;
@@ -1492,6 +1544,10 @@ bool AGGWorkshop::ImportCode(const FString& Code)
 		{
 			Design.Machines.Add({Middle(), Tag == TEXT('r')});
 		}
+		else if (bPoint && Tag == TEXT('m') && Design.Machines.Num() < 4)
+		{
+			Design.Machines.Add({Middle(), false, true, N.Num() >= 3 && N[2] != 0 ? 1 : 0});
+		}
 	}
 	if (!bTee || !bCup || Design.Cells.Num() == 0)
 	{
@@ -1522,7 +1578,7 @@ bool AGGWorkshop::Verify(const GG::FSetup& Setup, const FGGSolution& Answer)
 	std::vector<GG::FAttractor> Machines;
 	for (size_t I = 0; I < Setup.Machines.size(); ++I)
 	{
-		Machines.push_back({{Answer.Machines[I].X, Answer.Machines[I].Y, Setup.Machines[I].CoreHeight}, Setup.Machines[I].Strength, Setup.Machines[I].Range});
+		Machines.push_back(GG::Stand(Setup.Machines[I], Answer.Machines[I].X, Answer.Machines[I].Y, Answer.Turns.IsValidIndex(I) ? Answer.Turns[I] : 0));
 	}
 	return GG::LegReached(Setup, Leg, Machines, GG::LaunchVelocity(Answer.Yaw, Answer.Power));
 }
@@ -1727,7 +1783,8 @@ void AGGWorkshop::NextPlacement()
 	for (const GG::FMachineDef& Machine : ProofSetup.Machines)
 	{
 		const FIntPoint At = RateGround[RateRandom.RandRange(0, RateGround.Num() - 1)];
-		RateMachines.push_back({{static_cast<double>(At.X), static_cast<double>(At.Y), Machine.CoreHeight}, Machine.Strength, Machine.Range});
+		// (A mirror is turned one way or the other at random.)
+		RateMachines.push_back(GG::Stand(Machine, At.X, At.Y, RateRandom.RandRange(0, 1)));
 	}
 	RateRow = 0;
 }

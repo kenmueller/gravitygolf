@@ -90,10 +90,19 @@ class Course:
         """A plinth. A hole that has any lets machines stand only on them (the game snaps a machine to the middle)."""
         self.plinths.append({"position": [x, y, z], "radius": radius})
 
-    def solution(self, leg, machines, yaw, power):
+    def mirror(self, x, y, z=0, turn=0, core_height=45, movable=True):
+        """A mirror at its starting spot: an upright slab at 45 degrees that the ball bounces off like light. Turn 0
+        lies along +X+Y ("/" with +Y up, sends an eastbound ball north), turn 1 along +X-Y. It is carried and set
+        down like any machine, and can be turned."""
+        self.machines.append({"position": [x, y, z], "strength": 0, "range": 0, "coreHeight": core_height,
+                              "movable": movable, "kind": "mirror", "turn": turn})
+
+    def solution(self, leg, machines, yaw, power, turns=None):
         """The intended answer for a leg: where each machine stands, and one swing that works. The solver verifies
-        it and measures how forgiving it is. Required for holes with two or more machines."""
-        self.solutions.append({"leg": leg, "machines": [list(m) for m in machines], "yaw": yaw, "power": power})
+        it and measures how forgiving it is. Required for holes with two or more machines. `turns` says which way
+        each machine is turned (it only matters for mirrors)."""
+        self.solutions.append({"leg": leg, "machines": [list(m) for m in machines], "yaw": yaw, "power": power,
+                               "turns": list(turns) if turns else [0] * len(machines)})
 
     def placement_area(self, min_x, min_y, max_x, max_y):
         """Where the solver may try standing machines (the walkable ground)."""
@@ -135,7 +144,8 @@ def write_flat(data, placement, path):
         f.write(" ".join(str(v) for v in placement) + "\n")
         f.write(f"{len(machines)}\n")
         for m in machines:
-            f.write(f"{m['strength']} {m['range']} {m['coreHeight']} {m['position'][0]} {m['position'][1]}\n")
+            f.write(f"{m['strength']} {m['range']} {m['coreHeight']} {m['position'][0]} {m['position'][1]} "
+                    f"{1 if m.get('kind') == 'mirror' else 0}\n")
         f.write(f"{len(data['noMachine'])}\n")
         for z in data["noMachine"]:
             f.write(f"{z['position'][0]} {z['position'][1]} {z['radius']}\n")
@@ -159,7 +169,8 @@ def write_flat(data, placement, path):
         f.write(f"{len(data['solutions'])}\n")
         for sol in data["solutions"]:
             spots = " ".join(f"{m[0]} {m[1]}" for m in sol["machines"])
-            f.write(f"{sol['leg']} {sol['yaw']} {sol['power']} {spots}\n")
+            turns = " ".join(str(t) for t in sol.get("turns", [0] * len(sol["machines"])))
+            f.write(f"{sol['leg']} {sol['yaw']} {sol['power']} {spots} {turns}\n")
         plinths = data.get("plinths", [])
         f.write(f"{len(plinths)}\n")
         for p in plinths:

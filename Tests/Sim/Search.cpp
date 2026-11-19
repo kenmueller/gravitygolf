@@ -81,8 +81,10 @@ int main(int Argc, char** Argv)
 						X = Plate->Center.X;
 						Y = Plate->Center.Y;
 					}
-					Machines.push_back({{X, Y, M.CoreHeight}, M.Strength, M.Range});
-					Spots.push_back({X, Y, 0});
+					// A mirror is turned one way or the other at random. (The turn rides in the spot's third number.)
+					const int Turn = M.bMirror && U(Rng) < 0.5 ? 1 : 0;
+					Machines.push_back(Stand(M, X, Y, Turn));
+					Spots.push_back({X, Y, static_cast<double>(Turn)});
 				}
 				const double Yaw = std::round(-180.0 + U(Rng) * 360.0);
 				const double Power = std::round((0.1 + U(Rng) * 0.9) * 40.0) / 40.0;
@@ -108,7 +110,7 @@ int main(int Argc, char** Argv)
 				std::vector<FAttractor> Machines;
 				for (size_t M = 0; M < S.Machines.size(); ++M)
 				{
-					Machines.push_back({{Found[I].Spots[M].X, Found[I].Spots[M].Y, S.Machines[M].CoreHeight}, S.Machines[M].Strength, S.Machines[M].Range});
+					Machines.push_back(Stand(S.Machines[M], Found[I].Spots[M].X, Found[I].Spots[M].Y, static_cast<int>(Found[I].Spots[M].Z)));
 				}
 				for (double Yaw = -180.0; Yaw < 180.0; Yaw += 1.0)
 				{
@@ -125,7 +127,11 @@ int main(int Argc, char** Argv)
 	for (size_t I = 0; I < Found.size() && I < 12; ++I)
 	{
 		std::printf("tolerance %3d  swing yaw %6.1f power %.3f  machines:", Found[I].Tolerance, Found[I].Yaw, Found[I].Power);
-		for (const FVec3& Spot : Found[I].Spots) { std::printf(" (%.0f, %.0f)", Spot.X, Spot.Y); }
+		for (size_t M = 0; M < Found[I].Spots.size(); ++M)
+		{
+			const FVec3& Spot = Found[I].Spots[M];
+			std::printf(" (%.0f, %.0f)%s", Spot.X, Spot.Y, !S.Machines[M].bMirror ? "" : Spot.Z > 0.5 ? " turned \\" : " turned /");
+		}
 		std::printf("\n");
 	}
 	return 0;

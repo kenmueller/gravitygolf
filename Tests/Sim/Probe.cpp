@@ -6,6 +6,8 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
+#include <cstdlib>
 
 using namespace GG;
 
@@ -26,7 +28,13 @@ int main(int Argc, char** Argv)
 		const int Arg = 5 + static_cast<int>(M) * 2;
 		const double X = Arg + 1 < Argc ? std::atof(Argv[Arg]) : S.Machines[M].StartX;
 		const double Y = Arg + 1 < Argc ? std::atof(Argv[Arg + 1]) : S.Machines[M].StartY;
-		Machines.push_back({{X, Y, S.Machines[M].CoreHeight}, S.Machines[M].Strength, S.Machines[M].Range});
+		// Mirrors are turned as GG_TURNS says ("0,1": one number a machine), or all "/" without it.
+		int Turn = 0;
+		if (const char* Turns = std::getenv("GG_TURNS"))
+		{
+			Turn = static_cast<size_t>(2 * M) < std::strlen(Turns) && Turns[2 * M] == '1' ? 1 : 0;
+		}
+		Machines.push_back(Stand(S.Machines[M], X, Y, Turn));
 	}
 
 	FSim Sim;

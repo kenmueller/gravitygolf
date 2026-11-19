@@ -276,6 +276,8 @@ void AGGGolfer::SetupPlayerInputComponent(UInputComponent* Input)
 	Input->BindKey(EKeys::BackSpace, IE_Pressed, this, &AGGGolfer::ResetKey);
 	Input->BindKey(EKeys::B, IE_Pressed, this, &AGGGolfer::BallKey);
 	Input->BindKey(EKeys::T, IE_Pressed, this, &AGGGolfer::BuildKey);
+	Input->BindKey(EKeys::F, IE_Pressed, this, &AGGGolfer::TurnKey);
+	Input->BindKey(EKeys::Gamepad_RightShoulder, IE_Pressed, this, &AGGGolfer::TurnKey);
 	Input->BindKey(EKeys::RightMouseButton, IE_Pressed, this, &AGGGolfer::WatchPressed);
 	Input->BindKey(EKeys::RightMouseButton, IE_Released, this, &AGGGolfer::WatchReleased);
 	// The menu: Tab or Escape opens and closes it; arrows and Enter work it. (In the editor, Escape ends play.)
@@ -298,6 +300,7 @@ void AGGGolfer::SetupPlayerInputComponent(UInputComponent* Input)
 	Input->BindKey(EKeys::Seven, IE_Pressed, this, &AGGGolfer::Hole7);
 	Input->BindKey(EKeys::Eight, IE_Pressed, this, &AGGGolfer::Hole8);
 	Input->BindKey(EKeys::Nine, IE_Pressed, this, &AGGGolfer::Hole9);
+	Input->BindKey(EKeys::Zero, IE_Pressed, this, &AGGGolfer::Hole10);
 
 	// Gamepad: left stick walks (click it to run), right stick looks, right trigger swings.
 	Input->BindAxisKey(EKeys::Gamepad_LeftY, this, &AGGGolfer::PadForward);
@@ -560,6 +563,10 @@ void AGGGolfer::TouchButtons(const FVector2D& View, TArray<FGGTouchButton>& Out)
 	{
 		Add(TEXT("Grab"), 39.f, 12.f, 7.5f, IsCarrying() ? TEXT("PLACE") : TEXT("GRAB"));
 	}
+	if (MirrorAtHand() != INDEX_NONE)
+	{
+		Add(TEXT("Turn"), 39.f, 29.f, 6.5f, TEXT("TURN"));
+	}
 	// Along the top, out of the way: the things you do now and then.
 	if (Phase == EGGPhase::Ready || Phase == EGGPhase::Penalty)
 	{
@@ -615,6 +622,10 @@ void AGGGolfer::PressButton(FName Id)
 	else if (Id == TEXT("Build"))
 	{
 		BuildKey();
+	}
+	else if (Id == TEXT("Turn"))
+	{
+		TurnKey();
 	}
 }
 
@@ -778,7 +789,18 @@ void AGGGolfer::GGNet(const FString& Command, const FString& Argument)
 	{
 		N.Add(FCString::Atod(*Part));
 	}
-	if (Command == TEXT("carry") && N.Num() == 1)
+	if (Command == TEXT("turn") && N.Num() == 1)
+	{
+		if (HasAuthority())
+		{
+			C->TurnMachine(static_cast<int32>(N[0]));
+		}
+		else
+		{
+			ServerTurn(static_cast<int32>(N[0]));
+		}
+	}
+	else if (Command == TEXT("carry") && N.Num() == 1)
 	{
 		if (HasAuthority())
 		{
@@ -861,6 +883,59 @@ void AGGGolfer::ServerSwing_Implementation(FVector Direction, float Power)
 	if (C && !IsCarrying() && DistanceToBall() < SwingReach * 1.6)
 	{
 		C->Swing(Direction, Power, this);
+	}
+}
+
+int32 AGGGolfer::MirrorAtHand() const
+{
+	const AGGCourse* C = Course();
+	if (!C || C->Phase() == EGGPhase::Flying)
+	{
+		return INDEX_NONE;
+	}
+	if (IsCarrying())
+	{
+		return C->IsMirror(Carried) ? Carried : INDEX_NONE;
+	}
+	const int32 Index = C->FindMachine(HoldPoint(), PickUpReach);
+	return Index != INDEX_NONE && C->IsMirror(Index) && !C->CarrierOf(Index) ? Index : INDEX_NONE;
+}
+
+bool AGGGolfer::HandlingMirror() const
+{
+	const AGGCourse* C = Course();
+	if (!C)
+	{
+		return false;
+	}
+	return C->IsMirror(IsCarrying() ? Carried : C->FindMachine(HoldPoint(), PickUpReach));
+}
+
+void AGGGolfer::TurnKey()
+{
+	// F: turn a mirror to its other diagonal, in the hands or where it stands.
+	AGGCourse* C = Course();
+	const int32 Index = MirrorAtHand();
+	if (!C || Busy() || Index == INDEX_NONE)
+	{
+		return;
+	}
+	if (HasAuthority())
+	{
+		C->TurnMachine(Index);
+	}
+	else
+	{
+		ServerTurn(Index);
+	}
+}
+
+void AGGGolfer::ServerTurn_Implementation(int32 Index)
+{
+	AGGCourse* C = Course();
+	if (C && (C->CarrierOf(Index) == this || FVector::Dist(GetActorLocation(), C->MachineBase(Index)) < PickUpReach * 2.5))
+	{
+		C->TurnMachine(Index);
 	}
 }
 

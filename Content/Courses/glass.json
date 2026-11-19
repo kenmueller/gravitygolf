@@ -1,0 +1,288 @@
+{
+	"id": "glass",
+	"name": "The Looking Glass",
+	"level": "Glass",
+	"par": 2,
+	"ballRadius": 6,
+	"gravity": [
+		0,
+		0,
+		-980
+	],
+	"killZ": -1400,
+	"tee": {
+		"position": [
+			400,
+			0,
+			6
+		],
+		"yaw": 0
+	},
+	"cup": {
+		"position": [
+			2200,
+			1300,
+			0
+		],
+		"radius": 42,
+		"captureSpeed": 650
+	},
+	"noMachine": [
+		{
+			"position": [
+				3000,
+				2000,
+				0
+			],
+			"radius": 250,
+			"kind": "pad"
+		},
+		{
+			"position": [
+				2200,
+				1300,
+				0
+			],
+			"radius": 260,
+			"kind": "court"
+		}
+	],
+	"safeZones": [
+		{
+			"position": [
+				3000,
+				2000,
+				0
+			],
+			"radius": 190,
+			"needsSwitch": -1
+		}
+	],
+	"attractors": [
+		{
+			"position": [
+				800,
+				-250,
+				0
+			],
+			"strength": 0,
+			"range": 0,
+			"coreHeight": 45,
+			"movable": true,
+			"kind": "mirror",
+			"turn": 0
+		}
+	],
+	"boxes": [
+		{
+			"name": "Backstop",
+			"center": [
+				3000,
+				2225,
+				-15
+			],
+			"size": [
+				560,
+				270,
+				30
+			],
+			"surface": "sand",
+			"look": "sand",
+			"shape": "box"
+		},
+		{
+			"name": "Floor",
+			"center": [
+				1700,
+				1000,
+				-15
+			],
+			"size": [
+				4000,
+				3600,
+				30
+			],
+			"surface": "green",
+			"look": "floor",
+			"shape": "box"
+		},
+		{
+			"name": "South",
+			"center": [
+				1700.0,
+				-500.0,
+				200.0
+			],
+			"size": [
+				3800,
+				200,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "West",
+			"center": [
+				-100.0,
+				0.0,
+				200.0
+			],
+			"size": [
+				200,
+				800,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "East",
+			"center": [
+				3500.0,
+				1100.0,
+				200.0
+			],
+			"size": [
+				200,
+				3000,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "Top",
+			"center": [
+				2550.0,
+				2500.0,
+				200.0
+			],
+			"size": [
+				1700,
+				200,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "North_Near",
+			"center": [
+				1300.0,
+				500.0,
+				200.0
+			],
+			"size": [
+				2600,
+				200,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "Between",
+			"center": [
+				2500.0,
+				1100.0,
+				200.0
+			],
+			"size": [
+				200,
+				1000,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "Pocket_Floor",
+			"center": [
+				2050.0,
+				1000.0,
+				200.0
+			],
+			"size": [
+				700,
+				200,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "Pocket_West",
+			"center": [
+				1800.0,
+				1750.0,
+				200.0
+			],
+			"size": [
+				200,
+				1300,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "SafePad1",
+			"center": [
+				3000,
+				2000,
+				-10
+			],
+			"size": [
+				323.0,
+				323.0,
+				20
+			],
+			"surface": "sand",
+			"look": "pad",
+			"shape": "box"
+		}
+	],
+	"switches": [],
+	"gates": [],
+	"solutions": [
+		{
+			"leg": 0,
+			"machines": [
+				[
+					3000,
+					0
+				]
+			],
+			"yaw": 0,
+			"power": 0.4,
+			"turns": [
+				0
+			]
+		},
+		{
+			"leg": 1,
+			"machines": [
+				[
+					2200,
+					2000
+				]
+			],
+			"yaw": 180,
+			"power": 0.25,
+			"turns": [
+				0
+			]
+		}
+	],
+	"next": "Wires",
+	"ambience": "canyon"
+}

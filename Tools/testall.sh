@@ -15,7 +15,7 @@ check() { # name, command...
 	fi
 }
 check "sim tests" "$ROOT/Tests/Sim/run.sh"
-for COURSE in terraces saltmirror canyon lantern returning brief colonnade stones wires; do
+for COURSE in terraces saltmirror canyon lantern returning brief colonnade stones glass wires; do
 	check "proof: $COURSE" "$ROOT/Tests/Sim/solve.sh" "$COURSE"
 done
 check "every hole solves in the engine" "$ROOT/Tools/smoke.sh"

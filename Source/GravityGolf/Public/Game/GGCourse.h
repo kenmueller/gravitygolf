@@ -33,6 +33,8 @@ struct FGGSolution
 	double Power = 0.0;
 	/** Workshop holes: which plates were already banked when the leg was played. */
 	TArray<bool> Held;
+	/** Which way each machine is turned (it matters only for the mirrors among them). */
+	TArray<int32> Turns;
 };
 
 /**
@@ -75,6 +77,11 @@ public:
 	/** A player sets a carried machine down. False (with a message) where machines can't stand. */
 	bool PlaceMachine(int32 Index, const FVector& Base, AGGGolfer* Carrier);
 	AGGGolfer* CarrierOf(int32 Index) const;
+	/** Some machines are mirrors: no field, an upright glass at 45 degrees that the ball bounces off. A mirror can be
+	 *  turned to its other diagonal, in a player's hands or where it stands. */
+	bool IsMirror(int32 Index) const { return Index >= 0 && Index < static_cast<int32>(Attractors.size()) && Attractors[Index].Turn >= 0; }
+	int32 MachineTurn(int32 Index) const { return IsMirror(Index) ? Attractors[Index].Turn : 0; }
+	void TurnMachine(int32 Index);
 	// For a rival playing its own copy of the hole: the rules, and how the hole starts.
 	const GG::FCourse& Rules() const { return Course; }
 	const GG::FPhysics& PhysicsRules() const { return Physics; }
@@ -109,6 +116,8 @@ public:
 	void NetPlace(int32 Index, FVector Base);
 	UFUNCTION(NetMulticast, Reliable)
 	void NetAssisted();
+	UFUNCTION(NetMulticast, Reliable)
+	void NetTurn(int32 Index, int32 Turn);
 
 	/** Which course this is, so a joining player's copy loads the same one. */
 	UPROPERTY(ReplicatedUsing = OnRep_CourseId)
@@ -202,6 +211,10 @@ private:
 	std::vector<GG::FAttractor> Attractors;
 	TArray<FVector> MachineBases;
 	TArray<FVector> InitialBases;
+	TArray<int32> InitialTurns;
+	void BuildMirror(int32 Index);
+	/** Stand a mirror's glass along the diagonal it is turned to. */
+	void ApplyTurn(int32 Index);
 	TArray<bool> Movable;
 	/** Per machine: who is carrying it, if anyone. */
 	TArray<TWeakObjectPtr<AGGGolfer>> Carriers;

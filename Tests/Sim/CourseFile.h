@@ -14,6 +14,7 @@ using GG::FSetup;
 using GG::LegReached;
 using GG::MachineAllowed;
 using GG::MakeLeg;
+using GG::Stand;
 
 inline bool LoadCourse(const char* Path, FSetup& S)
 {
@@ -31,7 +32,9 @@ inline bool LoadCourse(const char* Path, FSetup& S)
 	for (int I = 0; I < Count; ++I)
 	{
 		FMachineDef M;
-		In >> M.Strength >> M.Range >> M.CoreHeight >> M.StartX >> M.StartY;
+		int Mirror = 0;
+		In >> M.Strength >> M.Range >> M.CoreHeight >> M.StartX >> M.StartY >> Mirror;
+		M.bMirror = Mirror != 0;
 		S.Machines.push_back(M);
 	}
 	In >> Count;
@@ -87,6 +90,12 @@ inline bool LoadCourse(const char* Path, FSetup& S)
 			FVec3 Spot;
 			In >> Spot.X >> Spot.Y;
 			H.Spots.push_back(Spot);
+		}
+		for (size_t M = 0; M < S.Machines.size(); ++M)
+		{
+			int Turn = 0;
+			In >> Turn;
+			H.Turns.push_back(Turn);
 		}
 		S.Hints.push_back(H);
 	}

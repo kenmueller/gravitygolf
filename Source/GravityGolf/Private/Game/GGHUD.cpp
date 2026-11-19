@@ -226,11 +226,11 @@ void AGGHUD::DrawPlay(const AGGGolfer* Golfer, const AGGCourse* Course)
 	}
 	else if (Golfer->IsCarrying())
 	{
-		Prompt = TEXT("E   set the machine down");
+		Prompt = Golfer->HandlingMirror() ? TEXT("E   set the mirror down        F   turn it") : TEXT("E   set the machine down");
 	}
 	else if (Golfer->CanPickUp())
 	{
-		Prompt = TEXT("E   pick up the gravity machine");
+		Prompt = Golfer->HandlingMirror() ? TEXT("E   pick up the mirror        F   turn it") : TEXT("E   pick up the gravity machine");
 	}
 	else if (Golfer->CanSwing())
 	{

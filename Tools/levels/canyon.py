@@ -22,12 +22,14 @@ importlib.reload(c)
 VARIANT = globals().get("GG_VARIANT", {})
 LEVEL = VARIANT.get("level", "/Game/Levels/Canyon")
 COURSE = "/Users/ken/Code/gravitygolf/Content/Courses/%s.json" % VARIANT.get("course", "canyon")
-DOOR = VARIANT.get("door", (2300, 3100))
+DOOR = VARIANT.get("door", (2300, 3100))  # None: this hole has no built doorway
+# The middle of the course: the cliffs that clad its outer walls stand on the side away from it.
+CENTER = VARIANT.get("center", (3000, 450))
 # High sun raking across the slot: one wall burns orange, the other glows with its bounce.
 SUN = VARIANT.get("sun", dict(sun_pitch=-64.0, sun_yaw=38.0, fog_density=0.035, sun_kelvin=5600.0, sky_intensity=1.5,
                               exposure_bias=0.0))
 SURFACE = "/Game/Materials/M_GG_Surface.M_GG_Surface"
-OUTER = {"Wall_South", "Wall_North", "Wall_West", "Wall_East", "Lower_End"}
+OUTER = set(VARIANT.get("outer", ("Wall_South", "Wall_North", "Wall_West", "Wall_East", "Lower_End")))
 rng = random.Random(VARIANT.get("seed", 23))
 
 
@@ -97,8 +99,8 @@ def walls(course, m, cliff, boulder):
                               "Landscape/Cliffs")
                 continue
             # Which way is "out"? Away from the middle of the course.
-            out_x = 0 if along_x else (1 if cx > 3000 else -1)
-            out_y = (1 if cy > 450 else -1) if along_x else 0
+            out_x = 0 if along_x else (1 if cx > CENTER[0] else -1)
+            out_y = (1 if cy > CENTER[1] else -1) if along_x else 0
             face_x = cx - out_x * sx / 2
             face_y = cy - out_y * sy / 2
             step = length * scale_len * 0.6
@@ -163,7 +165,7 @@ def markers(course, m):
 
 def sky_ring(m, boulder):
     """The fantastical: a ring of stone lies over the canyon like a lid, and boulders hang in the shaft of light."""
-    center = (3000.0, 450.0, 3600.0)
+    center = (float(CENTER[0]), float(CENTER[1]), 3600.0)
     radius = 3300.0
     segments = 64
     for i in range(segments):
@@ -196,8 +198,17 @@ boulder_mesh = c.fab_mesh("Canyon_Sandstone_Boulder")
 for b in course_data["boxes"]:
     if b["look"] == "floor":
         c.box(b["center"], b["size"], mats["floor"], b["name"])
+    elif b["look"] == "sand":
+        # Soft ground lying in the floor (a backstop behind a pad): a drift of pale sand, a hair proud of the floor.
+        c.box((b["center"][0], b["center"][1], 0.5), (b["size"][0], b["size"][1], 1.0), mats["sand"], b["name"],
+              folder="Course/Markers", solid=False)
+    elif b["look"] == "pad":
+        side = max(b["size"][0], b["size"][1])
+        c.mesh(c.CYLINDER, (b["center"][0], b["center"][1], 0.4), (side * 1.1, side * 1.1, 0.8), material=mats["stone"],
+               label=b["name"], folder="Course/Markers", cast_shadow=False)
 walls(course_data, mats, cliff_mesh, boulder_mesh)
-doorway(mats)
+if DOOR:
+    doorway(mats)
 markers(course_data, mats)
 c.player_start(course_data)
 sky_ring(mats, boulder_mesh)

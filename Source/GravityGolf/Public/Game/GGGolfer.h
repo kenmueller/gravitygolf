@@ -39,6 +39,10 @@ public:
 	float Charge() const { return ChargeAmount; }
 	bool IsCarrying() const { return Carried != INDEX_NONE; }
 	bool CanPickUp() const;
+	/** The mirror this player could turn right now: the one in their hands, or one within reach. INDEX_NONE if none. */
+	int32 MirrorAtHand() const;
+	/** What the machine in their hands, or the one they could pick up, is called. */
+	bool HandlingMirror() const;
 	double DistanceToBall() const;
 
 	// Touch play (phones and tablets): a movement stick under the left thumb, drag anywhere else to look, and round
@@ -66,6 +70,8 @@ public:
 	void ServerCarry(int32 Index);
 	UFUNCTION(Server, Reliable)
 	void ServerPlace(FVector Ground);
+	UFUNCTION(Server, Reliable)
+	void ServerTurn(int32 Index);
 	UFUNCTION(Server, Reliable)
 	void ServerReturnBall();
 	UFUNCTION(Server, Reliable)
@@ -157,6 +163,7 @@ private:
 	void ResetKey();
 	void BallKey();
 	void BuildKey();
+	void TurnKey();
 	void MenuUp();
 	void MenuDown();
 	void MenuLeft();
@@ -174,6 +181,7 @@ private:
 	void Hole7() { JumpToHole(7); }
 	void Hole8() { JumpToHole(8); }
 	void Hole9() { JumpToHole(9); }
+	void Hole10() { JumpToHole(10); }
 
 	void TouchPressed(ETouchIndex::Type Finger, FVector Location) { HandleTouch(static_cast<int32>(Finger), 0, FVector2D(Location)); }
 	void TouchMoved(ETouchIndex::Type Finger, FVector Location) { HandleTouch(static_cast<int32>(Finger), 1, FVector2D(Location)); }

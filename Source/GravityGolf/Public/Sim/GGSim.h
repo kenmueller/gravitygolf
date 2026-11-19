@@ -33,6 +33,8 @@ enum class ESurface : uint8_t
 	Stone,
 	Sand,
 	Ice,
+	/** A mirror's face: the ball leaves it at the angle it came in at, a little slower. */
+	Mirror,
 };
 
 /** Axis-aligned collision box. */
@@ -54,6 +56,12 @@ struct FAttractor
 	FVec3 Position;
 	double Strength = 420.0;
 	double Range = 1800.0;
+	/**
+	 * A machine can instead be a mirror: an upright slab standing on its spot at 45 degrees, which the ball bounces
+	 * off like light. -1 is not a mirror. 0 is a mirror lying along +X+Y ("/" seen from above with +Y up), 1 along
+	 * +X-Y ("\"). A mirror has no field: its strength and range are zero.
+	 */
+	int Turn = -1;
 };
 
 /** A pad where the ball may come to rest and stay: a checkpoint. Optional, per level. */
@@ -113,6 +121,10 @@ struct FPhysics
 	double RestSpeed = 6.0;
 	double RestTime = 0.35;
 	double MaxFlightTime = 30.0;
+	/** A mirror: half its length, half its thickness, and how far it stands above and below its machine's center. */
+	double MirrorHalfLength = 90.0;
+	double MirrorHalfThickness = 8.0;
+	double MirrorHalfHeight = 60.0;
 };
 
 enum class EBallState : uint8_t
@@ -215,5 +227,6 @@ private:
 	std::vector<bool> GateWasOpen;
 
 	void Collide(const FBox& Box, FVec3 A, double H, bool bWasOnGround, ESurface& Ground, std::vector<FEvent>* Events);
+	void CollideMirror(const FAttractor& Mirror, FVec3 A, double H, bool bWasOnGround, ESurface& Ground, std::vector<FEvent>* Events);
 };
 } // namespace GG

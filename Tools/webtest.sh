@@ -8,7 +8,7 @@ WEB="${GG_WEB_COPY:-$ROOT/../gravitygolf-web}"
 PY="$UE/Engine/Binaries/ThirdParty/Python3/Mac/bin/python3"
 STATUS=0
 # "tour" stands for every hole: open it, picture from the tee, play its solution. A web smoke test.
-TOUR="hole-Terraces hole-SaltMirror hole-Canyon hole-Lantern hole-Returning hole-Brief hole-Colonnade hole-Stones hole-Wires"
+TOUR="hole-Terraces hole-SaltMirror hole-Canyon hole-Lantern hole-Returning hole-Brief hole-Colonnade hole-Stones hole-Glass hole-Wires"
 NAMES=""
 for NAME in ${*:-play phone}; do
 	[ "$NAME" = "tour" ] && NAMES="$NAMES $TOUR" || NAMES="$NAMES $NAME"

@@ -13,7 +13,15 @@ namespace GG
 struct FMachineDef
 {
 	double Strength = 0, Range = 0, CoreHeight = 0, StartX = 0, StartY = 0;
+	/** A mirror instead of a field: it can be turned two ways (see FAttractor::Turn). */
+	bool bMirror = false;
 };
+
+/** A machine standing somewhere. Turn only matters to a mirror. */
+inline FAttractor Stand(const FMachineDef& M, double X, double Y, int Turn = 0)
+{
+	return {{X, Y, M.CoreHeight}, M.Strength, M.Range, M.bMirror ? Turn : -1};
+}
 
 /** A recorded answer for one leg: where each machine stands, and one swing. */
 struct FHint
@@ -21,6 +29,8 @@ struct FHint
 	int Leg = 0;
 	double Yaw = 0, Power = 0;
 	std::vector<FVec3> Spots;
+	/** Which way each machine is turned, for the mirrors among them. */
+	std::vector<int> Turns;
 };
 
 struct FSetup

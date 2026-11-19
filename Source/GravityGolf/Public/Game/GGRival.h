@@ -93,6 +93,8 @@ private:
 
 	// The attempt under way.
 	TArray<FVector> Targets;
+	/** Which way the rival has each mirror turned. */
+	TArray<int32> Turns;
 	double Yaw = 0.0;
 	double Power = 0.0;
 	int32 Carrying = INDEX_NONE;

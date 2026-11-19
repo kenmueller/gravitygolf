@@ -427,6 +427,10 @@ void AGGGameMode::TickDemo(float DeltaSeconds)
 			bDemo = false;
 			return;
 		}
+		if (Course->IsMirror(I) && Solution->Turns.IsValidIndex(I) && Course->MachineTurn(I) != Solution->Turns[I])
+		{
+			Course->TurnMachine(I);
+		}
 	}
 	Golfer->TestSwing(Solution->Yaw, Solution->Power);
 	DemoLeg = Leg;

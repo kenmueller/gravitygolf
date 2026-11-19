@@ -29,6 +29,8 @@ This is a puzzle game. The player must think. Every hole is designed so its comp
    The solver proves every leg separately.
 5. **Machines bend, they don't trap.** A gravity machine pulls only while the ball approaches and releases it
    after the closest pass. (A steady pull plus rolling friction always parks the ball under the machine.)
+   A third machine, the **mirror**, has no field: a glass standing at 45 degrees that the ball leaves at the angle
+   it came in at. It is the exact tool where the fields are the approximate ones.
 6. **The club is a putter.** The ball rolls. Height, curves and anything else come from the machines.
 7. **One new idea per hole**, taught by the level itself.
 
@@ -52,7 +54,7 @@ Never report something as good when it is merely working.
 ```
 GravityGolf.uproject          plugins: ModelContextProtocol + AllToolsets (MCP), Python, ProceduralMesh
 Source/GravityGolf/
-  */Sim/GGSim.*               deterministic 3D ball physics (boxes, surfaces, machines, cup, safe pads, light and weight plates, gates)
+  */Sim/GGSim.*               deterministic 3D ball physics (boxes, surfaces, machines, mirrors, cup, safe pads, light and weight plates, gates)
                               (plinths, where a hole has them, are a placement rule: GGProof.h and AGGCourse)
   */Game/GGCourse.*           loads Content/Courses/<level>.json, steps the sim at 240 Hz, ball/attractors/flag
   */Game/GGGolfer.*           first-person character: walk, keys, gamepad and touch; carry machines, swing, menus
@@ -188,6 +190,12 @@ console and read the pass list in the log before guessing.
   rectangles that never overlap, sand included, so its sand works.
 - Keys are not axes: `BindAxisKey(EKeys::W, ...)` trips an engine ensure at startup. Read W A S D with
   `IsInputKeyDown` in Tick.
+- Mirrors (`c.mirror(x, y, turn)`; `FAttractor::Turn` in the sim; F turns one in play). A mirror turns the ball a
+  right angle exactly and keeps four fifths of its speed. It is 180 cm long, so from 26 m it is a target 3 degrees
+  wide; a cup after a long mirrored path is too small a target (4 to 8 working swings), so mirrored legs end on a
+  pad with a backstop, and the cup comes a short way after the last mirror. A backstop must start close behind the
+  pad's middle (about 90 cm): a hard-hit ball runs nearly a metre into sand before it stops.
+  In the tools: `GG_TURNS=0,1 Tests/Sim/probe.sh ...` turns mirrors; solve and search try both turns.
 - The forgiving move in this physics is a straight reel: ball, machine and target in one line (hundreds of working
   swings). But a straight reel from where the ball lies never needs the machine for direction: if the line is open
   a plain putt does it. A machine is necessary only where the ball must turn (fiddly: a dozen swings) or where it

@@ -42,6 +42,9 @@ FSurfaceProps PropsFor(ESurface Surface)
 		return {0.05, 0.9, 0.1, 14.0};
 	case ESurface::Ice:
 		return {0.5, 0.01, 0.95, 0.0};
+	case ESurface::Mirror:
+		// The same share of speed kept along the face and off it, so the angle out equals the angle in.
+		return {0.8, 0.06, 0.8, 0.0};
 	case ESurface::Grass:
 	default:
 		return {0.35, 0.25, 0.8, 0.0};
@@ -126,6 +129,11 @@ FVec3 FSim::Acceleration(FVec3 Position, FVec3 Velocity, std::vector<FEvent>* Ev
 	for (size_t I = 0; I < Attractors.size(); ++I)
 	{
 		const FAttractor& A = Attractors[I];
+		if (A.Turn >= 0)
+		{
+			// A mirror has no field.
+			continue;
+		}
 		const FVec3 D = A.Position - Position;
 		const double R2 = Dot(D, D);
 		const double Range2 = A.Range * A.Range;
@@ -283,6 +291,48 @@ void FSim::Collide(const FBox& Box, FVec3 A, double H, bool bWasOnGround, ESurfa
 	}
 }
 
+void FSim::CollideMirror(const FAttractor& Mirror, FVec3 A, double H, bool bWasOnGround, ESurface& Ground, std::vector<FEvent>* Events)
+{
+	// A mirror is a box turned 45 degrees. Rather than a second kind of collision, the ball is looked at from the
+	// mirror's own frame, where the mirror is an ordinary box, and the same Collide does the work. The turn is by
+	// one fixed number (the sine and cosine of 45 degrees), so there is still no trigonometry in the step.
+	constexpr double K = 0.70710678118654752;
+	const double C = K;
+	const double S = Mirror.Turn == 0 ? K : -K;
+	FBall& B = BallState;
+	const double Dx = B.Position.X - Mirror.Position.X;
+	const double Dy = B.Position.Y - Mirror.Position.Y;
+	const FVec3 Local{Dx * C + Dy * S, Dy * C - Dx * S, B.Position.Z - Mirror.Position.Z};
+	FBox Box;
+	Box.Min = {-Physics.MirrorHalfLength, -Physics.MirrorHalfThickness, -Physics.MirrorHalfHeight};
+	Box.Max = {Physics.MirrorHalfLength, Physics.MirrorHalfThickness, Physics.MirrorHalfHeight};
+	Box.Surface = ESurface::Mirror;
+	// Nothing is touched unless the ball is touching: turning the ball's state there and back would round it.
+	const FVec3 Q{Clamp(Local.X, Box.Min.X, Box.Max.X), Clamp(Local.Y, Box.Min.Y, Box.Max.Y), Clamp(Local.Z, Box.Min.Z, Box.Max.Z)};
+	const FVec3 D = Local - Q;
+	if (Dot(D, D) >= B.Radius * B.Radius)
+	{
+		return;
+	}
+	const FVec3 WorldVelocity = B.Velocity;
+	B.Position = Local;
+	B.Velocity = {WorldVelocity.X * C + WorldVelocity.Y * S, WorldVelocity.Y * C - WorldVelocity.X * S, WorldVelocity.Z};
+	const FVec3 LocalA{A.X * C + A.Y * S, A.Y * C - A.X * S, A.Z};
+	const size_t EventsBefore = Events ? Events->size() : 0;
+	const bool bGroundBefore = B.bOnGround;
+	Collide(Box, LocalA, H, bWasOnGround, Ground, Events);
+	// A mirror is a wall, never the ground the ball rolls on.
+	B.bOnGround = bGroundBefore;
+	const FVec3 Out = B.Position;
+	const FVec3 OutVelocity = B.Velocity;
+	B.Position = {Mirror.Position.X + Out.X * C - Out.Y * S, Mirror.Position.Y + Out.X * S + Out.Y * C, Mirror.Position.Z + Out.Z};
+	B.Velocity = {OutVelocity.X * C - OutVelocity.Y * S, OutVelocity.X * S + OutVelocity.Y * C, OutVelocity.Z};
+	for (size_t I = EventsBefore; Events && I < Events->size(); ++I)
+	{
+		(*Events)[I].Position = B.Position;
+	}
+}
+
 void FSim::SubStep(double H, std::vector<FEvent>* Events)
 {
 	FBall& B = BallState;
@@ -298,6 +348,13 @@ void FSim::SubStep(double H, std::vector<FEvent>* Events)
 	for (const FBox& Box : Course->Boxes)
 	{
 		Collide(Box, A, H, bWasOnGround, Ground, Events);
+	}
+	for (const FAttractor& Machine : Attractors)
+	{
+		if (Machine.Turn >= 0)
+		{
+			CollideMirror(Machine, A, H, bWasOnGround, Ground, Events);
+		}
 	}
 
 	// Switches: rolling over one presses it. Gates: solid unless their switch is holding them open.

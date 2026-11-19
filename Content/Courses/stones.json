@@ -229,7 +229,10 @@
 				]
 			],
 			"yaw": -1,
-			"power": 0.225
+			"power": 0.225,
+			"turns": [
+				0
+			]
 		},
 		{
 			"leg": 1,
@@ -240,7 +243,10 @@
 				]
 			],
 			"yaw": -165,
-			"power": 0.35
+			"power": 0.35,
+			"turns": [
+				0
+			]
 		}
 	],
 	"plinths": [
@@ -301,6 +307,6 @@
 			"radius": 85
 		}
 	],
-	"next": "Wires",
+	"next": "Glass",
 	"ambience": "wind"
 }

@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from coursekit import Course  # noqa: E402
 
 LENGTH, HALF = 5200, 1100
-c = Course("stones", "Stepping Stones", "Stones", next_level="Wires")
+c = Course("stones", "Stepping Stones", "Stones", next_level="Glass")
 
 c.box("Crust", (LENGTH / 2, 0, -15), (LENGTH, 2 * HALF, 30), "green", "crust")
 BRINE = 3000

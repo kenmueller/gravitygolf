@@ -58,7 +58,15 @@ struct FSpot
 	double X, Y;
 	int Solutions;
 	double Yaw, Power;
+	/** Which way a mirror is turned at this spot (0 or 1). */
+	int Turn = 0;
 };
+
+/** How a mirror's turn is written in a listing. */
+static const char* TurnName(const FMachineDef& M, int Turn)
+{
+	return !M.bMirror ? "" : Turn == 0 ? " turned /" : " turned \\";
+}
 
 /** Tries one machine on a grid of spots; fills in how many swings work at each. Returns the sorted spots. */
 static std::vector<FSpot> SweepSpots(const FSetup& S, const FLeg& Leg, const FMachineDef& M, double YawStep, double PowerStep)
@@ -95,6 +103,17 @@ static std::vector<FSpot> SweepSpots(const FSetup& S, const FLeg& Leg, const FMa
 			Spots.push_back({Switch.Center.X, Switch.Center.Y, 0, 0, 0});
 		}
 	}
+	if (M.bMirror)
+	{
+		// A mirror can stand at each spot turned either way.
+		const size_t Count = Spots.size();
+		for (size_t I = 0; I < Count; ++I)
+		{
+			FSpot Other = Spots[I];
+			Other.Turn = 1;
+			Spots.push_back(Other);
+		}
+	}
 	std::atomic<size_t> Next{0};
 	std::vector<std::thread> Workers;
 	for (unsigned T = 0; T < std::max(1u, std::thread::hardware_concurrency()); ++T)
@@ -103,7 +122,7 @@ static std::vector<FSpot> SweepSpots(const FSetup& S, const FLeg& Leg, const FMa
 			for (size_t I = Next++; I < Spots.size(); I = Next++)
 			{
 				FSpot& Spot = Spots[I];
-				const std::vector<FAttractor> Machines = {{{Spot.X, Spot.Y, M.CoreHeight}, M.Strength, M.Range}};
+				const std::vector<FAttractor> Machines = {Stand(M, Spot.X, Spot.Y, Spot.Turn)};
 				Spot.Solutions = CountSolutions(S, Leg, Machines, YawStep, PowerStep, &Spot.Yaw, &Spot.Power);
 			}
 		});
@@ -137,8 +156,8 @@ static bool SolveLeg(const FSetup& S, const FLeg& Leg, int LegIndex, const char*
 		std::printf("  SOLVABLE: %d of %zu machine spots work\n", Working, Spots.size());
 		for (size_t I = 0; I < Spots.size() && I < (GListAll ? Spots.size() : 5) && Spots[I].Solutions > 0; ++I)
 		{
-			std::printf("    machine at (%5.0f, %5.0f): %3d swings work, e.g. yaw %6.1f power %.3f\n", Spots[I].X, Spots[I].Y,
-				Spots[I].Solutions, Spots[I].Yaw, Spots[I].Power);
+			std::printf("    machine at (%5.0f, %5.0f)%s: %3d swings work, e.g. yaw %6.1f power %.3f\n", Spots[I].X, Spots[I].Y,
+				TurnName(S.Machines[0], Spots[I].Turn), Spots[I].Solutions, Spots[I].Yaw, Spots[I].Power);
 		}
 		// A good puzzle: some spots work, most don't, and the best spot forgives imperfect swings.
 		const int Best = Spots.empty() ? 0 : Spots[0].Solutions;
@@ -162,7 +181,8 @@ static bool SolveLeg(const FSetup& S, const FLeg& Leg, int LegIndex, const char*
 			Working == 0 ? "ok" : "FAIL (one machine is enough)");
 		if (Working > 0)
 		{
-			std::printf("    e.g. at (%.0f, %.0f) yaw %.1f power %.3f\n", Spots[0].X, Spots[0].Y, Spots[0].Yaw, Spots[0].Power);
+			std::printf("    e.g. at (%.0f, %.0f)%s yaw %.1f power %.3f\n", Spots[0].X, Spots[0].Y, TurnName(S.Machines[M], Spots[0].Turn),
+				Spots[0].Yaw, Spots[0].Power);
 		}
 		bPass &= Working == 0;
 	}
@@ -189,15 +209,20 @@ static bool SolveLeg(const FSetup& S, const FLeg& Leg, int LegIndex, const char*
 			size_t A, B;
 			int Swings;
 			double Yaw, Power;
+			int TurnA, TurnB;
 		};
 		std::vector<FPair> Pairs;
 		for (size_t A = 0; A < S.Plinths.size(); ++A)
 		{
 			for (size_t B = 0; B < S.Plinths.size(); ++B)
 			{
-				if (A != B)
+				// A mirror can be turned either way on its plinth.
+				for (int TurnA = 0; TurnA < (S.Machines[0].bMirror ? 2 : 1) && A != B; ++TurnA)
 				{
-					Pairs.push_back({A, B, 0, 0, 0});
+					for (int TurnB = 0; TurnB < (S.Machines[1].bMirror ? 2 : 1); ++TurnB)
+					{
+						Pairs.push_back({A, B, 0, 0, 0, TurnA, TurnB});
+					}
 				}
 			}
 		}
@@ -209,9 +234,8 @@ static bool SolveLeg(const FSetup& S, const FLeg& Leg, int LegIndex, const char*
 				for (size_t I = Next++; I < Pairs.size(); I = Next++)
 				{
 					FPair& Pair = Pairs[I];
-					const std::vector<FAttractor> Machines = {
-						{{S.Plinths[Pair.A].X, S.Plinths[Pair.A].Y, S.Machines[0].CoreHeight}, S.Machines[0].Strength, S.Machines[0].Range},
-						{{S.Plinths[Pair.B].X, S.Plinths[Pair.B].Y, S.Machines[1].CoreHeight}, S.Machines[1].Strength, S.Machines[1].Range}};
+					const std::vector<FAttractor> Machines = {Stand(S.Machines[0], S.Plinths[Pair.A].X, S.Plinths[Pair.A].Y, Pair.TurnA),
+						Stand(S.Machines[1], S.Plinths[Pair.B].X, S.Plinths[Pair.B].Y, Pair.TurnB)};
 					Pair.Swings = CountSolutions(S, Leg, Machines, 1.0, 0.025, &Pair.Yaw, &Pair.Power);
 				}
 			});
@@ -227,22 +251,24 @@ static bool SolveLeg(const FSetup& S, const FLeg& Leg, int LegIndex, const char*
 		{
 			Working += Pair.Swings > 0;
 			const bool bIntended = std::fabs(S.Plinths[Pair.A].X - Hint->Spots[0].X) < 1 && std::fabs(S.Plinths[Pair.A].Y - Hint->Spots[0].Y) < 1
-				&& std::fabs(S.Plinths[Pair.B].X - Hint->Spots[1].X) < 1 && std::fabs(S.Plinths[Pair.B].Y - Hint->Spots[1].Y) < 1;
+				&& std::fabs(S.Plinths[Pair.B].X - Hint->Spots[1].X) < 1 && std::fabs(S.Plinths[Pair.B].Y - Hint->Spots[1].Y) < 1
+				&& (!S.Machines[0].bMirror || Pair.TurnA == Hint->Turns[0]) && (!S.Machines[1].bMirror || Pair.TurnB == Hint->Turns[1]);
 			if (bIntended)
 			{
 				Intended = Pair.Swings;
 			}
 			if (Pair.Swings > 0 && (GListAll || bIntended || &Pair - &Pairs[0] < 6))
 			{
-				std::printf("    machines at (%5.0f, %5.0f) and (%5.0f, %5.0f): %4d swings work, e.g. yaw %6.1f power %.3f%s\n", S.Plinths[Pair.A].X,
-					S.Plinths[Pair.A].Y, S.Plinths[Pair.B].X, S.Plinths[Pair.B].Y, Pair.Swings, Pair.Yaw, Pair.Power, bIntended ? "   <- intended" : "");
+				std::printf("    machines at (%5.0f, %5.0f)%s and (%5.0f, %5.0f)%s: %4d swings work, e.g. yaw %6.1f power %.3f%s\n", S.Plinths[Pair.A].X,
+					S.Plinths[Pair.A].Y, TurnName(S.Machines[0], Pair.TurnA), S.Plinths[Pair.B].X, S.Plinths[Pair.B].Y, TurnName(S.Machines[1], Pair.TurnB),
+					Pair.Swings, Pair.Yaw, Pair.Power, bIntended ? "   <- intended" : "");
 			}
 		}
 		const double Share = Pairs.empty() ? 0.0 : static_cast<double>(Working) / Pairs.size();
 		std::vector<FAttractor> Machines;
 		for (size_t M = 0; M < 2; ++M)
 		{
-			Machines.push_back({{Hint->Spots[M].X, Hint->Spots[M].Y, S.Machines[M].CoreHeight}, S.Machines[M].Strength, S.Machines[M].Range});
+			Machines.push_back(Stand(S.Machines[M], Hint->Spots[M].X, Hint->Spots[M].Y, Hint->Turns[M]));
 		}
 		const bool bExact = Reaches(S, Leg, Machines, Hint->Yaw, Hint->Power);
 		std::printf("  SOLVABLE: %d of %zu ways to stand the machines work (%.0f%%, need under 35%%); the intended way has %d swings (need 12+); its recorded swing %s\n",
@@ -252,7 +278,7 @@ static bool SolveLeg(const FSetup& S, const FLeg& Leg, int LegIndex, const char*
 	std::vector<FAttractor> Machines;
 	for (size_t M = 0; M < S.Machines.size(); ++M)
 	{
-		Machines.push_back({{Hint->Spots[M].X, Hint->Spots[M].Y, S.Machines[M].CoreHeight}, S.Machines[M].Strength, S.Machines[M].Range});
+		Machines.push_back(Stand(S.Machines[M], Hint->Spots[M].X, Hint->Spots[M].Y, Hint->Turns[M]));
 	}
 	const bool bExact = Reaches(S, Leg, Machines, Hint->Yaw, Hint->Power);
 	double Yaw = 0, Power = 0;
