@@ -212,6 +212,9 @@ mirror.
   bucket behind a Worker, which is what I recommended when Ken asked how to host it properly (docs/WEB.md).
   Nothing has been uploaded.
 
+- **`Tools/together.sh`**: one command hosts a hole in a window on this Mac and prints a link that puts a friend's
+  browser in it (the page and Epic's relay each behind a quick tunnel). Its local form (`GG_LOCAL=1`, no tunnels)
+  worked end to end with a real browser tab as the friend. The public form is Ken's to run and is untried.
 - **A browser can join a desktop host.** The web build in Chrome, a desktop copy hosting hole 3, and Epic's relay
   between them (a browser has no UDP), all on this Mac. The browser's player carried both machines to the answer
   and swung. The game now carries its own network version, because the installed engine and the source-built one

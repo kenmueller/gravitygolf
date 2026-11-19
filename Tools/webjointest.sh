@@ -17,7 +17,14 @@ rm -f "$OUT/host.log" "$OUT/relay.log"
 "$UE" "$ROOT/GravityGolf.uproject" "/Game/Levels/Canyon?listen" -game -windowed -ResX=640 -ResY=360 -GGNoTitle -GGTestSave -nosplash \
 	-unattended -abslog="$OUT/host.log" >/dev/null 2>&1 &
 HOST=$!
-"$PY" -I "$SRC/Engine/Platforms/Wasm/Build/Tools/web/ws_relay.py" >"$OUT/relay.log" 2>&1 &
+# GG_RELAY_PORT=8890 puts the relay somewhere the page will not look by itself, and uses the fixture that tells it.
+FIXTURE=web-join
+RELAYARGS=""
+if [ -n "$GG_RELAY_PORT" ]; then
+	FIXTURE=web-join-relay
+	RELAYARGS="--port $GG_RELAY_PORT"
+fi
+"$PY" -I "$SRC/Engine/Platforms/Wasm/Build/Tools/web/ws_relay.py" $RELAYARGS >"$OUT/relay.log" 2>&1 &
 RELAY=$!
 trap 'kill $HOST $RELAY 2>/dev/null' EXIT
 i=0
@@ -25,7 +32,7 @@ until grep -q "Loaded course " "$OUT/host.log" 2>/dev/null || [ $i -ge 120 ]; do
 grep -q "Loaded course " "$OUT/host.log" || { echo "FAIL  the host never loaded the hole"; exit 1; }
 rm -rf "$WEB/Saved/WebTest/web-join"
 "$PY" "$SRC/Engine/Platforms/Wasm/Build/Tools/web/webrun.py" run --stage "$STAGE" --fixtures "$ROOT/Build/Wasm/fixtures.json" \
-	--fixture web-join --out "$WEB/Saved/WebTest/web-join" 2>&1 | tail -1 | cut -c1-110
+	--fixture "$FIXTURE" --out "$WEB/Saved/WebTest/web-join" 2>&1 | tail -1 | cut -c1-110
 LOG="$WEB/Saved/WebTest/web-join/console.log"
 STATUS=0
 grep -q "Join succeeded" "$OUT/host.log" && echo "ok    the host accepted the browser's join" || { echo "FAIL  the host never accepted a join"; STATUS=1; }

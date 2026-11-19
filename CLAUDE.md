@@ -100,6 +100,8 @@ Tools/phone.sh [check]        serve the web build to a real phone on the LAN ove
 Tools/nettest.sh              two players in the editor; compares both copies of the hole after every step
 Tools/sounds.sh               writes every sound the game makes to WAV and measures it (length, level, pitch, brightness)
 Tools/hosttest.sh [Level]     two standalone copies of the game: one hosts, one joins by address
+Tools/together.sh [Level]     host a hole in a window on this Mac and print a link that drops a friend's browser into it
+                              (two public quick tunnels: Ken runs it, not Claude; GG_LOCAL=1 does it with none, for a test)
 Tools/webjointest.sh          the web build in Chrome joins a standalone desktop host through Epic's relay; both must
                               log the same swings (needs a Development web build; GG_WEB_OUT names its folder)
 Tools/nettest_workshop.sh     two players in the Workshop: the host builds, tests and solves; both copies compared

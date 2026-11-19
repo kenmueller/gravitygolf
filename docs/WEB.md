@@ -80,6 +80,23 @@ that keeps devices apart. The web version has no playing together: each visitor 
 requests to the local server addressed to localhost, because the server refuses names it does not know. Written on
 2026-11-19 when Ken asked for it; opening the link is his to do, and it had not been tried end to end when written.
 
+## Playing together with a friend in a browser
+
+```bash
+Tools/together.sh Canyon     # you play in a window here; the link it prints puts a friend's browser in the same hole
+```
+
+The Mac hosts the hole in an ordinary game window. The friend's page cannot send the game's packets (a browser has
+no UDP), so Epic's `ws_relay.py` runs here and carries them; the link names the host and the relay
+(`?args=127.0.0.1:7777 -WebRelay=<relay address>:443`). Two quick tunnels are opened, one for the page and one for
+the relay; the relay passes packets only from that page and only to this Mac. Ctrl-C closes all of it.
+
+What is proved (2026-11-19, on this Mac only): a browser joins a desktop host and both log the same swings to a
+hundredth of a centimetre (`Tools/webjointest.sh`); and with `GG_LOCAL=1` the script's own link, opened in a real
+browser tab, joined the hosting window and showed its hole. What is not: the two tunnels (WebSocket through
+Cloudflare), any real network delay, more than one friend, a friend on a phone, and what the two players look like
+to each other. The browser version still has no Play together in its own menu: the link does the joining.
+
 ## On a real phone
 
 ```bash
