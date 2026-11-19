@@ -94,6 +94,13 @@ between holes.** (Keys 1 to 9 now.)
   the ray-traced scene; on hole 1, no shadows from the pines whose shadows fall off the terrace, and heather that
   stands still. Hole 1 is still a hair under the 60 fps budget.
 - The saved picture quality is now applied when the game starts. It was only ever applied when you changed it.
+  The game also sets its own rendering resolution now (70% of the window at the highest quality, sharpened up by
+  the engine's upscaler): a packaged game would otherwise draw at 100%, twice the pixels everything was measured at.
+- **Caveat on those frame rates.** They were taken when the Mac was quiet. At the end of the session every hole
+  measured about 40% lower, with a load average of 31: macOS's media analysis, video decoding and a backup upload
+  were all running (probably working through the builds and screenshots this session made). I could not get a
+  quiet re-measurement after the last few changes (the fast-forward, hole 1's hedges, the resolution setting).
+  None of those should cost frames, but that is a belief, not a measurement.
 
 **Critique**
 - **The in-game proof is still weaker than the solver's, though less so.** It proves "impossible without the

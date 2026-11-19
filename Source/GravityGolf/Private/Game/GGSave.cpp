@@ -1,6 +1,7 @@
 #include "Game/GGSave.h"
 
 #include "Engine/GameInstance.h"
+#include "HAL/IConsoleManager.h"
 
 #include "Engine/Engine.h"
 #include "GameFramework/GameUserSettings.h"
@@ -134,24 +135,40 @@ int32 UGGSave::NextUnsolved() const
 
 void UGGSave::ApplyQuality() const
 {
-	if (UGameUserSettings* Settings = GEngine ? GEngine->GetGameUserSettings() : nullptr)
-	{
 #if PLATFORM_WASM || PLATFORM_IOS || PLATFORM_ANDROID
-		// On the web and on phones the device's own profile sets the quality. Applying the engine's stored levels over
-		// it could only raise them, so nothing is touched until the player asks.
-		if (!bQualityChosen)
-		{
-			return;
-		}
-#endif
-		// Until the player picks a quality, the platform's own defaults stand (a phone's are not a desktop's).
-		if (bQualityChosen)
-		{
-			Settings->SetOverallScalabilityLevel(FMath::Clamp(Quality, 0, 3));
-		}
-		// Bounced light never goes above the engine's "High". Its top setting cost 2 ms on hole 1 and a split-screen
-		// comparison showed no difference anyone could point at.
-		Settings->SetGlobalIlluminationQuality(FMath::Min(Settings->GetGlobalIlluminationQuality(), 2));
-		Settings->ApplyNonResolutionSettings();
+	// On the web and on phones the device's own profile sets the quality. Nothing is touched until the player asks.
+	if (!bQualityChosen)
+	{
+		return;
 	}
+#endif
+	// Each setting is set on its own, by name, rather than by applying the engine's stored settings wholesale: those
+	// carry a rendering resolution of their own, and nothing here should change what it does not mean to.
+	auto Set = [](const TCHAR* Name, int32 Value) {
+		if (IConsoleVariable* Variable = IConsoleManager::Get().FindConsoleVariable(Name))
+		{
+			Variable->Set(Value, ECVF_SetByGameSetting);
+		}
+	};
+	const int32 Level = FMath::Clamp(Quality, 0, 3);
+	if (bQualityChosen)
+	{
+		// Until the player picks a quality, the platform's own defaults stand.
+		for (const TCHAR* Group : {TEXT("sg.ViewDistanceQuality"), TEXT("sg.AntiAliasingQuality"), TEXT("sg.ShadowQuality"),
+				 TEXT("sg.ReflectionQuality"), TEXT("sg.PostProcessQuality"), TEXT("sg.TextureQuality"), TEXT("sg.EffectsQuality"),
+				 TEXT("sg.FoliageQuality"), TEXT("sg.ShadingQuality")})
+		{
+			Set(Group, Level);
+		}
+	}
+	// Bounced light never goes above the engine's "High". Its top setting cost 2 ms on hole 1 and a split-screen
+	// comparison showed no difference anyone could point at.
+	Set(TEXT("sg.GlobalIlluminationQuality"), FMath::Min(Level, 2));
+#if !(PLATFORM_WASM || PLATFORM_IOS || PLATFORM_ANDROID)
+	// The picture is drawn smaller than the window and sharpened up to it (the engine's temporal upscaler). Left
+	// alone, a packaged game draws at 100%: about twice the pixels the editor's play window uses by default, which is
+	// what every hole was looked at and measured at. So the size is set here: about two thirds at the highest quality.
+	static const int32 Percent[] = {50, 58, 64, 70};
+	Set(TEXT("r.ScreenPercentage"), Percent[Level]);
+#endif
 }
