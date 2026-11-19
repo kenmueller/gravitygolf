@@ -1,0 +1,20 @@
+# Unreal build output
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+Build/
+Plugins/*/Binaries/
+Plugins/*/Intermediate/
+*.xcworkspace
+*.xcodeproj
+.vscode/
+.idea/
+*.sln
+*.code-workspace
+
+.DS_Store
+.env*
+
+# Old 2022 repos, cloned for reference only
+/legacy/
