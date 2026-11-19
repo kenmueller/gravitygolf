@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Hole 12, Crossed Wires. The last hole.
+"""Hole 13, Crossed Wires. The last hole.
 
 THE IDEA: "two machines, two jobs, and the wires are crossed." Two walls cross the hall, each with gates of light
 in different colours. What opens a gate is a heavy plate of its colour, a long way behind the ball, and it stays

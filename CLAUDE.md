@@ -229,6 +229,8 @@ console and read the pass list in the log before guessing.
   `Tests/Sim/solve.sh` prints the carries and counts a way of standing the machines only if it can be carried to;
   the demo (F1, `Tools/smoke.sh`) makes the same carries in order. In the game the rule is three checks: a step
   (the golfer is put back), a set-down, and a pick-up through the bars. A lifted machine lets go of its plate at once.
+  A light plate the ball has banked opens its grille for good, so swings and carries interleave (hole 12): the
+  proof plans each leg's carries from where the leg before left the machines, with that leg's banked plates.
   The rival does not know about grilles yet: it carries in its own ghost copy in any order.
 - Never edit a shell script while it is running: `sh` reads the file as it goes, and a script changed under it fails
   with a syntax error at whatever line it had reached (`Tools/webtest.sh` did, after passing).
@@ -236,7 +238,7 @@ console and read the pass list in the log before guessing.
   had not committed.
 - Adding a hole: its course and level scripts, an entry in `UGGSave::Holes()` (GGSave.cpp), the previous course's
   `next_level`, the level lists in `Tools/smoke.sh`, `Tools/perf.sh`, `Tools/regen.sh`, `Tools/web.sh` (MAPS) and
-  `Tools/webtest.sh` (tour), a `hole-<Level>` fixture in `Build/Wasm/fixtures.json`, a number key in GGGolfer (1 to 9, 0, minus, equals so far), and
+  `Tools/webtest.sh` (tour), a `hole-<Level>` fixture in `Build/Wasm/fixtures.json`, a number key in GGGolfer (1 to 9, 0, minus, equals, left bracket so far), and
   the table in `docs/VISION.md`. The ending card appears on whichever hole has no `next_level`.
 - Test a hole's stated idea, not only the hole: change what the idea depends on (move the cup, hold the gate open)
   and check the proof changes. Hole 6's timed gate turned out to be decoration this way.

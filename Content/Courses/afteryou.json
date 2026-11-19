@@ -1,0 +1,488 @@
+{
+	"id": "afteryou",
+	"name": "After You",
+	"level": "AfterYou",
+	"par": 2,
+	"ballRadius": 6,
+	"gravity": [
+		0,
+		0,
+		-980
+	],
+	"killZ": -1400,
+	"tee": {
+		"position": [
+			300,
+			0,
+			6
+		],
+		"yaw": 0
+	},
+	"cup": {
+		"position": [
+			3200,
+			250,
+			0
+		],
+		"radius": 42,
+		"captureSpeed": 650
+	},
+	"noMachine": [
+		{
+			"position": [
+				2300,
+				-330,
+				0
+			],
+			"radius": 110,
+			"kind": "switch"
+		},
+		{
+			"position": [
+				2300,
+				-600,
+				0
+			],
+			"radius": 230,
+			"kind": "pad"
+		},
+		{
+			"position": [
+				3200,
+				250,
+				0
+			],
+			"radius": 180,
+			"kind": "court"
+		}
+	],
+	"safeZones": [
+		{
+			"position": [
+				2300,
+				-600,
+				0
+			],
+			"radius": 170,
+			"needsSwitch": 1
+		}
+	],
+	"attractors": [
+		{
+			"position": [
+				500,
+				450,
+				0
+			],
+			"strength": 220,
+			"range": 450,
+			"coreHeight": 45,
+			"movable": true
+		},
+		{
+			"position": [
+				500,
+				-250,
+				0
+			],
+			"strength": 0,
+			"range": 0,
+			"coreHeight": 45,
+			"movable": true,
+			"kind": "mirror",
+			"turn": 0
+		}
+	],
+	"boxes": [
+		{
+			"name": "Backstop",
+			"center": [
+				2300,
+				-745,
+				-15
+			],
+			"size": [
+				440,
+				110,
+				30
+			],
+			"surface": "sand",
+			"look": "sand",
+			"shape": "box"
+		},
+		{
+			"name": "Floor",
+			"center": [
+				1850.0,
+				0,
+				-15
+			],
+			"size": [
+				4100,
+				2000,
+				30
+			],
+			"surface": "green",
+			"look": "floor",
+			"shape": "box"
+		},
+		{
+			"name": "Outer_S",
+			"center": [
+				1850.0,
+				-900.0,
+				150.0
+			],
+			"size": [
+				4100,
+				200,
+				300
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Outer_N",
+			"center": [
+				1850.0,
+				900.0,
+				150.0
+			],
+			"size": [
+				4100,
+				200,
+				300
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Outer_W",
+			"center": [
+				-100.0,
+				0.0,
+				150.0
+			],
+			"size": [
+				200,
+				1600,
+				300
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Outer_E",
+			"center": [
+				3800.0,
+				0.0,
+				150.0
+			],
+			"size": [
+				200,
+				1600,
+				300
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Cross_S",
+			"center": [
+				1500.0,
+				-450.0,
+				150.0
+			],
+			"size": [
+				100,
+				700,
+				300
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Cross_M",
+			"center": [
+				1500.0,
+				250.0,
+				150.0
+			],
+			"size": [
+				100,
+				300,
+				300
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Cross_N",
+			"center": [
+				1500.0,
+				700.0,
+				150.0
+			],
+			"size": [
+				100,
+				200,
+				300
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "SafePad1",
+			"center": [
+				2300,
+				-600,
+				-10
+			],
+			"size": [
+				289.0,
+				289.0,
+				20
+			],
+			"surface": "sand",
+			"look": "pad",
+			"shape": "box"
+		},
+		{
+			"name": "Inner_W",
+			"center": [
+				2865.0,
+				-200.0,
+				150.0
+			],
+			"size": [
+				490,
+				100,
+				300
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Inner_E",
+			"center": [
+				3495.0,
+				-200.0,
+				150.0
+			],
+			"size": [
+				410,
+				100,
+				300
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		}
+	],
+	"switches": [
+		{
+			"position": [
+				800,
+				-550,
+				0
+			],
+			"radius": 75,
+			"weight": true
+		},
+		{
+			"position": [
+				2300,
+				-330,
+				0
+			],
+			"radius": 70,
+			"weight": false
+		},
+		{
+			"position": [
+				2700,
+				450,
+				0
+			],
+			"radius": 75,
+			"weight": true
+		}
+	],
+	"gates": [
+		{
+			"name": "FirstGrille",
+			"center": [
+				1500,
+				0,
+				110
+			],
+			"size": [
+				60,
+				200,
+				220
+			],
+			"switch": 0,
+			"openSeconds": 0.0,
+			"surface": "sand",
+			"grille": true
+		},
+		{
+			"name": "SecondGrille",
+			"center": [
+				1500,
+				500,
+				110
+			],
+			"size": [
+				60,
+				200,
+				220
+			],
+			"switch": 1,
+			"openSeconds": 0.0,
+			"surface": "sand",
+			"grille": true
+		},
+		{
+			"name": "CupGate",
+			"center": [
+				3200,
+				-200,
+				110
+			],
+			"size": [
+				180,
+				60,
+				220
+			],
+			"switch": 2,
+			"openSeconds": 0.0,
+			"surface": "sand",
+			"grille": false
+		}
+	],
+	"solutions": [
+		{
+			"leg": 0,
+			"machines": [
+				[
+					800,
+					-550
+				],
+				[
+					2300,
+					0
+				]
+			],
+			"yaw": 0,
+			"power": 0.35,
+			"turns": [
+				0,
+				1
+			]
+		},
+		{
+			"leg": 1,
+			"machines": [
+				[
+					2700,
+					450
+				],
+				[
+					3200,
+					-600
+				]
+			],
+			"yaw": 0,
+			"power": 0.3,
+			"turns": [
+				0,
+				0
+			]
+		}
+	],
+	"plinths": [
+		{
+			"position": [
+				500,
+				450,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				500,
+				-250,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				800,
+				-550,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				2700,
+				450,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				2300,
+				0,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				3200,
+				-600,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				2900,
+				0,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				2800,
+				-600,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				1900,
+				450,
+				0
+			],
+			"radius": 65
+		}
+	],
+	"next": "Wires",
+	"ambience": "water"
+}

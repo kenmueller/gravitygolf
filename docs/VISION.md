@@ -86,7 +86,8 @@ Built, proven by the solver and played end to end in the engine (`Tools/smoke.sh
 | 9 | The Looking Glass | The canyon at noon, three galleries turning two corners | A mirror turns the ball a right angle: stand it where the two lines cross, turned the right way of its two | 1 mirror, 1 pad |
 | 10 | Periscope | The salt a third time, at night: a moon far too large over the brine, an aurora, a black wall with one slit of light | Two mirrors draw a path, and the path has to pass through things in order: an S that crosses the plate before it reaches the slit it opens, then a U round a blind wall, with the glasses facing different ways | 2 mirrors, 15 plinths, 1 plate, 1 gate, 1 pad |
 | 11 | Leapfrog | The lantern court in the last hour of the night, rose lanterns | A grille (a gate with rails) stops a machine in your arms as well as the ball, and the weight that opens it is a machine too: one holds the near plate while the other goes through, then holds the far plate for the first to follow. The order of the carries is the puzzle; the swing is a tap | 2 attractors, 3 weight plates, 2 grilles, 1 gate, 9 plinths |
-| 12 | Crossed Wires | The hall of columns at night, lit by its gates | The last hole. Two machines, two jobs: the attractor is the weight on the plate whose colour matches the gate, the mirror stands beyond the gate and turns the ball into the wall's shadow. The plates are not in the order of their gates | 1 attractor, 1 mirror, 5 weight plates, 5 gates, 12 plinths, 1 pad |
+| 12 | After You | The hall of columns at noon | The ball can open a door for a machine. One machine is a mirror, too light to hold a plate, so there is no leapfrog: the weight lets the mirror through, the first swing is spent rolling the ball over a plate that drops a second grille, and only then can the weight follow and hold the cup's gate. Mirror first, ball second, weight last | 1 attractor, 1 mirror, 2 weight plates, 1 light plate, 2 grilles, 1 gate, 1 pad, 9 plinths |
+| 13 | Crossed Wires | The hall of columns at night, lit by its gates | The last hole. Two machines, two jobs: the attractor is the weight on the plate whose colour matches the gate, the mirror stands beyond the gate and turns the ball into the wall's shadow. The plates are not in the order of their gates | 1 attractor, 1 mirror, 5 weight plates, 5 gates, 12 plinths, 1 pad |
 
 Holes 1 to 4 are the tutorial. Hole 5 is the first exam: everything so far, on both swings. None is walkthrough-hard yet. Ideas for the worlds after them (not built):
 
@@ -131,10 +132,10 @@ Holes 1 to 4 are the tutorial. Hole 5 is the first exam: everything so far, on b
   shared as a short code. Mouse, gamepad and touch; it runs in the browser build. A Workshop hole can be hosted and
   played together (the host builds, everyone plays), and the rival can race one once it has been solved. Not built:
   a place to browse other people's holes, the solver's remaining checks in-game (one machine alone must fail).
-- Twelve holes in five places (each place seen at two or three hours of the day), the twelfth written as the last,
+- Thirteen holes in five places (each place seen at two or three hours of the day), the thirteenth written as the last,
   and a fast-forward for a rolling ball (hold Space).
 - Three machines: the attractor, the repulsor and the mirror. Plates, gates, pads and plinths. Grilles: gates that
-  stop a carried machine while shut, which makes the order of carrying a puzzle (one hole so far; the proof plans
+  stop a carried machine while shut, which makes the order of carrying a puzzle (two holes so far; the proof plans
   the carries).
 - Sound made by the game itself: thirteen effects, a bed of air per place, and slow music per place (four chords and
   a glass note; its own volume setting). All of it measured rather than heard (`Tools/sounds.sh`).

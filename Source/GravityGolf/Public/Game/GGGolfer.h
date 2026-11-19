@@ -186,6 +186,7 @@ private:
 	void Hole10() { JumpToHole(10); }
 	void Hole11() { JumpToHole(11); }
 	void Hole12() { JumpToHole(12); }
+	void Hole13() { JumpToHole(13); }
 
 	void TouchPressed(ETouchIndex::Type Finger, FVector Location) { HandleTouch(static_cast<int32>(Finger), 0, FVector2D(Location)); }
 	void TouchMoved(ETouchIndex::Type Finger, FVector Location) { HandleTouch(static_cast<int32>(Finger), 1, FVector2D(Location)); }

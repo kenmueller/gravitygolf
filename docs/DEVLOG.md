@@ -9,15 +9,15 @@ left click to swing (aim is where you look, longer hold is harder), E picks up a
 the ball, Backspace resets the hole, B jumps you to the ball, right click watches the ball, hold Space while the
 ball rolls to run it fast. **F1 plays the
 solution for the leg you are on (a hole solved that way is not recorded). Tab opens the menu. Keys 1 to 9 jump
-between holes, 0 is hole 10, minus is hole 11 and equals is hole 12.** F turns a mirror.
+between holes, 0 is hole 10, minus is 11, equals is 12 and the left bracket is 13.** F turns a mirror.
 
 **Four things to try, in this order**
-1. **Holes 5, 8, 9, 10, 11 and 12** (press the number; 0 is hole 10, minus is 11, equals is 12). Five is the first
-   one meant to be hard: the cup is behind you, behind a gate. Eight: machines stand only on seven plinths. Nine: a
-   new machine, the mirror (F turns it). Ten, Periscope, is the best looking: two mirrors, the salt at night under
-   an aurora. Eleven, Leapfrog, is the newest idea: gates with rails stop a machine in your arms, so the order you
-   carry things in is the puzzle. Twelve is the last hole: a weight, a mirror, and plates whose colours have to be
-   read. Try them without F1.
+1. **Holes 5, 10, 11 and 12** (press the number; 0 is hole 10, minus is 11, equals is 12). Five is the first one
+   meant to be hard: the cup is behind you, behind a gate. Ten, Periscope, is the best looking: two mirrors, the
+   salt at night under an aurora. Eleven and twelve are the newest idea and the nearest this game has come to The
+   Talos Principle: gates with rails stop a machine in your arms, so the order you carry things in is the puzzle.
+   Eleven (Leapfrog) teaches it. **Twelve (After You) is the one I most want you to try without F1**: it took me
+   one design, which worries me, so tell me whether it made you stop and think or just made you walk.
 2. **The Workshop** (Tab, then Workshop). Build a hole: pick a tool along the bottom, drag on the table. Press T to
    test it, T again to come back. CHECK runs every swing without the machines; solving it yourself in a test is the
    other half of the proof. Tab has Keep, My holes, and a code you can copy to a friend.
@@ -52,9 +52,10 @@ between holes, 0 is hole 10, minus is hole 11 and equals is hole 12.** F turns a
   hard is logistics: the thing that opens the door is the thing you need on the other side of it. This game had
   none, because the player and the machines walked through every gate. **So I built it, as a new kind of gate that
   changes no existing hole: the grille** (a gate with rails), which stops a machine in your arms while it is shut.
-  Hole 11, Leapfrog, teaches it. What I have not built is the hard hole this makes possible; that is next. If you
-  dislike the idea, it is one hole and one flag to take out.
-- More holes or more polish next. There are twelve holes, and the twelfth is written as the last. I did not wait
+  Hole 11, Leapfrog, teaches it; hole 12, After You, uses it with a mirror that cannot be the weight, so the ball
+  has to open the door for the machine. These are closer to what you asked for, not yet there. If you dislike the
+  idea, it is two holes and one flag to take out.
+- More holes or more polish next. There are thirteen holes, and the thirteenth is written as the last. I did not wait
   for the answer: I kept doing both (a new hole, then the worst-looking hole made better). Say if you want one or
   the other.
 
@@ -87,6 +88,13 @@ between holes, 0 is hole 10, minus is hole 11 and equals is hole 12.** F turns a
   through; that one, on its plate beyond, holds the second grille for the first to follow. The proof plans the
   carries (three, in that order) and the demo makes them.
 
+- **Hole 12, After You** (the finale is now hole 13). An attractor and a mirror. A mirror is too light to hold a
+  plate, so the leapfrog cannot work: the weight lets the mirror through the first grille and can never follow.
+  What opens the second grille is a plate the ball presses, kept pressed by a pad. So the first swing is spent on
+  that, and the order is mirror, ball, weight. The proof shows the idea carries the hole: before the ball banks its
+  plate 24 ways of standing the machines can be reached and one sinks the swing; take the banking away and the
+  second leg's carries cannot be made at all.
+
 **Verified** (results at the end of this entry are from the runs made after the last change)
 - `Tools/testall.sh` after the music, marks and lighting changes: ALL PASSED (sim tests, eleven proofs, every hole in
   the engine, the Workshop, two players in step, two players in the Workshop, host and join).
@@ -98,7 +106,10 @@ between holes, 0 is hole 10, minus is hole 11 and equals is hole 12.** F turns a
   banked). Leapfrog's proof passes with the carries printed. In the engine, `Tools/grilletest.sh` moves the player
   in straight steps and the game's own rule decides: five checks pass (stopped when shut, through when open, shut
   again when the weight is lifted, the ball's grille opened from beyond, empty hands walk through).
-- Sim tests pass, with a new one for the frame's end. All twelve proofs pass.
+- After You: its proof passes (leg one 50 working swings, leg two 15), its answer plays in the engine in two swings
+  with the four carries in order. Leapfrog also plays in Chrome from the web build, carries and all. After You has
+  not been in a web build yet.
+- Sim tests pass, with a new one for the frame's end. All thirteen proofs pass.
 - Periscope in the engine: its recorded answer sinks the ball in two swings; the rival finishes it at all three
   skills (50 s, 96 s, 249 s).
 - In Chrome, from the web build made before the music: all eleven holes' answers sink the ball, the Workshop works
@@ -134,6 +145,14 @@ between holes, 0 is hole 10, minus is hole 11 and equals is hole 12.** F turns a
   only 18 working swings out of 110,000, which is not the "easy part" its own description claims. Not verified:
   a human walking it (my test moves the player in straight jumps), two players, touch, the web. The rival ignores
   grilles entirely.
+- *After You* passed its proof on the first design, which no hole since the fourth has done. Either the planner
+  makes design easier (it tells me at once whether an order exists) or the hole is simpler than I think. Its second
+  swing has 15 working swings, near the floor of 12. Its look is the weakest of the thirteen: the hall at noon is a
+  beige floor under a plain blue sky, and the gates' colours wash out in sunlight.
+- *Frame rates* for the two newest holes read exactly 60.0 with every frame at 16.7 ms: the session had become
+  capped at 60 (the GPU time was 12 ms, and Lantern Court, re-measured beside them, read 60.0 too, an hour after
+  reading 76). I could not find what capped it; the screen may have gone to sleep. They are not slower than their
+  sister holes, but I have no uncapped number for them.
 - *Process.* I blamed a hung connection on TLS before testing plain HTTP, which showed in one step that it was the
   firewall. And a server I thought I had stopped kept the port, because I had killed a subshell instead of it.
 

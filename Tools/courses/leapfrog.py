@@ -20,7 +20,7 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 from coursekit import Course  # noqa: E402
 
-c = Course("leapfrog", "Leapfrog", "Leapfrog", next_level="Wires")
+c = Course("leapfrog", "Leapfrog", "Leapfrog", next_level="AfterYou")
 X0, X1, HALF = 0, 4200, 700
 c.box("Floor", ((X0 + X1) / 2, 0, -15), (X1 - X0 + 400, 2 * HALF + 400, 30), "green", "paving")
 H = 300
