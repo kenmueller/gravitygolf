@@ -23,8 +23,10 @@ This is a puzzle game. The player must think. Every hole is designed so its comp
    working out *where things go and why*, never pixel-perfect aim.
 3. **Proven, not assumed.** `Tests/Sim/solve.sh <course>` brute-forces both claims with the real physics. A hole
    doesn't ship until it prints PASS. Re-run it after any change to the course or the physics.
-4. **One swing.** Each attempt is a single swing from the tee. If the ball stops anywhere but the cup, it returns.
-   (Multiple strokes would let players walk the ball around every obstacle.)
+4. **One swing per leg.** If the ball stops anywhere but the cup or a safe zone, it returns to the last safe spot.
+   (Free multiple strokes would let players walk the ball around every obstacle.)
+   **Safe zones** are optional, per level: pads where a resting ball stays, making long holes a chain of legs.
+   The solver proves every leg separately.
 5. **The club is a putter.** The ball rolls. Height, curves and anything else come from the machines.
 6. **One new idea per hole**, taught by the level itself.
 
@@ -61,6 +63,7 @@ Tools/fab_assets.json         Fab/Megascans packs the levels need. They are giti
 Tools/editor.sh               start the editor and wait until its MCP server is idle
 Tools/mcp.py                  shell client for the editor's MCP server
 Tests/Sim/run.sh              standalone sim tests
+Tests/Sim/solve.sh <course>   puzzle-law proof: impossible without the machine, solvable with it (about 1 min)
 ```
 
 ## Commands
@@ -83,6 +86,8 @@ Work through the Unreal MCP (`mcp__unreal__*`) while the editor is open:
 - Play and look: `EditorAppToolset.StartPIE` (warmupSeconds 10+), `SceneCaptureToolset.CaptureGameViewport` with
   the PIE world from `ListWorlds`, then `StopPIE`.
 - Read the log with `ConsoleToolset.LogsToolset.GetLogEntries`.
+- Replay a solver result in PIE with console commands (`ConsoleToolset.RunConsoleCommand`): `GGMachine x y z`,
+  then `GGShot yaw power`, and read `LogGGCourse` for the outcome.
 - Fab installs: `FabToolset.InstallFabListing`, then save dirty packages.
 
 ## Gotchas

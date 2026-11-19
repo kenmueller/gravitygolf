@@ -115,7 +115,7 @@ static void TestAttractorBendsShot()
 	Straight.Run();
 
 	FSim Bent;
-	Bent.Begin(C, {{{800, 300, 60}, 1.35e8, 1300}}, C.Tee, {600, 0, 0});
+	Bent.Begin(C, {{{800, 300, 60}, 420.0, 1300}}, C.Tee, {600, 0, 0});
 	Bent.Run();
 	std::printf("attractor pulled the putt %.0f cm sideways\n", Bent.Ball().Position.Y - Straight.Ball().Position.Y);
 	CHECK(std::fabs(Straight.Ball().Position.Y) < 1e-9);
@@ -125,7 +125,7 @@ static void TestAttractorBendsShot()
 static void TestDeterminism()
 {
 	const FCourse C = Fairway(ESurface::Grass);
-	const std::vector<FAttractor> A = {{{900, -200, 150}, 1.35e8, 1300}};
+	const std::vector<FAttractor> A = {{{900, -200, 150}, 420.0, 1300}};
 	FSim One;
 	FSim Two;
 	One.Begin(C, A, C.Tee, {1700, 120, 1300});

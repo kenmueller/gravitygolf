@@ -99,10 +99,12 @@ FVec3 FSim::Acceleration(FVec3 Position) const
 		{
 			continue;
 		}
-		// Plummer-softened inverse square, windowed so the pull reaches exactly zero at Range.
+		// A dome-shaped field: a steady pull toward the machine that eases to zero at the dome's edge and at
+		// its very center. Unlike inverse-square gravity it is neither negligible far away nor violent up
+		// close, so players can plan with it.
 		const double Window = 1.0 - R2 / Range2;
-		const double S2 = R2 + Soft2;
-		Total = Total + D * (A.Strength * Window * Window / (S2 * std::sqrt(S2)));
+		const double Direction = 1.0 / std::sqrt(R2 + Soft2);
+		Total = Total + D * (A.Strength * Window * Window * Direction);
 	}
 	return Total;
 }
@@ -230,7 +232,7 @@ void FSim::SubStep(double H, std::vector<FEvent>* Events)
 	if (bOverCup)
 	{
 		const double Speed = Length(B.Velocity);
-		if (Speed <= Physics.CupCaptureSpeed)
+		if (Speed <= Course->CupCaptureSpeed)
 		{
 			B.State = EBallState::Sunk;
 			B.Position = {Course->Cup.X, Course->Cup.Y, Course->Cup.Z - B.Radius};
@@ -259,6 +261,18 @@ void FSim::SubStep(double H, std::vector<FEvent>* Events)
 		{
 			B.State = EBallState::AtRest;
 			B.Velocity = {};
+			for (int I = 0; I < static_cast<int>(Course->SafeZones.size()); ++I)
+			{
+				const FSafeZone& Zone = Course->SafeZones[I];
+				const double Dx = B.Position.X - Zone.Center.X;
+				const double Dy = B.Position.Y - Zone.Center.Y;
+				const double Dz = B.Position.Z - Zone.Center.Z;
+				if (Dx * Dx + Dy * Dy <= Zone.Radius * Zone.Radius && Dz > -B.Radius && Dz < 3.0 * B.Radius)
+				{
+					B.SafeZone = I;
+					break;
+				}
+			}
 			Emit(Events, EEventType::Rest, Ground, 0.0, B.Position);
 			return;
 		}

@@ -43,12 +43,22 @@ struct FBox
 	ESurface Surface = ESurface::Stone;
 };
 
-/** A gravity machine. Positive strength pulls, negative pushes. Its pull fades smoothly to zero at Range. */
+/**
+ * A gravity machine. Strength is its peak pull in cm/s^2 (negative pushes); the field is a dome of radius Range
+ * that fades smoothly to zero at its edge.
+ */
 struct FAttractor
 {
 	FVec3 Position;
-	double Strength = 1.35e8;
-	double Range = 1200.0;
+	double Strength = 420.0;
+	double Range = 1800.0;
+};
+
+/** A pad where the ball may come to rest and stay: a checkpoint. Optional, per level. */
+struct FSafeZone
+{
+	FVec3 Center;
+	double Radius = 150.0;
 };
 
 struct FCourse
@@ -60,6 +70,9 @@ struct FCourse
 	/** Center of the cup's mouth, on the surface. */
 	FVec3 Cup;
 	double CupRadius = 18.0;
+	/** The ball drops when it crosses the cup at or below this speed. */
+	double CupCaptureSpeed = 320.0;
+	std::vector<FSafeZone> SafeZones;
 	double BallRadius = 6.0;
 	/** The ball is lost below this height. */
 	double KillZ = -1000.0;
@@ -74,7 +87,6 @@ struct FPhysics
 	double BounceThreshold = 60.0;
 	double RestSpeed = 6.0;
 	double RestTime = 0.35;
-	double CupCaptureSpeed = 320.0;
 	double MaxFlightTime = 30.0;
 };
 
@@ -93,6 +105,8 @@ struct FBall
 	FVec3 Velocity;
 	double Radius = 6.0;
 	bool bOnGround = false;
+	/** Index of the safe zone the ball came to rest in, or -1. */
+	int SafeZone = -1;
 	double SlowTime = 0.0;
 	double Time = 0.0;
 	EBallState State = EBallState::Moving;

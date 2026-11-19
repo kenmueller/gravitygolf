@@ -12,36 +12,40 @@
 	"tee": {
 		"position": [
 			600,
-			0,
+			-650,
 			6
 		],
 		"yaw": 0
 	},
 	"cup": {
 		"position": [
-			3600,
-			0,
+			4000,
+			-650,
 			0
 		],
-		"radius": 18
+		"radius": 42,
+		"captureSpeed": 650
 	},
-	"plaza": {
-		"position": [
-			3600,
-			-900,
-			0
-		],
-		"radius": 700
-	},
+	"noMachine": [
+		{
+			"position": [
+				4000,
+				-650,
+				0
+			],
+			"radius": 520
+		}
+	],
+	"safeZones": [],
 	"attractors": [
 		{
 			"position": [
 				1100,
-				800,
+				600,
 				0
 			],
-			"strength": 135000000.0,
-			"range": 1500,
+			"strength": 420,
+			"range": 1900,
 			"coreHeight": 45,
 			"movable": true
 		}
@@ -144,96 +148,16 @@
 			"shape": "box"
 		},
 		{
-			"name": "Court_Back",
+			"name": "Great_Wall",
 			"center": [
-				2960.0,
-				0,
-				110
+				2460.0,
+				-365.0,
+				150
 			],
 			"size": [
 				120,
-				1080,
-				220
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Court_Front",
-			"center": [
-				4240.0,
-				0,
-				110
-			],
-			"size": [
-				120,
-				1080,
-				220
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Court_SideL",
-			"center": [
-				3600.0,
-				-480.0,
-				110
-			],
-			"size": [
-				1400,
-				120,
-				220
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Court_SideR_Near",
-			"center": [
-				3150.0,
-				480.0,
-				110
-			],
-			"size": [
-				500,
-				120,
-				220
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Court_SideR_Far",
-			"center": [
-				4050.0,
-				480.0,
-				110
-			],
-			"size": [
-				500,
-				120,
-				220
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Wing",
-			"center": [
-				2960.0,
-				720.0,
-				110
-			],
-			"size": [
-				120,
-				360,
-				220
+				1630.0,
+				300
 			],
 			"surface": "stone",
 			"look": "stone",

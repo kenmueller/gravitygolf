@@ -52,6 +52,10 @@ public:
 	/** Move a machine. Base is where its feet stand; the field's center sits above it. */
 	void MoveMachine(int32 Index, const FVector& Base, bool bCarried);
 	FVector MachineBase(int32 Index) const;
+	/** Some ground refuses machines (the paved court around a cup, for instance). */
+	bool CanPlaceMachine(const FVector& Base) const;
+	/** Show a short message on the HUD. */
+	void Notify(const FString& Message);
 
 	/** What the ground is made of under a point. */
 	GG::ESurface SurfaceAt(const FVector& Location) const;
@@ -96,6 +100,9 @@ private:
 	GG::FVec3 Lie;
 	GG::FVec3 PreviousPosition;
 	GG::FVec3 RestPosition;
+	GG::FVec3 LastSafe;
+	double NoticeTime = 0.0;
+	TArray<FVector> NoMachineZones; // x, y, radius
 	double CoreHeight = 45.0;
 	double Accumulator = 0.0;
 	double PhaseTime = 0.0;

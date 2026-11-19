@@ -106,6 +106,18 @@ bool AGGCourse::Load(const FString& CourseId)
 	const TSharedPtr<FJsonObject> Cup = Json->GetObjectField(TEXT("cup"));
 	Course.Cup = ReadVec(Cup, TEXT("position"));
 	Course.CupRadius = Cup->GetNumberField(TEXT("radius"));
+	Course.CupCaptureSpeed = Cup->GetNumberField(TEXT("captureSpeed"));
+
+	NoMachineZones.Reset();
+	for (const TSharedPtr<FJsonValue>& Value : Json->GetArrayField(TEXT("noMachine")))
+	{
+		const GG::FVec3 At = ReadVec(Value->AsObject(), TEXT("position"));
+		NoMachineZones.Add(FVector(At.X, At.Y, Value->AsObject()->GetNumberField(TEXT("radius"))));
+	}
+	for (const TSharedPtr<FJsonValue>& Value : Json->GetArrayField(TEXT("safeZones")))
+	{
+		Course.SafeZones.push_back({ReadVec(Value->AsObject(), TEXT("position")), Value->AsObject()->GetNumberField(TEXT("radius"))});
+	}
 
 	for (const TSharedPtr<FJsonValue>& Value : Json->GetArrayField(TEXT("boxes")))
 	{
@@ -182,6 +194,16 @@ void AGGCourse::BuildActors()
 	const FVector CupTop = ToUnreal(Course.Cup) + FVector(0, 0, 225);
 	AddMesh(Plane, Glow(FLinearColor(1.f, 0.16f, 0.1f), 4.f),
 		FTransform(FRotator(0.f, 0.f, 90.f), CupTop + FVector(0, 32, -22), FVector(0.01, 0.6, 0.4)));
+
+	// Safe zones: rings of light set into the ground. A ball that rests inside one stays.
+	UStaticMesh* Cylinder = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
+	for (const GG::FSafeZone& Zone : Course.SafeZones)
+	{
+		const double Scale = Zone.Radius / 50.0;
+		AddMesh(Cylinder, Glow(FLinearColor(0.3f, 1.f, 0.55f), 3.f),
+			FTransform(FRotator::ZeroRotator, ToUnreal(Zone.Center) + FVector(0, 0, 0.4), FVector(Scale, Scale, 0.004)))
+			->SetCastShadow(false);
+	}
 
 	for (int32 I = 0; I < MachineBases.Num(); ++I)
 	{
@@ -265,9 +287,28 @@ void AGGCourse::BuildMachine(int32 Index)
 	Light->RegisterComponent();
 }
 
+bool AGGCourse::CanPlaceMachine(const FVector& Base) const
+{
+	for (const FVector& Zone : NoMachineZones)
+	{
+		if (FVector::DistSquared2D(Base, Zone) < Zone.Z * Zone.Z)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+void AGGCourse::Notify(const FString& Message)
+{
+	Status = Message;
+	NoticeTime = 2.5;
+}
+
 void AGGCourse::ResetHole()
 {
 	Lie = Course.Tee;
+	LastSafe = Course.Tee;
 	PreviousPosition = Lie;
 	StrokeCount = 0;
 	Status.Reset();
@@ -385,14 +426,23 @@ void AGGCourse::FinishStroke(GG::EBallState State)
 		Status = StrokeCount == 1 ? TEXT("Solved in one attempt!") : FString::Printf(TEXT("Solved in %d attempts"), StrokeCount);
 		break;
 	case GG::EBallState::AtRest:
-		// One swing per attempt: a ball that stops short goes back to the tee.
+		if (Sim.Ball().SafeZone >= 0)
+		{
+			// Resting in a safe zone banks the progress: the next swing starts here.
+			Lie = Sim.Ball().Position;
+			LastSafe = Lie;
+			CurrentPhase = EGGPhase::Ready;
+			Notify(TEXT("Safe."));
+			break;
+		}
+		// One swing per leg: a ball that stops anywhere else goes back to the last safe spot.
 		RestPosition = Sim.Ball().Position;
-		Status = TEXT("Not in. Back to the tee.");
+		Status = TEXT("Not in. The ball returns.");
 		CurrentPhase = EGGPhase::Penalty;
 		break;
 	default:
 		RestPosition = Sim.Ball().Position;
-		Status = TEXT("Lost. Back to the tee.");
+		Status = TEXT("Lost. The ball returns.");
 		CurrentPhase = EGGPhase::Penalty;
 		break;
 	}
@@ -404,6 +454,14 @@ void AGGCourse::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	PhaseTime += DeltaSeconds;
+	if (NoticeTime > 0.0)
+	{
+		NoticeTime -= DeltaSeconds;
+		if (NoticeTime <= 0.0 && CurrentPhase == EGGPhase::Ready)
+		{
+			Status.Reset();
+		}
+	}
 
 	if (CurrentPhase == EGGPhase::Flying)
 	{
@@ -443,6 +501,7 @@ void AGGCourse::Tick(float DeltaSeconds)
 	else if (CurrentPhase == EGGPhase::Penalty && PhaseTime > ReturnPause)
 	{
 		Status.Reset();
+		Lie = LastSafe;
 		CurrentPhase = EGGPhase::Ready;
 		Trail.Reset();
 	}

@@ -1,4 +1,4 @@
-"""Hole 1, The Terraces: limestone terraces stepping down to a sea at sunrise, under a broken halo.
+"""Hole 1, The Terraces: a walled lawn on a limestone headland above the sea, under a broken halo.
 
 Collision geometry comes from Content/Courses/terraces.json (written by Tools/courses/terraces.py), so the
 scenery matches what the ball hits. Everything else here is dressing.
@@ -22,7 +22,8 @@ importlib.reload(c)  # the editor's interpreter persists between runs
 LEVEL = "/Game/Levels/Terraces"
 COURSE = "/Users/ken/Code/gravitygolf/Content/Courses/terraces.json"
 SEA_LEVEL = -3200
-DROP = 320
+DROP = 0
+LENGTH = 6400
 
 LIMESTONE = "/Game/Fab/Roman_Limestone_Wall/thzldg2qx_tier_1/Textures/T_thzldg2qx_4K_"
 CLIFF = "/Game/Fab/Quarry_Cliff/uchoab3fa_tier_1/Textures/T_uchoab3fa_4K_"
@@ -53,6 +54,7 @@ def materials():
         "grass": scan("MI_Terraces_Grass", LAWN, 260, (0.8, 0.95, 0.7, 1)),
         "green": scan("MI_Terraces_Green", LAWN, 180, (0.62, 1.0, 0.6, 1)),
         "stone": scan("MI_Terraces_Limestone", LIMESTONE, 320, (1.0, 0.95, 0.86, 1)),
+        "hedge": scan("MI_Terraces_Hedge", LAWN, 90, (0.28, 0.5, 0.2, 1)),
         "rock": scan("MI_Terraces_Rock", CLIFF, 900, (1.35, 1.3, 1.2, 1)),
         "ocean": unreal.load_asset("/Game/Materials/M_GG_Ocean.M_GG_Ocean"),
         "glyph": c.material_instance(glow, "MI_Terraces_Glyph", {"Strength": 18.0}, {"Color": (0.25, 0.6, 1.0, 1)}),
@@ -96,7 +98,7 @@ def cliffs(m):
     for side in (-1, 1):
         for row, top in enumerate((-760, -1900, -3000)):
             for i in range(5):
-                x = -600 + i * 2500 + rng.uniform(-300, 300)
+                x = -600 + i * 1900 + rng.uniform(-300, 300)
                 y = side * (2750 + row * 420 + rng.uniform(-120, 120))
                 tall = 3.0 + rng.uniform(-0.3, 0.5)
                 cliff((x, y, top - 508 * tall + rng.uniform(-150, 0)), (0 if side > 0 else 180) + rng.uniform(-12, 12),
@@ -104,28 +106,24 @@ def cliffs(m):
     for row, top in enumerate((-700, -1900, -3000)):
         for i in range(4):
             y = -2000 + i * 1350 + rng.uniform(-200, 200)
-            cliff((9500 + row * 380, y, top - 1626), 90 + rng.uniform(-10, 10), (2.4, 3.0, 3.2))
+            cliff((LENGTH + 500 + row * 380, y, top - 1626), 90 + rng.uniform(-10, 10), (2.4, 3.0, 3.2))
             cliff((-900 - row * 380, y, top + 500 - 1727), -90 + rng.uniform(-10, 10), (2.4, 3.0, 3.4))
 
-    # Rocky shelves beside the terraces carry the pines.
-    for index in range(3):
-        top = -DROP * index
-        x = 3000 * index + 1500
-        for side in (-1, 1):
-            c.box((x, side * 2050, top - 420), (3000, 1300, 600), m["rock"], f"Shelf{index}{'L' if side < 0 else 'R'}",
-                  folder="Landscape")
-            c.box((x, side * 2050, top - 135), (3000, 1300, 30), m["grass"], f"ShelfTop{index}{'L' if side < 0 else 'R'}",
-                  folder="Landscape")
-    c.box((4500, 0, -2400), (10400, 5600, 3000), m["rock"], "Cliff_Core", folder="Landscape")
+    # Rocky shelves beside the lawn carry the pines.
+    for side in (-1, 1):
+        c.box((LENGTH / 2, side * 2050, -420), (LENGTH, 1300, 600), m["rock"], f"Shelf{'L' if side < 0 else 'R'}",
+              folder="Landscape")
+        c.box((LENGTH / 2, side * 2050, -135), (LENGTH, 1300, 30), m["grass"], f"ShelfTop{'L' if side < 0 else 'R'}",
+              folder="Landscape")
+    c.box((LENGTH / 2, 0, -2400), (LENGTH + 1000, 5600, 3000), m["rock"], "Cliff_Core", folder="Landscape")
 
 
 def pines():
     trees = [unreal.load_asset(PINES + letter) for letter in "ABCD"]
     spots = []
-    for index in range(3):
-        for side in (-1, 1):
-            for _ in range(3):
-                spots.append((3000 * index + rng.uniform(250, 2750), side * rng.uniform(1700, 2500), -DROP * index - 122))
+    for side in (-1, 1):
+        for _ in range(8):
+            spots.append((rng.uniform(250, LENGTH - 250), side * rng.uniform(1700, 2500), -122))
     for i, spot in enumerate(spots):
         actor = c.spawn(unreal.SkeletalMeshActor, spot, (0, rng.uniform(0, 360), 0), f"Pine{i}", "Landscape/Pines")
         actor.skeletal_mesh_component.set_skinned_asset_and_update(rng.choice(trees))
@@ -133,7 +131,7 @@ def pines():
         actor.set_actor_scale3d(unreal.Vector(size, size, size))
 
 
-def halo(m):
+def halo(m, course):
     """The fantastical: a colossal broken ring of stone standing in the sea, and slabs that ignore gravity."""
     center = (26000.0, -3000.0, 2600.0)
     radius = 9000.0
@@ -159,15 +157,17 @@ def halo(m):
     # A stair of floating slabs climbs from the cliff edge toward the ring.
     for i in range(9):
         t = i / 8.0
-        c.box((9900 + i * 1050, 1500 - i * 260, -520 + t * t * 1700), (620 - i * 25, 880 - i * 30, 90), m["stone"],
+        c.box((LENGTH + 500 + i * 1050, 1500 - i * 260, -200 + t * t * 1900), (620 - i * 25, 880 - i * 30, 90), m["stone"],
               f"FloatingSlab{i}", folder="Fantastical/Slabs", rotation=(rng.uniform(-6, 6), rng.uniform(-14, 14), 0))
 
-    # A monolith hovers over the first terrace, lit from within, marking where the gravity machine waits.
-    c.box((2300, 700, 620), (120, 120, 520), m["stone"], "Monolith", folder="Fantastical")
-    c.box((2300, 700, 620), (126, 30, 480), m["glyph"], "MonolithGlyphA", folder="Fantastical")
-    c.box((2300, 700, 620), (30, 126, 480), m["glyph"], "MonolithGlyphB", folder="Fantastical")
-    c.mesh(c.CYLINDER, (2300, 700, 4), (300, 300, 8), material=m["stone"], label="AttractorDais", folder="Fantastical")
-    c.mesh(c.CYLINDER, (2300, 700, 9), (240, 240, 2), material=m["glyph"], label="AttractorDaisGlyph", folder="Fantastical")
+    # A monolith hovers where the machine waits, lit from within.
+    machine = course["attractors"][0]["position"]
+    x, y = machine[0], machine[1]
+    c.box((x, y, 640), (120, 120, 520), m["stone"], "Monolith", folder="Fantastical")
+    c.box((x, y, 640), (126, 30, 480), m["glyph"], "MonolithGlyphA", folder="Fantastical")
+    c.box((x, y, 640), (30, 126, 480), m["glyph"], "MonolithGlyphB", folder="Fantastical")
+    c.mesh(c.CYLINDER, (x, y, 0.6), (240, 240, 1), material=m["glyph"], label="MachineDaisGlyph", folder="Fantastical",
+           cast_shadow=False)
 
 
 def shrubs():
@@ -175,26 +175,23 @@ def shrubs():
     heather = [unreal.load_asset(HEATHER + letter) for letter in "ABCDEF"]
     rose = [unreal.load_asset(ROSE + letter) for letter in "ABCD"]
     count = 0
-    for index in range(3):
-        top = -DROP * index - 122
-        for side in (-1, 1):
-            for _ in range(16):
-                x = 3000 * index + rng.uniform(80, 2920)
-                y = side * rng.uniform(1440, 2650)
-                kind = rose if rng.random() < 0.35 else heather
-                actor = c.spawn(unreal.SkeletalMeshActor, (x, y, top), (0, rng.uniform(0, 360), 0), f"Shrub{count}",
-                                "Landscape/Shrubs")
-                actor.skeletal_mesh_component.set_skinned_asset_and_update(rng.choice(kind))
-                size = rng.uniform(0.9, 1.6)
-                actor.set_actor_scale3d(unreal.Vector(size, size, size))
-                count += 1
+    for side in (-1, 1):
+        for _ in range(44):
+            x = rng.uniform(80, LENGTH - 80)
+            y = side * rng.uniform(1440, 2650)
+            kind = rose if rng.random() < 0.35 else heather
+            actor = c.spawn(unreal.SkeletalMeshActor, (x, y, -122), (0, rng.uniform(0, 360), 0), f"Shrub{count}",
+                            "Landscape/Shrubs")
+            actor.skeletal_mesh_component.set_skinned_asset_and_update(rng.choice(kind))
+            size = rng.uniform(0.9, 1.6)
+            actor.set_actor_scale3d(unreal.Vector(size, size, size))
+            count += 1
 
 
 def rubble(m):
     """Fallen temple stones lie where the ruin shed them, off the line of play."""
     mesh = unreal.load_asset(STONES)
-    spots = [(4320, -1150, -DROP), (4700, -1000, -DROP), (4380, 1260, -DROP), (8700, -1220, -2 * DROP),
-             (8650, 1180, -2 * DROP), (300, 1150, 0), (2700, -1180, 0), (6200, 1200, -2 * DROP)]
+    spots = [(2620, -1050, 0), (2250, -900, 0), (2600, 620, 0), (5900, -1000, 0), (5800, 950, 0), (300, 1000, 0)]
     for i, spot in enumerate(spots):
         actor = c.spawn(unreal.StaticMeshActor, spot, (0, rng.uniform(0, 360), 0), f"Rubble{i}", "Ruins/Rubble")
         actor.static_mesh_component.set_static_mesh(mesh)
@@ -219,13 +216,23 @@ def sea_and_horizon(m):
 
 def markers(course, m):
     tee = course["tee"]["position"]
-    c.box((tee[0], tee[1], 1.5), (260, 260, 3), m["stone"], "TeeBox", folder="Course/Markers")
-    cup = course["cup"]["position"]
-    c.mesh(c.CYLINDER, (cup[0], cup[1], cup[2] + 0.6), (36, 36, 1), material=c.material_instance(
-        "/Game/Materials/M_GG_Surface.M_GG_Surface", "MI_Cup", {"Roughness": 1.0}, {"BaseColor": (0.004, 0.004, 0.004, 1)}),
-        label="Cup", folder="Course/Markers", cast_shadow=False)
-    c.mesh(c.CYLINDER, (cup[0], cup[1], cup[2] + 120), (2.5, 2.5, 240), material=m["stone"], label="FlagPole",
-           folder="Course/Markers")
+    c.mesh(c.CYLINDER, (tee[0], tee[1], 0.5), (200, 200, 1), material=m["stone"], label="TeeStone", folder="Course/Markers",
+           cast_shadow=False)
+    cup = course["cup"]
+    x, y, z = cup["position"]
+    # The paved court where machines can't stand, with a glyph ring marking its edge.
+    for zone in course["noMachine"]:
+        zx, zy, _ = zone["position"]
+        size = zone["radius"] * 2
+        c.mesh(c.CYLINDER, (zx, zy, 0.3), (size, size, 0.6), material=m["stone"], label="Court", folder="Course/Markers",
+               cast_shadow=False)
+        c.mesh(c.CYLINDER, (zx, zy, 0.2), (size + 24, size + 24, 0.4), material=m["glyph"], label="CourtEdge",
+               folder="Course/Markers", cast_shadow=False)
+    black = c.material_instance("/Game/Materials/M_GG_Surface.M_GG_Surface", "MI_Cup", {"Roughness": 1.0},
+                                {"BaseColor": (0.004, 0.004, 0.004, 1)})
+    c.mesh(c.CYLINDER, (x, y, z + 0.9), (cup["radius"] * 2, cup["radius"] * 2, 1), material=black, label="Cup",
+           folder="Course/Markers", cast_shadow=False)
+    c.mesh(c.CYLINDER, (x, y, z + 120), (2.5, 2.5, 240), material=m["stone"], label="FlagPole", folder="Course/Markers")
 
 
 c.fresh_level(LEVEL)
@@ -236,7 +243,7 @@ cliffs(mats)
 pines()
 shrubs()
 rubble(mats)
-halo(mats)
+halo(mats, course_data)
 sea_and_horizon(mats)
 markers(course_data, mats)
 c.LES.save_current_level()

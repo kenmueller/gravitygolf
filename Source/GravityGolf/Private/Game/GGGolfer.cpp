@@ -205,7 +205,11 @@ void AGGGolfer::Interact()
 	{
 		// Set the machine down on its feet where you're looking. No ground there, no placement.
 		FVector Ground;
-		if (GroundBelow(HoldPoint(), Ground))
+		if (GroundBelow(HoldPoint(), Ground) && !C->CanPlaceMachine(Ground))
+		{
+			C->Notify(TEXT("The machine won't stand on the court."));
+		}
+		else if (GroundBelow(HoldPoint(), Ground))
 		{
 			C->MoveMachine(Carried, Ground, false);
 			GGAudio::MachinePlace(this, Ground);
