@@ -14,7 +14,7 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 from coursekit import Course  # noqa: E402
 
-c = Course("returning", "The Long Way Round", "Returning")
+c = Course("returning", "The Long Way Round", "Returning", next_level="Brief")
 FLOOR_Z = -15
 WALL_H = 400
 

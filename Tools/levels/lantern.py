@@ -18,27 +18,33 @@ import common as c  # noqa: E402
 
 importlib.reload(c)
 
-LEVEL = "/Game/Levels/Lantern"
-COURSE = "/Users/ken/Code/gravitygolf/Content/Courses/lantern.json"
+# Other holes set in this court run this script with their own settings (see Tools/levels/brief.py).
+VARIANT = globals().get("GG_VARIANT", {})
+LEVEL = VARIANT.get("level", "/Game/Levels/Lantern")
+COURSE = "/Users/ken/Code/gravitygolf/Content/Courses/%s.json" % VARIANT.get("course", "lantern")
+# Material instances are named per hole, so one hole's colours never change another's.
+PREFIX = VARIANT.get("prefix", "Lantern")
+LANTERN_COLOR = VARIANT.get("lantern_color", (1.0, 0.5, 0.16))
+FAR_COLOR = VARIANT.get("far_color", (1.0, 0.55, 0.2))
 SURFACE = "/Game/Materials/M_GG_Surface.M_GG_Surface"
 GLOW = "/Game/Materials/M_GG_Glow.M_GG_Glow"
 PAPER = "/Game/Materials/M_GG_Lantern.M_GG_Lantern"
 PINES = "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_"
 WARM = (1.0, 0.55, 0.2)
-rng = random.Random(41)
+rng = random.Random(VARIANT.get("seed", 41))
 
 
 def materials():
     return {
-        "paving": c.scan_material("MI_Lantern_Paving", "Beige_Marble_Tiles", 300, (0.55, 0.55, 0.6, 1), roughness=0.55),
-        "wall": c.scan_material("MI_Lantern_Wall", "Roman_Limestone_Wall", 320, (0.8, 0.8, 0.85, 1)),
-        "hedge": c.scan_material("MI_Lantern_Hedge", "Creeping_Fig_Wall", 220, (0.6, 0.8, 0.55, 1)),
-        "pad": c.scan_material("MI_Lantern_Pad", "Red_Desert_Sand", 120, (0.35, 0.3, 0.3, 1)),
-        "glyph": c.material_instance(GLOW, "MI_Lantern_Glyph", {"Strength": 10.0}, {"Color": (WARM[0], WARM[1], WARM[2], 1)}),
-        "lantern": c.material_instance(PAPER, "MI_Lantern_Paper", {"Strength": 14.0}, {"Color": (1.0, 0.5, 0.16, 1)}),
-        "farLantern": c.material_instance(PAPER, "MI_Lantern_Far", {"Strength": 40.0}, {"Color": (1.0, 0.55, 0.2, 1)}),
-        "moon": c.material_instance(GLOW, "MI_Lantern_Moon", {"Strength": 2.2}, {"Color": (0.8, 0.88, 1.0, 1)}),
-        "bronze": c.material_instance(SURFACE, "MI_Lantern_Bronze", {"Roughness": 0.4, "Metallic": 1.0},
+        "paving": c.scan_material(f"MI_{PREFIX}_Paving", "Beige_Marble_Tiles", 300, (0.55, 0.55, 0.6, 1), roughness=0.55),
+        "wall": c.scan_material(f"MI_{PREFIX}_Wall", "Roman_Limestone_Wall", 320, (0.8, 0.8, 0.85, 1)),
+        "hedge": c.scan_material(f"MI_{PREFIX}_Hedge", "Creeping_Fig_Wall", 220, (0.6, 0.8, 0.55, 1)),
+        "pad": c.scan_material(f"MI_{PREFIX}_Pad", "Red_Desert_Sand", 120, (0.35, 0.3, 0.3, 1)),
+        "glyph": c.material_instance(GLOW, f"MI_{PREFIX}_Glyph", {"Strength": 10.0}, {"Color": (WARM[0], WARM[1], WARM[2], 1)}),
+        "lantern": c.material_instance(PAPER, f"MI_{PREFIX}_Paper", {"Strength": 14.0}, {"Color": (*LANTERN_COLOR, 1)}),
+        "farLantern": c.material_instance(PAPER, f"MI_{PREFIX}_Far", {"Strength": 40.0}, {"Color": (*FAR_COLOR, 1)}),
+        "moon": c.material_instance(GLOW, f"MI_{PREFIX}_Moon", {"Strength": 2.2}, {"Color": (0.8, 0.88, 1.0, 1)}),
+        "bronze": c.material_instance(SURFACE, f"MI_{PREFIX}_Bronze", {"Roughness": 0.4, "Metallic": 1.0},
                                       {"BaseColor": (0.25, 0.15, 0.06, 1)}),
         "black": c.material_instance(SURFACE, "MI_Cup", {"Roughness": 1.0}, {"BaseColor": (0.004, 0.004, 0.004, 1)}),
     }
@@ -81,9 +87,9 @@ def lanterns(course, m):
     rising from the cup's court into the sky."""
     cup = course["cup"]["position"]
     # Low lanterns that light the play: along the walls and over the key places.
-    key = [(course["tee"]["position"][0], course["tee"]["position"][1] + 260, 300),
-           (cup[0], cup[1], 430), (-1300, 350, 330), (-2300, 0, 330), (660, 1300, 360), (1500, 1200, 340),
-           (2000, -300, 320), (-600, -500, 320), (3300, -300, 320), (-1900, 1200, 340), (300, 700, 320)]
+    key = [(course["tee"]["position"][0], course["tee"]["position"][1] + 260, 300), (cup[0], cup[1], 430)]
+    key += VARIANT.get("lit", [(-1300, 350, 330), (-2300, 0, 330), (660, 1300, 360), (1500, 1200, 340),
+                               (2000, -300, 320), (-600, -500, 320), (3300, -300, 320), (-1900, 1200, 340), (300, 700, 320)])
     for x, y, z in key:
         lantern((x, y, z), 46, m, lit=(520.0, 1700.0))
     for _ in range(70):
@@ -91,14 +97,25 @@ def lanterns(course, m):
         y = rng.uniform(-850, 1850)
         lantern((x, y, rng.uniform(420, 1500)), rng.uniform(26, 44), m)
 
-    # The column: a slow spiral of lanterns climbing out of the court.
-    for i in range(260):
-        t = i / 260.0
-        angle = t * 26.0
-        radius = 240 + 2600 * t ** 1.4
-        height = 520 + 26000 * t ** 1.25
-        size = 36 + 240 * t
-        lantern((cup[0] + math.cos(angle) * radius, cup[1] + math.sin(angle) * radius, height), size, m, far=t > 0.12)
+    if VARIANT.get("river"):
+        # The river: lanterns streaming across the sky the way the ball has to go, low over the tee and climbing away
+        # past the cup, as if a wind were carrying them.
+        for i in range(320):
+            t = i / 320.0
+            along = -9000 + 30000 * t
+            sway = math.sin(t * 9.0) * 900 + rng.uniform(-700, 700)
+            height = 520 + 300 * math.sin(t * 5.0) + 9000 * max(0.0, t - 0.45) ** 1.6 + rng.uniform(-120, 260)
+            size = rng.uniform(30, 60) * (1.0 + 2.5 * max(0.0, t - 0.5))
+            lantern((along, 700 + sway, height), size, m, far=abs(along - 700) > 5200)
+    else:
+        # The column: a slow spiral of lanterns climbing out of the court.
+        for i in range(260):
+            t = i / 260.0
+            angle = t * 26.0
+            radius = 240 + 2600 * t ** 1.4
+            height = 520 + 26000 * t ** 1.25
+            size = 36 + 240 * t
+            lantern((cup[0] + math.cos(angle) * radius, cup[1] + math.sin(angle) * radius, height), size, m, far=t > 0.12)
 
     # Far lanterns over the dark land beyond the walls, so the night has depth.
     for _ in range(180):
@@ -160,7 +177,7 @@ def surroundings(m):
 c.fresh_level(LEVEL)
 mats = materials()
 # The moon stands behind the tee and to the left; its light comes over the player's shoulder.
-c.night_sky(moon_pitch=-28.0, moon_yaw=38.0)
+c.night_sky(**VARIANT.get("moon", dict(moon_pitch=-28.0, moon_yaw=38.0)))
 with open(COURSE) as f:
     course_data = json.load(f)
 course_geometry(course_data, mats)

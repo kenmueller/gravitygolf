@@ -18,6 +18,7 @@ const TArray<FGGHoleInfo>& UGGSave::Holes()
 		{TEXT("Canyon"), TEXT("canyon"), TEXT("The Narrows"), TEXT("A slot canyon at noon"), 1},
 		{TEXT("Lantern"), TEXT("lantern"), TEXT("Lantern Court"), TEXT("A walled court at night"), 2},
 		{TEXT("Returning"), TEXT("returning"), TEXT("The Long Way Round"), TEXT("The canyon in the evening"), 2},
+		{TEXT("Brief"), TEXT("brief"), TEXT("Second Wind"), TEXT("The court, later that night"), 1},
 	};
 	return All;
 }

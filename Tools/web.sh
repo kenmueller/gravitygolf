@@ -35,7 +35,7 @@ project.pop("EngineAssociation", None)
 json.dump(project, open(path, "w"), indent="\t")
 PY
 
-MAPS="/Game/Levels/Terraces+/Game/Levels/SaltMirror+/Game/Levels/Canyon+/Game/Levels/Lantern+/Game/Levels/Returning"
+MAPS="/Game/Levels/Terraces+/Game/Levels/SaltMirror+/Game/Levels/Canyon+/Game/Levels/Lantern+/Game/Levels/Returning+/Game/Levels/Brief"
 OUT="$WEB/Saved/Web"
 "$UE/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun -project="$WEB/GravityGolf.uproject" -platform=Wasm \
 	-clientconfig="$CONFIG" -build -cook -map="$MAPS" -stage -pak -iostore -package -archive -archivedirectory="$OUT" \

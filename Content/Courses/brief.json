@@ -1,0 +1,199 @@
+{
+	"id": "brief",
+	"name": "Second Wind",
+	"level": "Brief",
+	"par": 1,
+	"ballRadius": 6,
+	"gravity": [
+		0,
+		0,
+		-980
+	],
+	"killZ": -1400,
+	"tee": {
+		"position": [
+			-2350,
+			-500,
+			6
+		],
+		"yaw": 0
+	},
+	"cup": {
+		"position": [
+			3400,
+			660,
+			0
+		],
+		"radius": 42,
+		"captureSpeed": 650
+	},
+	"noMachine": [
+		{
+			"position": [
+				3400,
+				660,
+				0
+			],
+			"radius": 380,
+			"kind": "court"
+		}
+	],
+	"safeZones": [],
+	"attractors": [
+		{
+			"position": [
+				-1500,
+				-550,
+				0
+			],
+			"strength": 420,
+			"range": 1900,
+			"coreHeight": 45,
+			"movable": true
+		},
+		{
+			"position": [
+				-1200,
+				-550,
+				0
+			],
+			"strength": 420,
+			"range": 1900,
+			"coreHeight": 45,
+			"movable": true
+		}
+	],
+	"boxes": [
+		{
+			"name": "Paving",
+			"center": [
+				700.0,
+				500.0,
+				-15
+			],
+			"size": [
+				7000,
+				2800,
+				30
+			],
+			"surface": "green",
+			"look": "paving",
+			"shape": "box"
+		},
+		{
+			"name": "Hedge_S",
+			"center": [
+				700.0,
+				-975.0,
+				130.0
+			],
+			"size": [
+				7300,
+				150,
+				260
+			],
+			"surface": "sand",
+			"look": "hedge",
+			"shape": "box"
+		},
+		{
+			"name": "Hedge_N",
+			"center": [
+				700.0,
+				1975.0,
+				130.0
+			],
+			"size": [
+				7300,
+				150,
+				260
+			],
+			"surface": "sand",
+			"look": "hedge",
+			"shape": "box"
+		},
+		{
+			"name": "Hedge_W",
+			"center": [
+				-2875.0,
+				500.0,
+				130.0
+			],
+			"size": [
+				150,
+				2800,
+				260
+			],
+			"surface": "sand",
+			"look": "hedge",
+			"shape": "box"
+		},
+		{
+			"name": "Hedge_E",
+			"center": [
+				4275.0,
+				500.0,
+				130.0
+			],
+			"size": [
+				150,
+				2800,
+				260
+			],
+			"surface": "sand",
+			"look": "hedge",
+			"shape": "box"
+		},
+		{
+			"name": "Divide",
+			"center": [
+				1150.0,
+				210.0,
+				130.0
+			],
+			"size": [
+				6100,
+				120,
+				260
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Gallery_N",
+			"center": [
+				700.0,
+				1110.0,
+				130.0
+			],
+			"size": [
+				7000,
+				120,
+				260
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		}
+	],
+	"switches": [],
+	"gates": [],
+	"solutions": [
+		{
+			"leg": 0,
+			"machines": [
+				[
+					-450,
+					500
+				],
+				[
+					1450,
+					450
+				]
+			],
+			"yaw": 64,
+			"power": 0.35
+		}
+	]
+}

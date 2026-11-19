@@ -177,6 +177,7 @@ void AGGGolfer::SetupPlayerInputComponent(UInputComponent* Input)
 	Input->BindKey(EKeys::Three, IE_Pressed, this, &AGGGolfer::Hole3);
 	Input->BindKey(EKeys::Four, IE_Pressed, this, &AGGGolfer::Hole4);
 	Input->BindKey(EKeys::Five, IE_Pressed, this, &AGGGolfer::Hole5);
+	Input->BindKey(EKeys::Six, IE_Pressed, this, &AGGGolfer::Hole6);
 
 	// Gamepad: left stick walks (click it to run), right stick looks, right trigger swings.
 	Input->BindAxisKey(EKeys::Gamepad_LeftY, this, &AGGGolfer::PadForward);
