@@ -492,6 +492,61 @@ def build_night_sky():
     finish(material, path)
 
 
-for build in (build_surface, build_glow, build_lantern, build_sky, build_ball, build_ocean, build_scan, build_salt, build_mirror, build_night_sky):
-    build()
+GRID = r"""
+// The Workshop's table: dark slate ruled like drafting paper. A fine line every Minor centimetres (the squares holes
+// are built on) and a bright one every Major. Lines are a pixel or two wide at any distance and fade before they
+// would shimmer.
+float2 P = WorldPos.xy;
+float Dist = length(WorldPos - CameraPos);
+float2 A = P / Minor;
+float2 WA = max(fwidth(A), 1e-5);
+float2 DA = abs(frac(A - 0.5) - 0.5) / WA;
+float Fine = (1.0 - saturate(min(DA.x, DA.y))) * saturate(1.0 - max(WA.x, WA.y) * 3.0);
+float2 B = P / Major;
+float2 WB = max(fwidth(B), 1e-5);
+float2 DB = abs(frac(B - 0.5) - 0.5) / WB;
+float Bold = (1.0 - saturate(min(DB.x, DB.y) - 0.6)) * saturate(1.0 - max(WB.x, WB.y) * 3.0);
+float Far = saturate(1.0 - Dist / 90000.0);
+Lines = (Fine * 0.22 + Bold * 0.9) * Far * Far;
+// A slow mottling so the slate is not one flat colour.
+float Cloud = sin(P.x * 0.0011) * sin(P.y * 0.0013) * 0.5 + 0.5;
+// Ink darkens the lines instead of lighting them: ruled paper rather than a lit table.
+return Tint.rgb * (0.8 + 0.4 * Cloud) * (1.0 - saturate((Fine * 0.6 + Bold) * Far) * Ink);
+"""
+
+
+def build_grid():
+    material, path = fresh("M_GG_Grid")
+    world = node(material, unreal.MaterialExpressionWorldPosition, -900, 0)
+    camera = node(material, unreal.MaterialExpressionCameraPositionWS, -900, 80)
+    minor = scalar_param(material, "Minor", 50.0, -900, 160)
+    major = scalar_param(material, "Major", 500.0, -900, 240)
+    tint = vector_param(material, "Tint", (0.012, 0.022, 0.045, 1), -900, 320)
+    line = vector_param(material, "LineColor", (0.25, 0.6, 1.0, 1), -900, 480)
+    strength = scalar_param(material, "Strength", 1.2, -900, 640)
+    ink = scalar_param(material, "Ink", 0.0, -900, 720)
+    slate = custom(material, GRID, ["WorldPos", "CameraPos", "Minor", "Major", "Tint", "Ink"], -500, 100,
+                   outputs=[("Lines", unreal.CustomMaterialOutputType.CMOT_FLOAT1)])
+    for source, pin in [(world, "WorldPos"), (camera, "CameraPos"), (minor, "Minor"), (major, "Major"), (tint, "Tint"),
+                        (ink, "Ink")]:
+        MEL.connect_material_expressions(source, "", slate, pin)
+    glow = node(material, unreal.MaterialExpressionMultiply, -200, 300)
+    MEL.connect_material_expressions(line, "", glow, "A")
+    MEL.connect_material_expressions(slate, "Lines", glow, "B")
+    lit = node(material, unreal.MaterialExpressionMultiply, -50, 400)
+    MEL.connect_material_expressions(glow, "", lit, "A")
+    MEL.connect_material_expressions(strength, "", lit, "B")
+    MEL.connect_material_property(slate, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    MEL.connect_material_property(lit, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    MEL.connect_material_property(scalar_param(material, "Roughness", 0.32, -500, 520), "", unreal.MaterialProperty.MP_ROUGHNESS)
+    finish(material, path)
+
+
+BUILDS = {"surface": build_surface, "glow": build_glow, "lantern": build_lantern, "sky": build_sky, "ball": build_ball,
+          "ocean": build_ocean, "scan": build_scan, "salt": build_salt, "mirror": build_mirror, "night_sky": build_night_sky,
+          "grid": build_grid}
+# GG_ONLY (set by the caller) rebuilds just the named materials. A material that is rebuilt resets every instance
+# made from it, so adding a new one this way leaves the levels alone.
+for build_name in globals().get("GG_ONLY") or BUILDS:
+    BUILDS[build_name]()
 unreal.log("GG: materials done")

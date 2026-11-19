@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Sim/GGProof.h"
 #include "Sim/GGSim.h"
 
 #include "GGCourse.generated.h"
@@ -30,6 +31,8 @@ struct FGGSolution
 	TArray<FVector> Machines;
 	double Yaw = 0.0;
 	double Power = 0.0;
+	/** Workshop holes: which plates were already banked when the leg was played. */
+	TArray<bool> Held;
 };
 
 /**
@@ -47,6 +50,11 @@ public:
 
 	static bool Exists(const FString& CourseId);
 	bool Load(const FString& CourseId);
+	/** Build the hole from course JSON held in memory (the Workshop does this after every edit). Replaces whatever
+	 *  was loaded before. */
+	bool LoadText(const FString& Text, const FString& CourseId);
+	/** Take the hole down again: every mesh and light it built, and all of its state. */
+	void Unload();
 
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -72,6 +80,15 @@ public:
 	const GG::FPhysics& PhysicsRules() const { return Physics; }
 	const std::vector<GG::FAttractor>& MachineFields() const { return Attractors; }
 	const TArray<FVector>& StartingBases() const { return InitialBases; }
+	/** The hole as the puzzle-law proof sees it (see Sim/GGProof.h). */
+	GG::FSetup MakeSetup() const;
+	/** Legs finished by a real swing since the hole was loaded: where the machines stood, and the swing. The Workshop
+	 *  keeps these as its proof that a hole can be solved. */
+	const TArray<FGGSolution>& PlayedLegs() const { return Played; }
+	/** Goes up each time a leg is added to PlayedLegs. */
+	int32 PlayedSerial() const { return PlayedCount; }
+	/** A hole built in the Workshop draws itself. */
+	bool Drawn() const { return bDrawn; }
 	double MachineCoreHeight() const { return CoreHeight; }
 	/** Seconds the player has spent on this hole so far (it stops when the ball is sunk). */
 	double PlayTime() const { return Clock; }
@@ -117,6 +134,8 @@ public:
 
 	/** Show the machines' fields boldly (true) or as faint rings only (false). */
 	void SetFieldEmphasis(bool bEmphasize);
+	/** Draw no fields at all (the Workshop's table, where the rings of a few machines cover the whole design). */
+	void HideFields(bool bHide) { bFieldsHidden = bHide; }
 	/** After a solve: open the next hole, or replay this one if it's the last. */
 	void Advance();
 	bool HasNext() const { return !NextLevel.IsEmpty(); }
@@ -188,6 +207,7 @@ private:
 	double NoticeTime = 0.0;
 	FString NextLevel;
 	bool bFieldEmphasis = false;
+	bool bFieldsHidden = false;
 	float FieldLevel = 0.f;
 	TArray<float> MachineFlash;
 	/** Switches banked on earlier legs of this hole. */
@@ -196,6 +216,22 @@ private:
 	TArray<FGGSolution> Solutions;
 	TArray<float> GateLevel;
 	TArray<FVector> NoMachineZones; // x, y, radius
+	/** A course made in the Workshop has no level dressed around it, so it draws its own floor and walls. */
+	struct FDrawnBox
+	{
+		FVector Center;
+		FVector Size;
+		FString Look;
+	};
+	TArray<FDrawnBox> DrawnBoxes;
+	bool bDrawn = false;
+	bool bPlantsSpawned = false;
+	void BuildDrawn();
+	TArray<FGGSolution> Played;
+	int32 PlayedCount = 0;
+	/** The swing under way, kept until it is known whether it finished its leg. */
+	FGGSolution Pending;
+	bool bPendingValid = false;
 	double CoreHeight = 45.0;
 	double Accumulator = 0.0;
 	double Clock = 0.0;

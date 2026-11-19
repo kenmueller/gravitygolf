@@ -60,6 +60,9 @@ Source/GravityGolf/
   */Game/GGHUD.*              play HUD, touch controls, solved card and the menus (title, pause, holes, settings)
   */Game/GGSave.*             saved progress and settings; the list of holes in play order
   */Game/GGRival.*            the bot to race: plays the hole in a ghost copy of its own, at three skills
+  */Game/GGWorkshop.*         the level editor: a design on a 50 cm grid, its tools, the view from above, the proof
+  */Game/GGWorkshopHUD.cpp    the Workshop's building screen (drawn by AGGHUD)
+  */Sim/GGProof.h             the proof's building blocks, shared by Tests/Sim and the Workshop
 Content/Courses/*.json        collision boxes + rules, written by Tools/courses/<level>.py (plain Python)
 Tools/levels/<level>.py       builds the level in the editor from the course JSON plus dressing (common.py helpers)
 Tools/build_materials.py      generates /Game/Materials (custom HLSL: triplanar scans, ocean, ball, glow)
@@ -82,6 +85,8 @@ Tools/web.sh [config] [host]  package for the web (Wasm + WebGPU) with the sourc
 Tools/webtest.sh [play|phone|tour]   run the web build in Chrome with screenshots (tour: every hole's solution)
 Tools/nettest.sh              two players in the editor; compares both copies of the hole after every step
 Tools/rivaltest.sh [Level ...]   the rival bot plays a hole at each skill, time sped up; reports time and swings
+Tools/workshoptest.sh         works the Workshop without hands: every tool, undo, hole codes, touch, the proof, a test play
+Tests/Sim/design.sh <json> solve|search|probe   the standalone tools on a Workshop design (`GGWorkshop json <file>` writes one)
 Tools/net.sh <player|all> "<cmd>"    run a console command on one player's machine (GGNet where|carry|place|swing...)
 ```
 
@@ -108,7 +113,10 @@ Work through the Unreal MCP (`mcp__unreal__*`) while the editor is open:
   then `GGShot yaw,power`, and read `LogGGCourse` for the outcome.
 - Fab installs: `FabToolset.InstallFabListing`, then save dirty packages.
 - Test input without hands: `GGTouch finger,phase,x,y` (a touch, in fractions of the screen), `GGMenu
-  title|pause|holes|settings|none`, `GGWhere` (logs the player's position, facing and state).
+  title|pause|holes|settings|together|workshop|designs|none`, `GGWhere` (logs the player's position, facing and state).
+- The Workshop from the console: `GGWorkshop tool wall`, `GGWorkshop stroke x0,y0,x1,y1` (one stroke of the tool, in
+  centimetres), `test`, `build`, `undo`, `new`, `keep`, `open <name>`, `code [text]`, `check`, `json <file>`. Every call
+  logs the Workshop's state.
 - `execute_python` takes `{"script": {"content": "<code>"}}` and returns the last expression's value; `print`
   goes to the log only.
 
@@ -158,6 +166,14 @@ console and read the pass list in the log before guessing.
 - A dead ball inside an attractor's dome is reeled in and thrown out the far side; inside a repulsor's dome it is
   pushed straight away. Many "answers" the search finds are a ball killed on a wall and then carried by the
   machines. They pass the proof, but trace them (`Tests/Sim/probe.sh`) before recording one as the intended answer.
+- One enormous box draws over things standing on it: the Workshop's table as a single 90 km slab hid a hole whose
+  ground was 30 cm above it (depth precision across a huge triangle). Lay big ground in tiles of a few hundred metres.
+- A material rebuilt by `Tools/build_materials.py` resets its instances. To add or change one material without
+  touching the rest, run the script with `GG_ONLY` set: `runpy.run_path(path, init_globals={'GG_ONLY': ['grid']})`.
+- Overlapping floor boxes double the rolling resistance where they overlap (each box the ball touches slows it). The
+  Workshop cuts a design's squares into rectangles that never overlap, in a fixed order, for that reason.
+- Keys are not axes: `BindAxisKey(EKeys::W, ...)` trips an engine ensure at startup. Read W A S D with
+  `IsInputKeyDown` in Tick.
 - Adding a hole: its course and level scripts, an entry in `UGGSave::Holes()` (GGSave.cpp), the previous course's
   `next_level`, and the level lists in `Tools/smoke.sh`, `Tools/perf.sh`, `Tools/regen.sh` and `Tools/web.sh`.
 - Test a hole's stated idea, not only the hole: change what the idea depends on (move the cup, hold the gate open)

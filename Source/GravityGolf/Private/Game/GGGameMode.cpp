@@ -23,6 +23,7 @@
 #include "Game/GGHUD.h"
 #include "Game/GGRival.h"
 #include "Game/GGSave.h"
+#include "Game/GGWorkshop.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/CommandLine.h"
@@ -65,6 +66,13 @@ void AGGGameMode::BeginPlay()
 	Super::BeginPlay();
 
 	const FString CourseId = UGameplayStatics::GetCurrentLevelName(this, true).ToLower();
+	if (CourseId == TEXT("workshop"))
+	{
+		// The Workshop has no hole of its own: the player builds one, and the Workshop hands it to the course.
+		Course = GetWorld()->SpawnActor<AGGCourse>();
+		GetWorld()->SpawnActor<AGGWorkshop>()->Begin(Course);
+		return;
+	}
 	if (!AGGCourse::Exists(CourseId))
 	{
 		UE_LOG(LogGGMode, Warning, TEXT("No course file for level '%s'"), *CourseId);
@@ -119,6 +127,108 @@ TArray<double> Numbers(const FString& Text)
 	return Out;
 }
 } // namespace
+
+void AGGGameMode::GGWorkshop(const FString& Command, const FString& Argument)
+{
+	// Works the Workshop without hands, through the same calls the pointer and the buttons make.
+	AGGWorkshop* Workshop = AGGWorkshop::Get(this);
+	if (!Workshop)
+	{
+		UE_LOG(LogGGMode, Warning, TEXT("GGWorkshop: this level is not the Workshop"));
+		return;
+	}
+	const TArray<double> N = Numbers(Argument);
+	if (Command == TEXT("tool"))
+	{
+		for (int32 I = 0; I < static_cast<int32>(EGGTool::Count); ++I)
+		{
+			if (FString(AGGWorkshop::ToolName(static_cast<EGGTool>(I))).Replace(TEXT(" "), TEXT("")).Equals(Argument, ESearchCase::IgnoreCase))
+			{
+				Workshop->SetTool(static_cast<EGGTool>(I));
+			}
+		}
+	}
+	else if (Command == TEXT("stroke") && N.Num() >= 2)
+	{
+		// One stroke of the chosen tool, in world centimetres: x,y for a click, x0,y0,x1,y1 for a drag.
+		Workshop->Press(FVector2D(N[0], N[1]));
+		if (N.Num() >= 4)
+		{
+			Workshop->Drag(FVector2D(N[2], N[3]));
+		}
+		Workshop->Release();
+	}
+	else if (Command == TEXT("click") && N.Num() >= 2)
+	{
+		// A press on the screen, in fractions of it: a button if one is there.
+		if (AGGGolfer* Golfer = Cast<AGGGolfer>(UGameplayStatics::GetPlayerPawn(this, 0)))
+		{
+			const FVector2D At = Golfer->ViewportSize() * FVector2D(N[0], N[1]);
+			UE_LOG(LogGGMode, Display, TEXT("Workshop: click %s"), Golfer->Hud() && Golfer->Hud()->WorkshopPress(At) ? TEXT("hit a button") : TEXT("missed"));
+		}
+	}
+	else if (Command == TEXT("test"))
+	{
+		Workshop->StartTesting();
+	}
+	else if (Command == TEXT("build"))
+	{
+		Workshop->StartBuilding();
+	}
+	else if (Command == TEXT("undo"))
+	{
+		Workshop->Undo();
+	}
+	else if (Command == TEXT("new"))
+	{
+		Workshop->NewHole();
+	}
+	else if (Command == TEXT("name"))
+	{
+		Workshop->NameHole(Argument);
+	}
+	else if (Command == TEXT("keep"))
+	{
+		Workshop->SaveHole();
+	}
+	else if (Command == TEXT("open"))
+	{
+		Workshop->LoadHole(Argument);
+	}
+	else if (Command == TEXT("code"))
+	{
+		if (Argument.IsEmpty())
+		{
+			UE_LOG(LogGGMode, Display, TEXT("Workshop: code %s"), *Workshop->ShareCode());
+		}
+		else
+		{
+			Workshop->ImportCode(Argument);
+		}
+	}
+	else if (Command == TEXT("check"))
+	{
+		Workshop->StartProof();
+	}
+	else if (Command == TEXT("json") && !Argument.IsEmpty())
+	{
+		// The design as a course file, for the standalone solver (Tests/Sim/design.sh).
+		FFileHelper::SaveStringToFile(Workshop->Design().ToJson(), *Argument);
+	}
+	else if (Command == TEXT("view") && N.Num() >= 3)
+	{
+		Workshop->LookAt(FVector2D(N[0], N[1]), N[2]);
+	}
+	else if (Command == TEXT("frame"))
+	{
+		Workshop->FrameDesign();
+	}
+	const FGGDesign& Design = Workshop->Design();
+	UE_LOG(LogGGMode, Display, TEXT("Workshop: %s \"%s\" squares %d machines %d plates %d gates %d pads %d solved %d necessary %d proving %d (%.0f%%) | %s"),
+		Workshop->Building() ? TEXT("building") : TEXT("testing"), *Design.Name, Design.Cells.Num(), Design.Machines.Num(), Design.Plates.Num(),
+		Design.Gates.Num(), Design.Pads.Num(), Design.Solved() ? 1 : 0, Design.Necessary, Workshop->Proving() ? 1 : 0, Workshop->ProofProgress() * 100.f,
+		*Workshop->Message());
+}
 
 void AGGGameMode::GGShot(const FString& YawPower)
 {
@@ -200,7 +310,9 @@ void AGGGameMode::GGMenu(const FString& Screen)
 	if (AGGHUD* Hud = PC ? Cast<AGGHUD>(PC->GetHUD()) : nullptr)
 	{
 		Hud->OpenMenu(Screen == TEXT("title") ? EGGMenu::Title : Screen == TEXT("pause") ? EGGMenu::Pause
-			: Screen == TEXT("holes") ? EGGMenu::Holes : Screen == TEXT("settings") ? EGGMenu::Settings : EGGMenu::None);
+			: Screen == TEXT("holes") ? EGGMenu::Holes : Screen == TEXT("settings") ? EGGMenu::Settings
+			: Screen == TEXT("together") ? EGGMenu::Together : Screen == TEXT("workshop") ? EGGMenu::Workshop
+			: Screen == TEXT("designs") ? EGGMenu::Designs : EGGMenu::None);
 	}
 }
 

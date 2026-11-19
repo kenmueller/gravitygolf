@@ -8,6 +8,7 @@ public class GravityGolf : ModuleRules
 
 		PublicDependencyModuleNames.AddRange(new[]
 		{
+			"ApplicationCore",
 			"Core",
 			"CoreUObject",
 			"Engine",

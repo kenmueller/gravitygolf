@@ -11,6 +11,8 @@
 #include "Game/GGGolfer.h"
 #include "Game/GGRival.h"
 #include "Game/GGSave.h"
+#include "Game/GGWorkshop.h"
+#include "HAL/PlatformApplicationMisc.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/CommandLine.h"
@@ -29,7 +31,7 @@ float AGGHUD::Unit() const
 	return Canvas ? Canvas->ClipY / 1080.f : 1.f;
 }
 
-void AGGHUD::Label(const FString& Line, float X, float Y, float Size, const FLinearColor& Color, bool bCentered, bool bBold)
+void AGGHUD::Label(const FString& Line, float X, float Y, float Size, const FLinearColor& Color, bool bCentered, bool bBold, bool bRight)
 {
 	if (!TextFont)
 	{
@@ -41,6 +43,15 @@ void AGGHUD::Label(const FString& Line, float X, float Y, float Size, const FLin
 	}
 	// Slate sizes fonts in points; three quarters of a pixel height gives capitals about that tall.
 	const FSlateFontInfo Info(TextFont, FMath::Max(6.f, Size * 0.75f), bBold ? FName(TEXT("Bold")) : FName(TEXT("Regular")));
+	if (bRight)
+	{
+		// Right-aligned: measure the line and start it that far to the left.
+		// (Drawing a text item is what measures it, so an invisible copy is drawn first.)
+		FCanvasTextItem Measure(FVector2D(-4000.0, -4000.0), FText::FromString(Line), Info, FLinearColor(0.f, 0.f, 0.f, 0.f));
+		Measure.BlendMode = SE_BLEND_Translucent;
+		Canvas->DrawItem(Measure);
+		X -= static_cast<float>(Measure.DrawnSize.X);
+	}
 	FCanvasTextItem Item(FVector2D(X, Y), FText::FromString(Line), Info, Color);
 	// A soft dark shadow, so every line reads over bright rock, sky or salt.
 	Item.EnableShadow(FLinearColor(0.f, 0.f, 0.f, 0.7f * Color.A), FVector2D(1.5f, 1.5f) * FMath::Max(Unit(), 0.75f));
@@ -95,7 +106,17 @@ void AGGHUD::DrawHUD()
 		DrawMenu();
 		return;
 	}
+	AGGWorkshop* Workshop = AGGWorkshop::Get(this);
+	if (Workshop && Workshop->Building())
+	{
+		DrawWorkshop(Workshop);
+		return;
+	}
 	DrawPlay(Golfer, Course);
+	if (Workshop && !Golfer->UsingTouch())
+	{
+		Label(TEXT("T   back to building"), Canvas->ClipX - 40.f * Unit(), 34.f * Unit(), 19.f * Unit(), Dim, false, false, true);
+	}
 	if (Golfer->UsingTouch())
 	{
 		DrawTouch(Golfer);
@@ -134,6 +155,14 @@ void AGGHUD::DrawPlay(const AGGGolfer* Golfer, const AGGCourse* Course)
 		Label(bPerfect ? TEXT("PERFECT") : TEXT("SOLVED"), CX, Top + 28.f * S, 54.f * S, bPerfect ? Gold : Ink, true, true);
 		Label(FString::Printf(TEXT("%d swing%s    perfect is %d"), Course->Strokes(), Course->Strokes() == 1 ? TEXT("") : TEXT("s"), Perfect),
 			CX, Top + 112.f * S, 24.f * S, Ink, true);
+		if (const AGGWorkshop* Shop = AGGWorkshop::Get(this))
+		{
+			// A hole of the player's own: solving it is half of proving it.
+			Label(Shop->Design().Solved() ? TEXT("Your answer is kept as this hole's solution") : TEXT("Solve every swing in one go to keep it as the answer"),
+				CX, Top + 152.f * S, 20.f * S, Dim, true);
+			Label(bTouch ? TEXT("BUILD takes you back to the table") : TEXT("T  back to building        Backspace  play it again"), CX, Top + 198.f * S, 20.f * S, Dim, true);
+			return;
+		}
 		if (Course->Assisted())
 		{
 			Label(TEXT("The solution was shown, so this one isn't recorded"), CX, Top + 152.f * S, 20.f * S, Dim, true);
@@ -238,9 +267,18 @@ void AGGHUD::OpenMenu(EGGMenu Which)
 		CloseMenu();
 		return;
 	}
-	if (Which == EGGMenu::Holes || Which == EGGMenu::Settings)
+	const bool bWorkshop = AGGWorkshop::Get(this) != nullptr;
+	if (Which == EGGMenu::Pause && bWorkshop)
 	{
-		Parent = Menu == EGGMenu::Title ? EGGMenu::Title : EGGMenu::Pause;
+		Which = EGGMenu::Workshop;
+	}
+	if (Which == EGGMenu::Holes || Which == EGGMenu::Settings || Which == EGGMenu::Together || Which == EGGMenu::Designs)
+	{
+		Parent = Menu == EGGMenu::Title ? EGGMenu::Title : bWorkshop ? EGGMenu::Workshop : EGGMenu::Pause;
+	}
+	if (Which == EGGMenu::Together && Address.IsEmpty())
+	{
+		Address = UGGSave::Get().LastHost;
 	}
 	Menu = Which;
 	Selected = 0;
@@ -261,6 +299,12 @@ void AGGHUD::CloseMenu()
 	Items.Reset();
 	if (APlayerController* PC = GetOwningPlayerController())
 	{
+		// Building in the Workshop is done with the pointer, so it stays.
+		const AGGWorkshop* Workshop = AGGWorkshop::Get(this);
+		if (Workshop && Workshop->Building())
+		{
+			return;
+		}
 		PC->bShowMouseCursor = false;
 		PC->SetInputMode(FInputModeGameOnly());
 	}
@@ -285,16 +329,66 @@ void AGGHUD::BuildMenu()
 	case EGGMenu::Title:
 		Add(Save.BestSwings.Num() > 0 ? TEXT("Continue") : TEXT("Play"), TEXT("Play"));
 		Add(TEXT("Holes"), TEXT("Holes"));
+		Add(TEXT("Workshop"), TEXT("Workshop"));
+#if !PLATFORM_WASM
+		if (!AGGWorkshop::Get(this))
+		{
+			Add(TEXT("Play together"), TEXT("Together"));
+		}
+#endif
 		Add(TEXT("Settings"), TEXT("Settings"));
 #if !PLATFORM_WASM
 		Add(TEXT("Quit"), TEXT("Quit"));
 #endif
 		break;
+	case EGGMenu::Workshop:
+	{
+		const AGGWorkshop* Workshop = AGGWorkshop::Get(this);
+		const bool bBuilding = Workshop && Workshop->Building();
+		Add(bBuilding ? TEXT("Back to building") : TEXT("Back to the hole"), TEXT("Resume"));
+		Add(bBuilding ? TEXT("Test this hole") : TEXT("Back to building"), TEXT("ToggleBuild"));
+		Add(TEXT("Name"), TEXT("Name"), Workshop ? Workshop->Design().Name + (bBuilding ? TEXT("_") : TEXT("")) : FString());
+		Add(TEXT("Keep this hole"), TEXT("Keep"));
+		Add(TEXT("My holes"), TEXT("Designs"), FString::Printf(TEXT("%d kept"), Save.Designs.Num()));
+		Add(TEXT("Start a new hole"), TEXT("NewHole"));
+#if !PLATFORM_WASM
+		Add(TEXT("Copy this hole's code"), TEXT("CopyCode"));
+		Add(TEXT("Open a hole from a copied code"), TEXT("PasteCode"));
+#endif
+		Add(TEXT("Settings"), TEXT("Settings"));
+		Add(TEXT("Leave the Workshop"), TEXT("Title"));
+		break;
+	}
+	case EGGMenu::Designs:
+	{
+		TArray<FString> Names;
+		Save.Designs.GetKeys(Names);
+		Names.Sort();
+		for (int32 I = 0; I < Names.Num(); ++I)
+		{
+			Add(*Names[I], TEXT("OpenDesign"), FString(TEXT("open")), I);
+		}
+		if (Names.Num() == 0)
+		{
+			Add(TEXT("Nothing kept yet"), TEXT("None"), FString(), 0, false);
+		}
+		const AGGWorkshop* Workshop = AGGWorkshop::Get(this);
+		if (Workshop && Save.Designs.Contains(Workshop->Design().Name))
+		{
+			Add(*FString::Printf(TEXT("Delete \"%s\""), *Workshop->Design().Name), TEXT("DeleteDesign"));
+		}
+		Add(TEXT("Back"), TEXT("Back"));
+		break;
+	}
 	case EGGMenu::Pause:
 		Add(TEXT("Resume"), TEXT("Resume"));
 		Add(TEXT("Start this hole again"), TEXT("Restart"));
 		Add(TEXT("Show the solution"), TEXT("Hint"));
 		Add(TEXT("Holes"), TEXT("Holes"));
+		Add(TEXT("Workshop"), TEXT("Workshop"));
+#if !PLATFORM_WASM
+		Add(TEXT("Play together"), TEXT("Together"));
+#endif
 		Add(TEXT("Settings"), TEXT("Settings"));
 		Add(TEXT("Title screen"), TEXT("Title"));
 		break;
@@ -310,6 +404,22 @@ void AGGHUD::BuildMenu()
 				: Best <= All[I].Perfect ? FString::Printf(TEXT("Perfect, %d"), Best)
 				: FString::Printf(TEXT("Best %d, perfect is %d"), Best, All[I].Perfect);
 			Add(*FString::Printf(TEXT("%d   %s"), I + 1, All[I].Name), TEXT("Hole"), Value, I, bOpen);
+		}
+		Add(TEXT("Back"), TEXT("Back"));
+		break;
+	}
+	case EGGMenu::Together:
+	{
+		const ENetMode Mode = GetNetMode();
+		if (Mode == NM_Standalone)
+		{
+			Add(TEXT("Host this hole"), TEXT("Host"));
+			Add(TEXT("Join a host at"), TEXT("Join"), Address.IsEmpty() ? FString(TEXT("type an address")) : Address);
+		}
+		else
+		{
+			Add(Mode == NM_Client ? TEXT("You have joined a host") : TEXT("You are hosting"), TEXT("None"), FString(), 0, false);
+			Add(TEXT("Leave and play alone"), TEXT("Leave"));
 		}
 		Add(TEXT("Back"), TEXT("Back"));
 		break;
@@ -350,7 +460,7 @@ void AGGHUD::MenuMove(int32 Rows, int32 Columns)
 			}
 		}
 	}
-	if (Columns != 0 && Items.IsValidIndex(Selected) && !Items[Selected].Value.IsEmpty() && Items[Selected].Action != TEXT("Hole"))
+	if (Columns != 0 && Items.IsValidIndex(Selected) && Adjustable(Items[Selected]))
 	{
 		RunAction(Items[Selected], Columns);
 	}
@@ -365,15 +475,126 @@ void AGGHUD::MenuActivate()
 	}
 }
 
+bool AGGHUD::Adjustable(const FItem& Item)
+{
+	// Rows whose value steps left and right. The others only show a value beside their name.
+	static const FName Steps[] = {TEXT("Sensitivity"), TEXT("Invert"), TEXT("Volume"), TEXT("Quality"), TEXT("Rival")};
+	return !Item.Value.IsEmpty() && Algo::Find(Steps, Item.Action) != nullptr;
+}
+
+bool AGGHUD::MenuType(const FKey& Key)
+{
+	if (Menu == EGGMenu::Workshop)
+	{
+		// In the Workshop's menu, typing names the hole.
+		AGGWorkshop* Workshop = AGGWorkshop::Get(this);
+		const APlayerController* PC = GetOwningPlayerController();
+		if (!Workshop || !PC)
+		{
+			return false;
+		}
+		FString Name = Workshop->Design().Name;
+		const FString KeyName = Key.GetFName().ToString();
+		static const TPair<FKey, TCHAR> Digits[] = {
+			{EKeys::Zero, TEXT('0')}, {EKeys::One, TEXT('1')}, {EKeys::Two, TEXT('2')}, {EKeys::Three, TEXT('3')}, {EKeys::Four, TEXT('4')},
+			{EKeys::Five, TEXT('5')}, {EKeys::Six, TEXT('6')}, {EKeys::Seven, TEXT('7')}, {EKeys::Eight, TEXT('8')}, {EKeys::Nine, TEXT('9')},
+			{EKeys::SpaceBar, TEXT(' ')}, {EKeys::Hyphen, TEXT('-')},
+		};
+		TCHAR Typed = 0;
+		for (const TPair<FKey, TCHAR>& Pair : Digits)
+		{
+			if (Key == Pair.Key)
+			{
+				Typed = Pair.Value;
+			}
+		}
+		if (!Typed && KeyName.Len() == 1 && FChar::IsAlpha(KeyName[0]))
+		{
+			// Capitals with Shift, and to start the name.
+			const bool bUpper = PC->IsInputKeyDown(EKeys::LeftShift) || PC->IsInputKeyDown(EKeys::RightShift) || Name.IsEmpty();
+			Typed = bUpper ? FChar::ToUpper(KeyName[0]) : FChar::ToLower(KeyName[0]);
+		}
+		if (Key == EKeys::BackSpace)
+		{
+			Name.LeftChopInline(1);
+		}
+		else if (Typed && Name.Len() < 28)
+		{
+			Name.AppendChar(Typed);
+		}
+		else
+		{
+			return false;
+		}
+		Workshop->NameHole(Name);
+		BuildMenu();
+		for (int32 I = 0; I < Items.Num(); ++I)
+		{
+			if (Items[I].Action == TEXT("Name"))
+			{
+				Selected = I;
+			}
+		}
+		return true;
+	}
+	// Otherwise typing only happens on the Play together screen, into the address.
+	if (Menu != EGGMenu::Together || GetNetMode() != NM_Standalone)
+	{
+		return false;
+	}
+	static const TPair<FKey, TCHAR> Keys[] = {
+		{EKeys::Zero, TEXT('0')}, {EKeys::One, TEXT('1')}, {EKeys::Two, TEXT('2')}, {EKeys::Three, TEXT('3')}, {EKeys::Four, TEXT('4')},
+		{EKeys::Five, TEXT('5')}, {EKeys::Six, TEXT('6')}, {EKeys::Seven, TEXT('7')}, {EKeys::Eight, TEXT('8')}, {EKeys::Nine, TEXT('9')},
+		{EKeys::NumPadZero, TEXT('0')}, {EKeys::NumPadOne, TEXT('1')}, {EKeys::NumPadTwo, TEXT('2')}, {EKeys::NumPadThree, TEXT('3')},
+		{EKeys::NumPadFour, TEXT('4')}, {EKeys::NumPadFive, TEXT('5')}, {EKeys::NumPadSix, TEXT('6')}, {EKeys::NumPadSeven, TEXT('7')},
+		{EKeys::NumPadEight, TEXT('8')}, {EKeys::NumPadNine, TEXT('9')}, {EKeys::Period, TEXT('.')}, {EKeys::Decimal, TEXT('.')},
+		{EKeys::Hyphen, TEXT('-')}, {EKeys::Semicolon, TEXT(':')}, {EKeys::Colon, TEXT(':')},
+	};
+	bool bUsed = false;
+	if (Key == EKeys::BackSpace)
+	{
+		Address.LeftChopInline(1);
+		bUsed = true;
+	}
+	for (const TPair<FKey, TCHAR>& Pair : Keys)
+	{
+		if (Key == Pair.Key && Address.Len() < 40)
+		{
+			Address.AppendChar(Pair.Value);
+			bUsed = true;
+		}
+	}
+	// Letters, for host names.
+	const FString Name = Key.GetFName().ToString();
+	if (!bUsed && Name.Len() == 1 && FChar::IsAlpha(Name[0]) && Address.Len() < 40)
+	{
+		Address.AppendChar(FChar::ToLower(Name[0]));
+		bUsed = true;
+	}
+	if (bUsed)
+	{
+		// Typing selects the address row.
+		BuildMenu();
+		for (int32 I = 0; I < Items.Num(); ++I)
+		{
+			if (Items[I].Action == TEXT("Join"))
+			{
+				Selected = I;
+			}
+		}
+	}
+	return bUsed;
+}
+
 void AGGHUD::MenuBack()
 {
-	if (Menu == EGGMenu::Holes || Menu == EGGMenu::Settings)
+	if (Menu == EGGMenu::Holes || Menu == EGGMenu::Settings || Menu == EGGMenu::Together || Menu == EGGMenu::Designs)
 	{
 		Menu = Parent;
 		Selected = 0;
 		BuildMenu();
 	}
-	else if (Menu == EGGMenu::Pause)
+	else if (Menu == EGGMenu::Pause || Menu == EGGMenu::Workshop)
 	{
 		CloseMenu();
 	}
@@ -394,8 +615,7 @@ void AGGHUD::MenuPointer(const FVector2D& At, bool bPress)
 			{
 				const FItem Item = Items[I];
 				// On a value row, the left half steps down and the right half steps up.
-				const bool bValue = !Item.Value.IsEmpty() && Item.Action != TEXT("Hole");
-				RunAction(Item, bValue ? (At.X < Item.Rect.GetCenter().X ? -1 : 1) : 0);
+				RunAction(Item, Adjustable(Item) ? (At.X < Item.Rect.GetCenter().X ? -1 : 1) : 0);
 			}
 			return;
 		}
@@ -461,9 +681,98 @@ void AGGHUD::RunAction(const FItem& Item, int32 Direction)
 	{
 		OpenMenu(EGGMenu::Settings);
 	}
+	else if (Action == TEXT("Together"))
+	{
+		OpenMenu(EGGMenu::Together);
+	}
+	else if (Action == TEXT("Host"))
+	{
+		// Reopen this hole as a host: friends join with this machine's address.
+		CloseMenu();
+		UGameplayStatics::OpenLevel(this, FName(*UGameplayStatics::GetCurrentLevelName(this, true)), true, TEXT("listen"));
+	}
+	else if (Action == TEXT("Join"))
+	{
+		if (!Address.IsEmpty())
+		{
+			Save.LastHost = Address;
+			UGGSave::Store();
+			CloseMenu();
+			if (APlayerController* PC = GetOwningPlayerController())
+			{
+				PC->ClientTravel(Address, TRAVEL_Absolute);
+			}
+		}
+	}
+	else if (Action == TEXT("Leave"))
+	{
+		CloseMenu();
+		UGameplayStatics::OpenLevel(this, FName(*UGameplayStatics::GetCurrentLevelName(this, true)));
+	}
 	else if (Action == TEXT("Title"))
 	{
 		OpenMenu(EGGMenu::Title);
+	}
+	else if (Action == TEXT("Workshop"))
+	{
+		CloseMenu();
+		UGameplayStatics::OpenLevel(this, FName(TEXT("/Game/Levels/Workshop")));
+	}
+	else if (Action == TEXT("Designs"))
+	{
+		OpenMenu(EGGMenu::Designs);
+	}
+	else if (AGGWorkshop* Workshop = AGGWorkshop::Get(this); Workshop && (Action == TEXT("ToggleBuild") || Action == TEXT("Keep") || Action == TEXT("NewHole")
+		|| Action == TEXT("CopyCode") || Action == TEXT("PasteCode") || Action == TEXT("OpenDesign") || Action == TEXT("DeleteDesign") || Action == TEXT("Name")))
+	{
+		if (Action == TEXT("Name"))
+		{
+			return;
+		}
+		if (Action == TEXT("ToggleBuild"))
+		{
+			Menu = EGGMenu::None;
+			Items.Reset();
+			Workshop->Toggle();
+			CloseMenu();
+			return;
+		}
+		if (Action == TEXT("Keep"))
+		{
+			Workshop->SaveHole();
+		}
+		else if (Action == TEXT("NewHole"))
+		{
+			Workshop->NewHole();
+		}
+		else if (Action == TEXT("CopyCode"))
+		{
+			FPlatformApplicationMisc::ClipboardCopy(*Workshop->ShareCode());
+			Workshop->Say(TEXT("This hole's code is copied. Paste it to a friend."));
+		}
+		else if (Action == TEXT("PasteCode"))
+		{
+			FString Code;
+			FPlatformApplicationMisc::ClipboardPaste(Code);
+			Workshop->ImportCode(Code);
+		}
+		else if (Action == TEXT("OpenDesign"))
+		{
+			Workshop->LoadHole(Item.Label);
+		}
+		else if (Action == TEXT("DeleteDesign"))
+		{
+			Workshop->DeleteHole(Workshop->Design().Name);
+			BuildMenu();
+			return;
+		}
+		Menu = EGGMenu::None;
+		Items.Reset();
+		if (!Workshop->Building())
+		{
+			Workshop->StartBuilding();
+		}
+		CloseMenu();
 	}
 	else if (Action == TEXT("Back"))
 	{
@@ -528,12 +837,16 @@ void AGGHUD::DrawMenu()
 	}
 	else
 	{
-		const TCHAR* Heading = Menu == EGGMenu::Pause ? TEXT("PAUSED") : Menu == EGGMenu::Holes ? TEXT("HOLES") : TEXT("SETTINGS");
+		const TCHAR* Heading = Menu == EGGMenu::Pause ? TEXT("PAUSED") : Menu == EGGMenu::Holes ? TEXT("HOLES")
+			: Menu == EGGMenu::Together ? TEXT("PLAY TOGETHER") : Menu == EGGMenu::Workshop ? TEXT("WORKSHOP")
+			: Menu == EGGMenu::Designs ? TEXT("MY HOLES") : TEXT("SETTINGS");
 		Label(Heading, CX, Canvas->ClipY * 0.13f, 54.f * S, Ink, true, true);
 		Top = Canvas->ClipY * 0.27f;
 	}
 
-	const float Row = (bTouch ? 84.f : 66.f) * S;
+	// Long lists (the Workshop's menu) take smaller rows so they fit the screen.
+	const float Room = Canvas->ClipY * 0.9f - Top;
+	const float Row = FMath::Min((bTouch ? 84.f : 66.f) * S, Room / FMath::Max(Items.Num(), 1));
 	const float Width = FMath::Min(760.f * S, Canvas->ClipX * 0.92f);
 	const float Left = CX - Width * 0.5f;
 	for (int32 I = 0; I < Items.Num(); ++I)
@@ -548,24 +861,27 @@ void AGGHUD::DrawMenu()
 			DrawRect(Gold, Left, Y, 4.f * S, Row - 6.f * S);
 		}
 		const FLinearColor Color = !Item.bEnabled ? Faint : bChosen ? Ink : Dim;
-		const float TextY = Y + (Row - 6.f * S) * 0.5f - 21.f * S;
+		const float TextSize = FMath::Min(30.f * S, Row * 0.46f);
+		const float TextY = Y + (Row - 6.f * S) * 0.5f - TextSize * 0.7f;
 		if (Item.Value.IsEmpty())
 		{
-			Label(Item.Label, CX, TextY, 30.f * S, Color, true, bChosen);
+			Label(Item.Label, CX, TextY, TextSize, Color, true, bChosen);
 		}
 		else
 		{
-			Label(Item.Label, Left + 28.f * S, TextY, 30.f * S, Color, false, bChosen);
+			Label(Item.Label, Left + 28.f * S, TextY, TextSize, Color, false, bChosen);
 			// Values sit in a right-hand column; an arrow each side says they can be changed.
-			const bool bChange = Item.Action != TEXT("Hole");
+			const bool bChange = Adjustable(Item);
 			const FString Shown = bChange && bChosen ? FString::Printf(TEXT("<   %s   >"), *Item.Value) : Item.Value;
-			Label(Shown, Left + Width * 0.74f, TextY + 3.f * S, 24.f * S, bChosen ? Gold : Color, true);
+			Label(Shown, Left + Width * 0.74f, TextY + TextSize * 0.1f, TextSize * 0.8f, bChosen ? Gold : Color, true);
 		}
 	}
 
 	if (!bTouch)
 	{
-		const TCHAR* Hint = Menu == EGGMenu::Settings ? TEXT("Arrows or mouse to choose        Left and right to change        Tab to go back")
+		const TCHAR* Hint = Menu == EGGMenu::Workshop ? TEXT("Type to name the hole        Arrows or mouse to choose        Enter to select        Tab to go back")
+			: Menu == EGGMenu::Together ? TEXT("Type the host's address, then Enter to join        A host's friends need its address and port 7777 open")
+			: Menu == EGGMenu::Settings ? TEXT("Arrows or mouse to choose        Left and right to change        Tab to go back")
 			: Menu == EGGMenu::Title ? TEXT("Arrows or mouse to choose        Enter to select")
 			: TEXT("Arrows or mouse to choose        Enter to select        Tab to go back");
 		Label(Hint, CX, Canvas->ClipY * 0.93f, 17.f * S, Faint, true);

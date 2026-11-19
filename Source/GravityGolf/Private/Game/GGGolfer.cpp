@@ -11,6 +11,7 @@
 #include "Game/GGGameMode.h"
 #include "Game/GGHUD.h"
 #include "Game/GGSave.h"
+#include "Game/GGWorkshop.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "HAL/IConsoleManager.h"
@@ -265,28 +266,27 @@ void AGGGolfer::SetupPlayerInputComponent(UInputComponent* Input)
 {
 	Super::SetupPlayerInputComponent(Input);
 
-	Input->BindAxisKey(EKeys::W, this, &AGGGolfer::MoveForward);
-	Input->BindAxisKey(EKeys::D, this, &AGGGolfer::MoveRight);
 	Input->BindAxisKey(EKeys::MouseX, this, &AGGGolfer::Turn);
 	Input->BindAxisKey(EKeys::MouseY, this, &AGGGolfer::LookUp);
 	Input->BindKey(EKeys::SpaceBar, IE_Pressed, this, &ACharacter::Jump);
 	Input->BindKey(EKeys::LeftMouseButton, IE_Pressed, this, &AGGGolfer::SwingPressed);
 	Input->BindKey(EKeys::LeftMouseButton, IE_Released, this, &AGGGolfer::SwingReleased);
 	Input->BindKey(EKeys::E, IE_Pressed, this, &AGGGolfer::Interact);
-	Input->BindKey(EKeys::R, IE_Pressed, this, &AGGGolfer::ReturnBall);
-	Input->BindKey(EKeys::BackSpace, IE_Pressed, this, &AGGGolfer::ResetHole);
-	Input->BindKey(EKeys::B, IE_Pressed, this, &AGGGolfer::GoToBall);
+	Input->BindKey(EKeys::R, IE_Pressed, this, &AGGGolfer::ReturnKey);
+	Input->BindKey(EKeys::BackSpace, IE_Pressed, this, &AGGGolfer::ResetKey);
+	Input->BindKey(EKeys::B, IE_Pressed, this, &AGGGolfer::BallKey);
+	Input->BindKey(EKeys::T, IE_Pressed, this, &AGGGolfer::BuildKey);
 	Input->BindKey(EKeys::RightMouseButton, IE_Pressed, this, &AGGGolfer::WatchPressed);
 	Input->BindKey(EKeys::RightMouseButton, IE_Released, this, &AGGGolfer::WatchReleased);
-	// The menu: Tab, P or Escape opens and closes it; arrows and Enter work it. (In the editor, Escape ends play.)
+	// The menu: Tab or Escape opens and closes it; arrows and Enter work it. (In the editor, Escape ends play.)
 	Input->BindKey(EKeys::Tab, IE_Pressed, this, &AGGGolfer::MenuToggle);
-	Input->BindKey(EKeys::P, IE_Pressed, this, &AGGGolfer::MenuToggle);
 	Input->BindKey(EKeys::Escape, IE_Pressed, this, &AGGGolfer::MenuToggle);
 	Input->BindKey(EKeys::Up, IE_Pressed, this, &AGGGolfer::MenuUp);
 	Input->BindKey(EKeys::Down, IE_Pressed, this, &AGGGolfer::MenuDown);
 	Input->BindKey(EKeys::Left, IE_Pressed, this, &AGGGolfer::MenuLeft);
 	Input->BindKey(EKeys::Right, IE_Pressed, this, &AGGGolfer::MenuRight);
 	Input->BindKey(EKeys::Enter, IE_Pressed, this, &AGGGolfer::AcceptOrJump);
+	Input->BindKey(EKeys::AnyKey, IE_Pressed, this, &AGGGolfer::AnyKey);
 	// Testing aids: watch the solution, or jump straight to a hole.
 	Input->BindKey(EKeys::F1, IE_Pressed, this, &AGGGolfer::ShowSolution);
 	Input->BindKey(EKeys::One, IE_Pressed, this, &AGGGolfer::Hole1);
@@ -335,6 +335,30 @@ bool AGGGolfer::MenuOpen() const
 	return Screen && Screen->MenuOpen();
 }
 
+bool AGGGolfer::Building() const
+{
+	// In the Workshop, while the hole is being built, the player is a pointer over the table, not a golfer.
+	const AGGWorkshop* Workshop = AGGWorkshop::Get(this);
+	return Workshop && Workshop->Building();
+}
+
+bool AGGGolfer::Busy() const
+{
+	return MenuOpen() || Building();
+}
+
+void AGGGolfer::BuildKey()
+{
+	// T: between building a hole and testing it.
+	AGGWorkshop* Workshop = AGGWorkshop::Get(this);
+	if (Workshop && !MenuOpen() && IsLocallyControlled())
+	{
+		bCharging = false;
+		SwingTime = -1.f;
+		Workshop->Toggle();
+	}
+}
+
 void AGGGolfer::MenuToggle()
 {
 	if (AGGHUD* Screen = Hud())
@@ -348,6 +372,39 @@ void AGGGolfer::MenuToggle()
 			bCharging = false;
 			Screen->OpenMenu(EGGMenu::Pause);
 		}
+	}
+}
+
+// The keys do nothing while a menu is open (a menu may be taking typing).
+void AGGGolfer::ReturnKey()
+{
+	if (!Busy())
+	{
+		ReturnBall();
+	}
+}
+
+void AGGGolfer::ResetKey()
+{
+	if (!Busy())
+	{
+		ResetHole();
+	}
+}
+
+void AGGGolfer::BallKey()
+{
+	if (!Busy())
+	{
+		GoToBall();
+	}
+}
+
+void AGGGolfer::AnyKey(FKey Key)
+{
+	if (AGGHUD* Screen = Hud())
+	{
+		Screen->MenuType(Key);
 	}
 }
 
@@ -389,7 +446,7 @@ void AGGGolfer::AcceptOrJump()
 	{
 		Hud()->MenuActivate();
 	}
-	else
+	else if (!Building())
 	{
 		Jump();
 	}
@@ -397,7 +454,7 @@ void AGGGolfer::AcceptOrJump()
 
 void AGGGolfer::AddLook(float YawDegrees, float PitchDegrees)
 {
-	if (MenuOpen())
+	if (Busy())
 	{
 		return;
 	}
@@ -416,7 +473,7 @@ void AGGGolfer::AddLook(float YawDegrees, float PitchDegrees)
 
 void AGGGolfer::PadForward(float Value)
 {
-	if (!MenuOpen())
+	if (!Busy())
 	{
 		AddMovementInput(GetActorForwardVector(), Value);
 	}
@@ -424,7 +481,7 @@ void AGGGolfer::PadForward(float Value)
 
 void AGGGolfer::PadRight(float Value)
 {
-	if (!MenuOpen())
+	if (!Busy())
 	{
 		AddMovementInput(GetActorRightVector(), Value);
 	}
@@ -502,6 +559,11 @@ void AGGGolfer::TouchButtons(const FVector2D& View, TArray<FGGTouchButton>& Out)
 	}
 	// The menu is always within reach.
 	Add(TEXT("Menu"), 8.f, 100.f - 8.5f, 4.8f, TEXT("MENU"));
+	if (AGGWorkshop::Get(this))
+	{
+		// Testing a hole of the player's own: the way back to the table.
+		Add(TEXT("Build"), 42.5f, 100.f - 8.5f, 4.8f, TEXT("BUILD"));
+	}
 }
 
 bool AGGGolfer::TouchStick(FVector2D& OutOrigin, FVector2D& OutKnob) const
@@ -537,6 +599,10 @@ void AGGGolfer::PressButton(FName Id)
 	{
 		MenuToggle();
 	}
+	else if (Id == TEXT("Build"))
+	{
+		BuildKey();
+	}
 }
 
 void AGGGolfer::ReleaseButton(FName Id)
@@ -562,6 +628,13 @@ void AGGGolfer::HandleTouch(int32 Finger, int32 Phase, const FVector2D& At)
 			Hud()->MenuPointer(At, true);
 		}
 		MoveFinger = LookFinger = INDEX_NONE;
+		return;
+	}
+	if (AGGWorkshop* Workshop = AGGWorkshop::Get(this); Workshop && Workshop->Building())
+	{
+		// Building: fingers work the tools and the view.
+		MoveFinger = LookFinger = INDEX_NONE;
+		Workshop->HandleTouch(Finger, Phase, At);
 		return;
 	}
 	const FVector2D View = ViewportSize();
@@ -642,27 +715,6 @@ AGGCourse* AGGGolfer::Course() const
 {
 	TActorIterator<AGGCourse> It(GetWorld());
 	return It ? *It : nullptr;
-}
-
-void AGGGolfer::MoveForward(float Value)
-{
-	// W is bound as an axis key (1 while held); S is read directly so one binding covers both.
-	const APlayerController* PC = Cast<APlayerController>(GetController());
-	const float Back = PC && PC->IsInputKeyDown(EKeys::S) ? 1.f : 0.f;
-	if (!MenuOpen())
-	{
-		AddMovementInput(GetActorForwardVector(), Value - Back);
-	}
-}
-
-void AGGGolfer::MoveRight(float Value)
-{
-	const APlayerController* PC = Cast<APlayerController>(GetController());
-	const float Left = PC && PC->IsInputKeyDown(EKeys::A) ? 1.f : 0.f;
-	if (!MenuOpen())
-	{
-		AddMovementInput(GetActorRightVector(), Value - Left);
-	}
 }
 
 void AGGGolfer::Turn(float Value)
@@ -882,7 +934,17 @@ void AGGGolfer::SwingPressed()
 		}
 		return;
 	}
+	if (Building())
+	{
+		return;
+	}
 	AGGCourse* C = Course();
+	if (AGGWorkshop* Workshop = AGGWorkshop::Get(this); Workshop && C && C->Phase() == EGGPhase::Sunk)
+	{
+		// A hole of the player's own, solved: back to the table.
+		Workshop->StartBuilding();
+		return;
+	}
 	if (C && C->Phase() == EGGPhase::Sunk)
 	{
 		if (HasAuthority())
@@ -955,7 +1017,7 @@ bool AGGGolfer::PlaceCarried(const FVector& Ground)
 void AGGGolfer::Interact()
 {
 	AGGCourse* C = Course();
-	if (!C || C->Phase() == EGGPhase::Flying || MenuOpen())
+	if (!C || C->Phase() == EGGPhase::Flying || Busy())
 	{
 		return;
 	}
@@ -987,6 +1049,10 @@ void AGGGolfer::Interact()
 
 void AGGGolfer::ReturnBall()
 {
+	if (Building())
+	{
+		return;
+	}
 	if (AGGCourse* C = Course())
 	{
 		bCharging = false;
@@ -1005,6 +1071,10 @@ void AGGGolfer::ReturnBall()
 
 void AGGGolfer::ResetHole()
 {
+	if (Building())
+	{
+		return;
+	}
 	if (AGGCourse* C = Course())
 	{
 		bCharging = false;
@@ -1027,7 +1097,7 @@ void AGGGolfer::ResetHole()
 void AGGGolfer::GoToBall()
 {
 	const AGGCourse* C = Course();
-	if (!C || C->Phase() == EGGPhase::Flying)
+	if (!C || C->Phase() == EGGPhase::Flying || Building())
 	{
 		return;
 	}
@@ -1079,6 +1149,10 @@ bool AGGGolfer::TestPlaceMachine(int32 Index, const FVector& Ground)
 
 void AGGGolfer::ShowSolution()
 {
+	if (Building())
+	{
+		return;
+	}
 	if (AGGGameMode* Mode = GetWorld()->GetAuthGameMode<AGGGameMode>())
 	{
 		Mode->GGDemo();
@@ -1087,6 +1161,10 @@ void AGGGolfer::ShowSolution()
 
 void AGGGolfer::JumpToHole(int32 Number)
 {
+	if (Busy())
+	{
+		return;
+	}
 	if (AGGGameMode* Mode = GetWorld()->GetAuthGameMode<AGGGameMode>())
 	{
 		Mode->GGHole(Number);
@@ -1215,6 +1293,13 @@ void AGGGolfer::Tick(float DeltaSeconds)
 		return;
 	}
 	// From here on: only the player at this machine.
+	if (Building())
+	{
+		// Over the Workshop's table there is no golfer to move, and no club in the picture.
+		bCharging = false;
+		ClubPivot->SetVisibility(false, true);
+		return;
+	}
 	if (GoToBallIn > 0.f)
 	{
 		GoToBallIn -= DeltaSeconds;
@@ -1240,6 +1325,12 @@ void AGGGolfer::Tick(float DeltaSeconds)
 
 	// Run: hold Shift, click the left stick, or push the touch stick all the way.
 	const APlayerController* Player = Cast<APlayerController>(GetController());
+	if (Player && !Busy())
+	{
+		// W A S D walk. (Read here rather than bound: they are keys, not axes.)
+		AddMovementInput(GetActorForwardVector(), (Player->IsInputKeyDown(EKeys::W) ? 1.f : 0.f) - (Player->IsInputKeyDown(EKeys::S) ? 1.f : 0.f));
+		AddMovementInput(GetActorRightVector(), (Player->IsInputKeyDown(EKeys::D) ? 1.f : 0.f) - (Player->IsInputKeyDown(EKeys::A) ? 1.f : 0.f));
+	}
 	const bool bRunKey = Player && (Player->IsInputKeyDown(EKeys::LeftShift) || Player->IsInputKeyDown(EKeys::Gamepad_LeftThumbstick));
 	const bool bSprint = (bRunKey || Stick.SizeSquared() > 0.9) && !bCharging;
 	GetCharacterMovement()->MaxWalkSpeed = bSprint ? SprintSpeed : WalkSpeed;

@@ -31,6 +31,12 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 
+	/** Console, in the Workshop: "tool wall", "stroke x0,y0,x1,y1" (one stroke of the tool, in centimetres), "click fx,fy"
+	 *  (a press on the screen), "test", "build", "undo", "new", "name N", "keep", "open N", "code" (log it) or "code <text>"
+	 *  (open one), "check" (start the proof), "view x,y,distance", "frame". Every call logs the Workshop's state. */
+	UFUNCTION(Exec)
+	void GGWorkshop(const FString& Command, const FString& Argument);
+
 	/** Console: swing with a yaw in degrees and power 0..1. Lets automated checks replay solver results. */
 	UFUNCTION(Exec)
 	void GGShot(const FString& YawPower);

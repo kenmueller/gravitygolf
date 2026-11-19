@@ -41,6 +41,18 @@ public:
 	UPROPERTY()
 	int32 Quality = 3;
 
+	/** The last host this player joined, to offer again. */
+	UPROPERTY()
+	FString LastHost;
+
+	/** Holes the player has built in the Workshop, by name, as course JSON. */
+	UPROPERTY()
+	TMap<FString, FString> Designs;
+
+	/** The design on the Workshop's table, saved or not, so nothing is lost between sessions. */
+	UPROPERTY()
+	FString Draft;
+
 	/** A bot to race on every hole: 0 none, 1 easy, 2 medium, 3 hard. */
 	UPROPERTY()
 	int32 Rival = 0;

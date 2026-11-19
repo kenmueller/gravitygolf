@@ -92,6 +92,10 @@ public:
 	void ShowSolution();
 	class AGGHUD* Hud() const;
 	bool MenuOpen() const;
+	/** In the Workshop, while the hole is being built rather than played. */
+	bool Building() const;
+	/** A menu is open or the Workshop is in building: the keys don't play golf. */
+	bool Busy() const;
 
 	// Hooks for automated play tests. They drive the same code paths as the keys.
 	/** Pick up the nearest machine wherever it is and try to set it down at a ground point. */
@@ -139,8 +143,6 @@ public:
 	void SetSeat(int32 InSeat);
 
 private:
-	void MoveForward(float Value);
-	void MoveRight(float Value);
 	void Turn(float Value);
 	void LookUp(float Value);
 	void SwingPressed();
@@ -150,6 +152,11 @@ private:
 	void WatchReleased() { bWatching = false; }
 	void JumpToHole(int32 Number);
 	void MenuToggle();
+	void AnyKey(FKey Key);
+	void ReturnKey();
+	void ResetKey();
+	void BallKey();
+	void BuildKey();
 	void MenuUp();
 	void MenuDown();
 	void MenuLeft();

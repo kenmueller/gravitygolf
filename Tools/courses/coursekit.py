@@ -100,39 +100,45 @@ class Course:
             json.dump(data, f, indent="\t")
             f.write("\n")
 
-        flat = os.path.join(ROOT, "Saved", "SimTest", f"{self.id}.course")
-        os.makedirs(os.path.dirname(flat), exist_ok=True)
-        with open(flat, "w") as f:
-            tee, cup = self.tee["position"], self.cup
-            f.write(f"{tee[0]} {tee[1]} {tee[2]}\n")
-            f.write(f"{cup['position'][0]} {cup['position'][1]} {cup['position'][2]} {cup['radius']} {cup['captureSpeed']}\n")
-            f.write(f"{self.ball_radius} {self.kill_z}\n")
-            f.write(" ".join(str(v) for v in self.placement) + "\n")
-            f.write(f"{len(self.machines)}\n")
-            for m in self.machines:
-                f.write(f"{m['strength']} {m['range']} {m['coreHeight']} {m['position'][0]} {m['position'][1]}\n")
-            f.write(f"{len(self.no_machine)}\n")
-            for z in self.no_machine:
-                f.write(f"{z['position'][0]} {z['position'][1]} {z['radius']}\n")
-            f.write(f"{len(self.safe_zones)}\n")
-            for z in self.safe_zones:
-                f.write(f"{z['position'][0]} {z['position'][1]} {z['position'][2]} {z['radius']} {z['needsSwitch']}\n")
-            f.write(f"{len(self.boxes)}\n")
-            for b in self.boxes:
-                c, s = b["center"], b["size"]
-                f.write(" ".join(str(v) for v in (c[0] - s[0] / 2, c[1] - s[1] / 2, c[2] - s[2] / 2, c[0] + s[0] / 2,
-                                                   c[1] + s[1] / 2, c[2] + s[2] / 2, SURFACES[b["surface"]])) + "\n")
-            f.write(f"{len(self.switches)}\n")
-            for sw in self.switches:
-                f.write(f"{sw['position'][0]} {sw['position'][1]} {sw['position'][2]} {sw['radius']} {1 if sw.get('weight') else 0}\n")
-            f.write(f"{len(self.gates)}\n")
-            for g in self.gates:
-                c, s = g["center"], g["size"]
-                f.write(" ".join(str(v) for v in (c[0] - s[0] / 2, c[1] - s[1] / 2, c[2] - s[2] / 2, c[0] + s[0] / 2,
-                                                   c[1] + s[1] / 2, c[2] + s[2] / 2, SURFACES[g["surface"]], g["switch"],
-                                                   g["openSeconds"])) + "\n")
-            f.write(f"{len(self.solutions)}\n")
-            for sol in self.solutions:
-                spots = " ".join(f"{m[0]} {m[1]}" for m in sol["machines"])
-                f.write(f"{sol['leg']} {sol['yaw']} {sol['power']} {spots}\n")
+        write_flat(data, self.placement, os.path.join(ROOT, "Saved", "SimTest", f"{self.id}.course"))
         print(f"wrote {out} ({len(self.boxes)} boxes, {len(self.machines)} machines, {len(self.safe_zones)} safe zones)")
+
+
+def write_flat(data, placement, path):
+    """The course as plain numbers for the standalone solver, search and probe (Tests/Sim). `data` is the course as
+    written to JSON; `placement` is where machines may be tried (min x, min y, max x, max y)."""
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    machines = data["attractors"]
+    with open(path, "w") as f:
+        tee, cup = data["tee"]["position"], data["cup"]
+        f.write(f"{tee[0]} {tee[1]} {tee[2]}\n")
+        f.write(f"{cup['position'][0]} {cup['position'][1]} {cup['position'][2]} {cup['radius']} {cup['captureSpeed']}\n")
+        f.write(f"{data['ballRadius']} {data['killZ']}\n")
+        f.write(" ".join(str(v) for v in placement) + "\n")
+        f.write(f"{len(machines)}\n")
+        for m in machines:
+            f.write(f"{m['strength']} {m['range']} {m['coreHeight']} {m['position'][0]} {m['position'][1]}\n")
+        f.write(f"{len(data['noMachine'])}\n")
+        for z in data["noMachine"]:
+            f.write(f"{z['position'][0]} {z['position'][1]} {z['radius']}\n")
+        f.write(f"{len(data['safeZones'])}\n")
+        for z in data["safeZones"]:
+            f.write(f"{z['position'][0]} {z['position'][1]} {z['position'][2]} {z['radius']} {z['needsSwitch']}\n")
+        f.write(f"{len(data['boxes'])}\n")
+        for b in data["boxes"]:
+            c, s = b["center"], b["size"]
+            f.write(" ".join(str(v) for v in (c[0] - s[0] / 2, c[1] - s[1] / 2, c[2] - s[2] / 2, c[0] + s[0] / 2,
+                                               c[1] + s[1] / 2, c[2] + s[2] / 2, SURFACES[b["surface"]])) + "\n")
+        f.write(f"{len(data['switches'])}\n")
+        for sw in data["switches"]:
+            f.write(f"{sw['position'][0]} {sw['position'][1]} {sw['position'][2]} {sw['radius']} {1 if sw.get('weight') else 0}\n")
+        f.write(f"{len(data['gates'])}\n")
+        for g in data["gates"]:
+            c, s = g["center"], g["size"]
+            f.write(" ".join(str(v) for v in (c[0] - s[0] / 2, c[1] - s[1] / 2, c[2] - s[2] / 2, c[0] + s[0] / 2,
+                                               c[1] + s[1] / 2, c[2] + s[2] / 2, SURFACES[g["surface"]], g["switch"],
+                                               g["openSeconds"])) + "\n")
+        f.write(f"{len(data['solutions'])}\n")
+        for sol in data["solutions"]:
+            spots = " ".join(f"{m[0]} {m[1]}" for m in sol["machines"])
+            f.write(f"{sol['leg']} {sol['yaw']} {sol['power']} {spots}\n")

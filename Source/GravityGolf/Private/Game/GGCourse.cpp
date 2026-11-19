@@ -210,12 +210,59 @@ bool AGGCourse::Exists(const FString& CourseId)
 bool AGGCourse::Load(const FString& CourseId)
 {
 	FString Text;
-	TSharedPtr<FJsonObject> Json;
-	if (!FFileHelper::LoadFileToString(Text, *CoursePath(CourseId)) ||
-		!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), Json) || !Json.IsValid())
+	if (!FFileHelper::LoadFileToString(Text, *CoursePath(CourseId)))
 	{
 		UE_LOG(LogGGCourse, Error, TEXT("Can't load course %s"), *CoursePath(CourseId));
 		return false;
+	}
+	return LoadText(Text, CourseId);
+}
+
+void AGGCourse::Unload()
+{
+	TInlineComponentArray<UActorComponent*> Built(this);
+	for (UActorComponent* Component : Built)
+	{
+		if (Component != Root)
+		{
+			Component->DestroyComponent();
+		}
+	}
+	Course = GG::FCourse();
+	Attractors.clear();
+	MachineBases.Reset();
+	InitialBases.Reset();
+	Movable.Reset();
+	Carriers.Reset();
+	Machines.Reset();
+	MachineCores.Reset();
+	MachineLights.Reset();
+	SwitchMaterials.Reset();
+	GateBars.Reset();
+	GateLevel.Reset();
+	Solutions.Reset();
+	DrawnBoxes.Reset();
+	Played.Reset();
+	bPendingValid = false;
+	bDrawn = false;
+	NoMachineZones.Reset();
+	Trail.Reset();
+	BallMesh = nullptr;
+	TrailDots = GuideDots = FieldDots = FieldRing = FieldPushDots = FieldPushRing = nullptr;
+	Id.Reset();
+}
+
+bool AGGCourse::LoadText(const FString& Text, const FString& CourseId)
+{
+	TSharedPtr<FJsonObject> Json;
+	if (!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), Json) || !Json.IsValid())
+	{
+		UE_LOG(LogGGCourse, Error, TEXT("Course %s is not valid JSON"), *CourseId);
+		return false;
+	}
+	if (!Id.IsEmpty())
+	{
+		Unload();
 	}
 
 	Course = GG::FCourse();
@@ -225,6 +272,8 @@ bool AGGCourse::Load(const FString& CourseId)
 		NetCourseId = Id;
 	}
 	Name = Json->GetStringField(TEXT("name"));
+	bDrawn = false;
+	Json->TryGetBoolField(TEXT("drawn"), bDrawn);
 	NextLevel.Reset();
 	Json->TryGetStringField(TEXT("next"), NextLevel);
 	Course.Par = Json->GetIntegerField(TEXT("par"));
@@ -305,6 +354,12 @@ bool AGGCourse::Load(const FString& CourseId)
 		const GG::FVec3 Center = ReadVec(Box, TEXT("center"));
 		const GG::FVec3 Half = ReadVec(Box, TEXT("size")) * 0.5;
 		Course.Boxes.push_back({Center - Half, Center + Half, ParseSurface(Box->GetStringField(TEXT("surface")))});
+		if (bDrawn)
+		{
+			FString Look;
+			Box->TryGetStringField(TEXT("look"), Look);
+			DrawnBoxes.Add({ToUnreal(Center), ToUnreal(Half) * 2.0, Look});
+		}
 	}
 
 	Attractors.clear();
@@ -327,8 +382,160 @@ bool AGGCourse::Load(const FString& CourseId)
 	NetResetHole_Implementation();
 	UE_LOG(LogGGCourse, Log, TEXT("Loaded course %s: %d boxes, %d attractors"), *Name,
 		static_cast<int32>(Course.Boxes.size()), static_cast<int32>(Attractors.size()));
-	SpawnPlants(UGameplayStatics::GetCurrentLevelName(this, true));
+	if (!bPlantsSpawned)
+	{
+		bPlantsSpawned = true;
+		SpawnPlants(UGameplayStatics::GetCurrentLevelName(this, true));
+	}
 	return true;
+}
+
+GG::FSetup AGGCourse::MakeSetup() const
+{
+	GG::FSetup Setup;
+	Setup.Course = Course;
+	bool bAny = false;
+	for (const GG::FBox& Box : Course.Boxes)
+	{
+		// The ground is every box whose top is about where the ball rolls.
+		if (Box.Max.Z < 20.0)
+		{
+			Setup.MinX = bAny ? FMath::Min(Setup.MinX, Box.Min.X) : Box.Min.X;
+			Setup.MinY = bAny ? FMath::Min(Setup.MinY, Box.Min.Y) : Box.Min.Y;
+			Setup.MaxX = bAny ? FMath::Max(Setup.MaxX, Box.Max.X) : Box.Max.X;
+			Setup.MaxY = bAny ? FMath::Max(Setup.MaxY, Box.Max.Y) : Box.Max.Y;
+			bAny = true;
+		}
+	}
+	for (int32 I = 0; I < MachineBases.Num(); ++I)
+	{
+		Setup.Machines.push_back({Attractors[I].Strength, Attractors[I].Range, CoreHeight, InitialBases[I].X, InitialBases[I].Y});
+	}
+	for (const FVector& Zone : NoMachineZones)
+	{
+		Setup.NoMachine.push_back({Zone.X, Zone.Y, Zone.Z});
+	}
+	Setup.ZoneNeeds.assign(Course.SafeZones.size(), -1);
+	for (const FGGSolution& Answer : Solutions)
+	{
+		GG::FHint Hint;
+		Hint.Leg = Answer.Leg;
+		Hint.Yaw = Answer.Yaw;
+		Hint.Power = Answer.Power;
+		for (const FVector& Spot : Answer.Machines)
+		{
+			Hint.Spots.push_back({Spot.X, Spot.Y, 0.0});
+		}
+		Setup.Hints.push_back(Hint);
+	}
+	return Setup;
+}
+
+void AGGCourse::BuildDrawn()
+{
+	// A hole from the Workshop has no level dressed around it: it draws its own ground, walls and markers, and gives
+	// them collision so the player can walk the hole.
+	UStaticMesh* Cube = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube"));
+	UStaticMesh* Cylinder = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
+	UMaterialInterface* SurfaceBase = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/M_GG_Surface.M_GG_Surface"));
+	TMap<FString, UMaterialInterface*> Looks;
+	auto LookFor = [&](const FString& Look) -> UMaterialInterface* {
+		if (UMaterialInterface** Found = Looks.Find(Look))
+		{
+			return *Found;
+		}
+		// The Workshop's level script makes one material per look (Tools/levels/workshop.py). Plain colours stand in
+		// when it hasn't been run.
+		UMaterialInterface* Material = LoadObject<UMaterialInterface>(nullptr,
+			*FString::Printf(TEXT("/Game/Materials/Instances/MI_Workshop_%s.MI_Workshop_%s"), *Look, *Look));
+		if (!Material)
+		{
+			UMaterialInstanceDynamic* Plain = UMaterialInstanceDynamic::Create(SurfaceBase, this);
+			const FLinearColor Color = Look == TEXT("floor") ? FLinearColor(0.42f, 0.44f, 0.4f)
+				: Look == TEXT("sand") || Look == TEXT("pad") ? FLinearColor(0.55f, 0.42f, 0.25f)
+				: Look == TEXT("soft") ? FLinearColor(0.5f, 0.36f, 0.22f)
+				: FLinearColor(0.6f, 0.6f, 0.62f);
+			Plain->SetVectorParameterValue(TEXT("BaseColor"), Color);
+			Plain->SetScalarParameterValue(TEXT("Roughness"), 0.8f);
+			Material = Plain;
+		}
+		Looks.Add(Look, Material);
+		return Material;
+	};
+	auto Solid = [](UStaticMeshComponent* Component) {
+		Component->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		Component->SetCollisionResponseToAllChannels(ECR_Block);
+	};
+	for (const FDrawnBox& Box : DrawnBoxes)
+	{
+		FVector Center = Box.Center;
+		FVector Size = Box.Size;
+		if (Box.Look == TEXT("pad"))
+		{
+			// A safe pad's soft ground is a square in the simulation and a round patch to the eye (drawn below).
+			continue;
+		}
+		if (Box.Look == TEXT("sand"))
+		{
+			// Sand lies in the floor. Drawn a hair proud of it so the two surfaces don't flicker.
+			Center.Z += 0.6;
+		}
+		UStaticMeshComponent* Mesh = AddMesh(Cube, LookFor(Box.Look), FTransform(FRotator::ZeroRotator, Center, Size / 100.0));
+		Solid(Mesh);
+		if (Box.Look == TEXT("wall"))
+		{
+			// A dark top, so a white wall on white ground reads at once from above.
+			AddMesh(Cube, LookFor(TEXT("cap")), FTransform(FRotator::ZeroRotator, FVector(Center.X, Center.Y, Center.Z + Size.Z * 0.5 + 1.5),
+				FVector(Size.X, Size.Y, 3.0) / 100.0));
+		}
+	}
+
+	UMaterialInstanceDynamic* Black = UMaterialInstanceDynamic::Create(SurfaceBase, this);
+	Black->SetVectorParameterValue(TEXT("BaseColor"), FLinearColor(0.004f, 0.004f, 0.004f));
+	Black->SetScalarParameterValue(TEXT("Roughness"), 1.f);
+	UMaterialInterface* Stone = LookFor(TEXT("cap"));
+	const FVector Tee = ToUnreal(Course.Tee);
+	// The tee: a small dark disc in a ring of light.
+	AddMesh(Cylinder, Glow(FLinearColor(1.f, 0.9f, 0.7f), 3.f), FTransform(FRotator::ZeroRotator, FVector(Tee.X, Tee.Y, 0.5), FVector(0.72, 0.72, 0.008)))
+		->SetCastShadow(false);
+	AddMesh(Cylinder, Stone, FTransform(FRotator::ZeroRotator, FVector(Tee.X, Tee.Y, 0.7), FVector(0.62, 0.62, 0.008)))->SetCastShadow(false);
+	const FVector Cup = ToUnreal(Course.Cup);
+	const double Mouth = Course.CupRadius / 50.0;
+	AddMesh(Cylinder, Glow(FLinearColor(1.f, 0.55f, 0.25f), 6.f), FTransform(FRotator::ZeroRotator, Cup + FVector(0, 0, 0.9), FVector(Mouth + 0.1, Mouth + 0.1, 0.01)))
+		->SetCastShadow(false);
+	AddMesh(Cylinder, Black, FTransform(FRotator::ZeroRotator, Cup + FVector(0, 0, 1.0), FVector(Mouth, Mouth, 0.01)))->SetCastShadow(false);
+	AddMesh(Cylinder, Stone, FTransform(FRotator::ZeroRotator, Cup + FVector(0, 0, 130), FVector(0.025, 0.025, 2.6)));
+	// Safe pads: a round patch of dark felt, a little smaller than the disc of light the course lays under it, so
+	// the light shows as a ring around it.
+	for (const GG::FSafeZone& Zone : Course.SafeZones)
+	{
+		const double Scale = (Zone.Radius - 9.0) / 50.0;
+		AddMesh(Cylinder, LookFor(TEXT("pad")), FTransform(FRotator::ZeroRotator, ToUnreal(Zone.Center) + FVector(0, 0, 0.8), FVector(Scale, Scale, 0.004)))
+			->SetCastShadow(false);
+	}
+	// The court around the cup, where machines can't stand: a thin ring of light.
+	for (const FVector& Zone : NoMachineZones)
+	{
+		if (FVector::DistSquared2D(Zone, Cup) < 1.0)
+		{
+			UInstancedStaticMeshComponent* Edge = NewObject<UInstancedStaticMeshComponent>(this);
+			Edge->SetStaticMesh(Cube);
+			Edge->SetMaterial(0, Glow(FLinearColor(1.f, 0.55f, 0.25f), 3.f));
+			Edge->SetMobility(EComponentMobility::Movable);
+			Edge->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			Edge->SetCastShadow(false);
+			Edge->SetupAttachment(Root);
+			Edge->RegisterComponent();
+			constexpr int32 Marks = 72;
+			for (int32 I = 0; I < Marks; ++I)
+			{
+				const double Angle = 2.0 * UE_DOUBLE_PI * I / Marks;
+				const FVector At(Zone.X + FMath::Cos(Angle) * Zone.Z, Zone.Y + FMath::Sin(Angle) * Zone.Z, 1.2);
+				Edge->AddInstance(FTransform(FRotator(0.0, FMath::RadiansToDegrees(Angle) + 90.0, 0.0), At,
+					FVector(Zone.Z * 2.0 * UE_DOUBLE_PI / Marks * 0.55 / 100.0, 0.04, 0.012)), true);
+			}
+		}
+	}
 }
 
 UStaticMeshComponent* AGGCourse::AddMesh(UStaticMesh* Mesh, UMaterialInterface* Material, const FTransform& Transform,
@@ -372,6 +579,10 @@ void AGGCourse::BuildActors()
 
 	BallMesh = AddMesh(Sphere, BallMaterial,
 		FTransform(FRotator::ZeroRotator, ToUnreal(Course.Tee), FVector(Course.BallRadius / 50.0)));
+	if (bDrawn)
+	{
+		BuildDrawn();
+	}
 
 	// The flag: a glowing pennant so the cup reads from across the course.
 	const FVector CupTop = ToUnreal(Course.Cup) + FVector(0, 0, 225);
@@ -842,6 +1053,22 @@ void AGGCourse::NetSwing_Implementation(FVector Velocity, AGGGolfer* Swinger)
 	std::vector<bool> Held = HeldSwitches;
 	GG::HoldWeightPlates(Course, Active, Held);
 	Sim.Begin(Course, Active, Lie, ToSim(Velocity), Physics, &Held);
+	// Remember the swing: if it finishes the leg, it is an answer to it. (Not while a machine is being carried: a
+	// carried machine is off, and an answer has to say where every machine stands.)
+	Pending = FGGSolution();
+	Pending.Leg = CurrentLeg;
+	Pending.Yaw = FMath::RadiansToDegrees(FMath::Atan2(Velocity.Y, Velocity.X));
+	Pending.Power = Velocity.Size2D() / Physics.MaxLaunchSpeed;
+	Pending.Machines = MachineBases;
+	for (const bool bHeld : HeldSwitches)
+	{
+		Pending.Held.Add(bHeld);
+	}
+	bPendingValid = true;
+	for (int32 I = 0; I < Carriers.Num(); ++I)
+	{
+		bPendingValid &= CarrierOf(I) == nullptr;
+	}
 	PreviousPosition = Lie;
 	Accumulator = 0.0;
 	Trail.Reset();
@@ -878,6 +1105,17 @@ void AGGCourse::PreviewSwing(const FVector& Direction, double Power, double Seco
 void AGGCourse::FinishStroke(GG::EBallState State)
 {
 	PhaseTime = 0.0;
+	// A swing that finished its leg (reached the next pad in order, or the cup from the last pad) is kept as an answer.
+	const int32 Zones = static_cast<int32>(Course.SafeZones.size());
+	const bool bLegDone = State == GG::EBallState::Sunk ? Pending.Leg == Zones
+		: State == GG::EBallState::AtRest && Sim.Ball().SafeZone == Pending.Leg;
+	if (bPendingValid && bLegDone)
+	{
+		Played.RemoveAll([&](const FGGSolution& Old) { return Old.Leg == Pending.Leg; });
+		Played.Add(Pending);
+		++PlayedCount;
+	}
+	bPendingValid = false;
 	switch (State)
 	{
 	case GG::EBallState::Sunk:
@@ -887,7 +1125,7 @@ void AGGCourse::FinishStroke(GG::EBallState State)
 			const int32 Legs = static_cast<int32>(Course.SafeZones.size()) + 1;
 			Status = StrokeCount <= Legs ? FString::Printf(TEXT("Solved. Perfect: %d swing%s"), StrokeCount, StrokeCount == 1 ? TEXT("") : TEXT("s"))
 										 : FString::Printf(TEXT("Solved in %d swings (perfect is %d)"), StrokeCount, Legs);
-			if (!bAssisted)
+			if (!bAssisted && !bDrawn)
 			{
 				UGGSave::Get().RecordSolve(Id, StrokeCount);
 			}
@@ -1048,6 +1286,10 @@ void AGGCourse::UpdateFieldPreview(float DeltaSeconds)
 
 	FieldRing->ClearInstances();
 	FieldDots->ClearInstances();
+	if (bFieldsHidden)
+	{
+		return;
+	}
 	const double Time = GetWorld()->GetTimeSeconds();
 	constexpr int32 RingDashes = 96;
 	const double SizeScale = CVarFieldSize.GetValueOnGameThread();
