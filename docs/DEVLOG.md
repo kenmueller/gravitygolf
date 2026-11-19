@@ -7,7 +7,8 @@ Newest first. Each entry says what changed, what was verified, and an honest cri
 **To play.** Open the project (or run `Tools/editor.sh`), press Play. Keys: WASD and mouse, Shift to run, hold
 left click to swing (aim is where you look, longer hold is harder), E picks up and sets down a machine, R returns
 the ball, Backspace resets the hole, B jumps you to the ball, right click watches the ball. **F1 plays the
-solution for the leg you are on. Keys 1 to 5 jump between holes.**
+solution for the leg you are on (a hole solved that way is not recorded). Tab opens the menu. Keys 1 to 6 jump
+between holes.**
 
 **Start with hole 5** (press 5). It is the first one meant to be hard: the cup is behind you, behind a gate.
 Try it without F1 and tell me how long it took and whether the answer felt earned or fiddly.
@@ -29,6 +30,41 @@ Try it without F1 and tell me how long it took and whether the answer felt earne
 - What to build next. My recommendation: more hard holes first, which needs new tools (relays, splitters, timed
   gates) because two machines and a plate only stretch so far. Then avatars and co-op. Menus, a level editor and
   bots come after there is a game worth sharing.
+
+## 2026-11-19, session 1 (autonomous): touch, menus, saved progress, hole 6, the web build
+
+**Changed**
+- **Touch play.** A movement stick under the left thumb, drag anywhere else to look, and round buttons: SWING (hold
+  and release; slide the thumb to trim the aim), GRAB/PLACE, WATCH, BALL, RETURN, MENU. It switches on with the first
+  touch. Gamepad too: sticks, right trigger to swing.
+- **Menus.** Title screen (real launches only, not Play-In-Editor), pause (Tab, P or Escape), hole list, settings
+  (look speed, invert, sound, picture quality). Mouse, keys, gamepad or touch.
+- **Saved progress.** Best swings per hole. A hole unlocks when the one before is solved. Watching the solution does
+  not count as solving. Keys 1 to 6 still jump anywhere, for testing.
+- **HUD.** Crisp text at any size, and a card when a hole is solved.
+- **Hole 6, Second Wind.** Two attractors. The way to the cup turns a hard corner and then runs the length of the
+  court. A ball slow enough to be bent round the corner dies before the cup, so a second machine has to carry it:
+  a pull is also a push. Proof: no machine 0 of 110,880; either attractor alone 0 of 442 spots; 230 working swings.
+  Set in the lantern court later that night, with pale lanterns streaming across the sky.
+- **Web build.** The launcher engine on Mac cannot target the web, so the engine is built from source at `~/UE59`
+  (see `docs/WEB.md`). The Mac has no Rosetta, which the engine's C# build tools need for one Intel-only helper, so
+  the source tree uses the launcher install's prebuilt copies of those tools.
+
+**Verified in the engine**
+- Simulated touches (`GGTouch`): walking with the stick, looking, the BALL button, hold-to-swing.
+- Every menu screen draws; the hole list shows a solved hole and locks the rest.
+- `Tools/smoke.sh`: all six holes.
+
+**Critique**
+- Hole 6's first draft had a timed gate, sold as "slow for the corner, fast for the gate". The solver showed the hole
+  needed two machines with the gate open forever: the timer was decoration. I only found out because I tested the
+  explanation, not just the hole. Every hole's stated idea should get that test: change the thing the idea depends
+  on and check the proof changes.
+- Hole 6 is forgiving (230 swings). It is a new idea, not a hard hole. The game still has one exam and five lessons.
+- Touch controls have never been under a thumb. The layout is a guess at what is comfortable; a phone will say.
+- The title screen's backdrop is the player's own view, club and all. It should be a composed shot of the place.
+- The menus are plain text on a dimmed world. Clean, but there is no identity in them yet: no mark, no sound.
+- Six holes in four worlds: two of them reuse a world at a different hour. That stretches "every level is different".
 
 ## 2026-11-18, session 1 (autonomous): hole 5, real models
 

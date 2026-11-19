@@ -2,6 +2,8 @@
 # Packages the game for the web (Wasm + WebGPU), following Engine/Platforms/Wasm/Docs/GettingStarted.md:
 #   Tools/web.sh [Development|Shipping] [host]
 #   host: static | pages | r2worker | s3cf | netlify | zip   (the engine's deploy planner; it plans, it never uploads)
+# The build tools (UnrealBuildTool, AutomationTool) are the launcher install's prebuilt copies, placed in the source
+# tree: compiling them needs an Intel-only helper and this Mac has no Rosetta. Hence -nocompileuat -nocompile.
 # Needs an engine with the web libraries (a source build at ~/UE59; the 5.9 preview's Mac launcher build has none) and
 # the Emscripten SDK 6.0.10 at ~/emsdk. Works in a copy of the project (../gravitygolf-web) so the build against the
 # source engine never touches the binaries the launcher editor uses.
@@ -12,6 +14,7 @@ WEB="${GG_WEB_COPY:-$ROOT/../gravitygolf-web}"
 CONFIG="${1:-Development}"
 HOST="${2:-static}"
 export WASM_EMSDK_ROOT="${WASM_EMSDK_ROOT:-$HOME/emsdk}"
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
 if [ ! -f "$WASM_EMSDK_ROOT/upstream/emscripten/emscripten-version.txt" ]; then
 	echo "No Emscripten SDK at $WASM_EMSDK_ROOT (need 6.0.10; see docs/WEB.md)" >&2
 	exit 1
@@ -39,7 +42,7 @@ MAPS="/Game/Levels/Terraces+/Game/Levels/SaltMirror+/Game/Levels/Canyon+/Game/Le
 OUT="$WEB/Saved/Web"
 "$UE/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun -project="$WEB/GravityGolf.uproject" -platform=Wasm \
 	-clientconfig="$CONFIG" -build -cook -map="$MAPS" -stage -pak -iostore -package -archive -archivedirectory="$OUT" \
-	-deploy -WasmHost="$HOST" -unattended -utf8output -nop4 \
+	-deploy -WasmHost="$HOST" -unattended -utf8output -nop4 -nocompileuat -nocompile \
 	-AdditionalCookerOptions="-unattended -nopause -nosplash -nullrhi"
 "$UE/Engine/Binaries/ThirdParty/Python3/Mac/bin/python3" "$UE/Engine/Platforms/Wasm/Build/Tools/deploy/check_stage.py" "$OUT/Wasm"
 echo "Site: $OUT/Wasm    Play locally: $OUT/play-gravitygolf.sh    Deploy plan: $WEB/Saved/Wasm/Deploy"

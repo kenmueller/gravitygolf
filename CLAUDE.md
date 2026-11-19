@@ -54,10 +54,11 @@ GravityGolf.uproject          plugins: ModelContextProtocol + AllToolsets (MCP),
 Source/GravityGolf/
   */Sim/GGSim.*               deterministic 3D ball physics (boxes, surfaces, machines, cup, safe pads, plates, gates)
   */Game/GGCourse.*           loads Content/Courses/<level>.json, steps the sim at 240 Hz, ball/attractors/flag
-  */Game/GGGolfer.*           first-person character: walk, carry machines (E), swing (hold click), F1 solution, 1-5 holes
+  */Game/GGGolfer.*           first-person character: walk, keys, gamepad and touch; carry machines, swing, menus
   */Game/GGGameMode.*         starts the course matching the level name; console commands (GGDemo, GGHole, GGPerf, GGView...)
   */Game/GGAudio.*            runtime-synthesized sounds (footsteps, strike, bounce, cup, machine)
-  */Game/GGHUD.*              placeholder HUD
+  */Game/GGHUD.*              play HUD, touch controls, solved card and the menus (title, pause, holes, settings)
+  */Game/GGSave.*             saved progress and settings; the list of holes in play order
 Content/Courses/*.json        collision boxes + rules, written by Tools/courses/<level>.py (plain Python)
 Tools/levels/<level>.py       builds the level in the editor from the course JSON plus dressing (common.py helpers)
 Tools/build_materials.py      generates /Game/Materials (custom HLSL: triplanar scans, ocean, ball, glow)
@@ -101,6 +102,8 @@ Work through the Unreal MCP (`mcp__unreal__*`) while the editor is open:
 - Replay a solver result in PIE with console commands (`ConsoleToolset.RunConsoleCommand`): `GGMachine x,y,z`,
   then `GGShot yaw,power`, and read `LogGGCourse` for the outcome.
 - Fab installs: `FabToolset.InstallFabListing`, then save dirty packages.
+- Test input without hands: `GGTouch finger,phase,x,y` (a touch, in fractions of the screen), `GGMenu
+  title|pause|holes|settings|none`, `GGWhere` (logs the player's position, facing and state).
 - `execute_python` takes `{"script": {"content": "<code>"}}` and returns the last expression's value; `print`
   goes to the log only.
 
@@ -132,6 +135,10 @@ console and read the pass list in the log before guessing.
 - Web builds: the 5.9 preview's Mac launcher build cannot target Wasm ("not supported from this engine
   distribution"; it lacks the Wasm third-party libraries, page template and tools). The editor will not even list
   the Wasm platform for cooking unless the Emscripten SDK is found (`WASM_EMSDK_ROOT=~/emsdk`, version 6.0.10).
+- Adding a hole: its course and level scripts, an entry in `UGGSave::Holes()` (GGSave.cpp), the previous course's
+  `next_level`, and the level lists in `Tools/smoke.sh`, `Tools/perf.sh`, `Tools/regen.sh` and `Tools/web.sh`.
+- Test a hole's stated idea, not only the hole: change what the idea depends on (move the cup, hold the gate open)
+  and check the proof changes. Hole 6's timed gate turned out to be decoration this way.
 - An attractor is also a cannon: a ball tapped toward it is drawn in and released along the line through it.
   Every layout must block the straight line from the ball through any spot a machine can stand to the target, or
   the hole is trivial. The solver catches it; `Tests/Sim/search.sh` shows it as huge tolerances with one machine
