@@ -215,6 +215,9 @@ mirror.
 - **`Tools/together.sh`**: one command hosts a hole in a window on this Mac and prints a link that puts a friend's
   browser in it (the page and Epic's relay each behind a quick tunnel). Its local form (`GG_LOCAL=1`, no tunnels)
   worked end to end with a real browser tab as the friend. The public form is Ken's to run and is untried.
+- **Play together is in the browser version's menu** (join by address; a browser cannot host, and says so).
+- **Leapfrog's swing is forgiving now**: the tee moved up to the first wall (53 working swings, from 18), with the
+  two machines standing either side of the grille in the tee's view.
 - **A browser can join a desktop host.** The web build in Chrome, a desktop copy hosting hole 3, and Epic's relay
   between them (a browser has no UDP), all on this Mac. The browser's player carried both machines to the answer
   and swung. The game now carries its own network version, because the installed engine and the source-built one
@@ -235,6 +238,11 @@ mirror.
   machines log the same two swings to a hundredth of a centimetre: the answer (sunk) and a plain swing that comes
   to rest at (1294.00, 261.76). One is a native build for this Mac's processor and the other WebAssembly: this is
   the first evidence that "the same shot is the same everywhere" holds between different kinds of machine.
+- **The current build in Chrome** (a fresh Development build in its own folder): all fourteen holes' answers sink the
+  ball, among them hole 13 and the rebuilt finale with their carries; the Credits and Play together screens; play,
+  the Workshop, and every phone-size check. The join test passes on it at desktop size and at phone size with the
+  joined player taking and setting down a machine by touch; in the second, both machines log the same two swings
+  that come to rest, (3277.22, 1288.82) and (1294.00, 394.00), the first bent by a machine set down by touch.
 - Ken's share link, tried from here: the page, the three isolation headers, and a byte range answered as a range.
 - Not yet in any web build when this was written: hole 13 in the Development build Ken is sharing (it has 13 holes
   and the old finale).

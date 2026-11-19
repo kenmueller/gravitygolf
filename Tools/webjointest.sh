@@ -20,6 +20,8 @@ HOST=$!
 # GG_RELAY_PORT=8890 puts the relay somewhere the page will not look by itself, and uses the fixture that tells it.
 FIXTURE=web-join
 RELAYARGS=""
+# GG_JOIN_PHONE=1: the joiner is the browser at phone size, working the machine buttons by touch.
+[ -n "$GG_JOIN_PHONE" ] && FIXTURE=web-join-phone
 if [ -n "$GG_RELAY_PORT" ]; then
 	FIXTURE=web-join-relay
 	RELAYARGS="--port $GG_RELAY_PORT"
@@ -53,6 +55,13 @@ else
 	echo "      browser:"; echo "${WEBSWINGS:-nothing}" | sed 's/^/        /'
 	STATUS=1
 fi
-echo "$HOSTSWINGS" | head -1 | grep -q "state 2" && echo "ok    the answer, carried and swung from the browser, sank the ball" || { echo "FAIL  the answer did not sink"; STATUS=1; }
+if [ -n "$GG_JOIN_PHONE" ]; then
+	# By touch: GRAB took a machine and PLACE set it down somewhere else, as the joined player's own copy tells it.
+	WHERE="$(grep "where: " "$LOG" 2>/dev/null | sed 's/.*where: //')"
+	echo "$WHERE" | sed -n 2p | grep -q "carrying 0" && echo "ok    touch: GRAB picked the machine up" || { echo "FAIL  touch: GRAB did not pick the machine up"; STATUS=1; }
+	echo "$WHERE" | sed -n 3p | grep -q "carrying -1" && ! echo "$WHERE" | sed -n 3p | grep -q "(800,-250)" && echo "ok    touch: PLACE set it down somewhere new" || { echo "FAIL  touch: PLACE did not set the machine down"; STATUS=1; }
+else
+	echo "$HOSTSWINGS" | head -1 | grep -q "state 2" && echo "ok    the answer, carried and swung from the browser, sank the ball" || { echo "FAIL  the answer did not sink"; STATUS=1; }
+fi
 [ $STATUS -eq 0 ] && echo "PASS" || echo "FAIL"
 exit $STATUS

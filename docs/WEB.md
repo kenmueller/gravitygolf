@@ -92,10 +92,12 @@ no UDP), so Epic's `ws_relay.py` runs here and carries them; the link names the 
 the relay; the relay passes packets only from that page and only to this Mac. Ctrl-C closes all of it.
 
 What is proved (2026-11-19, on this Mac only): a browser joins a desktop host and both log the same swings to a
-hundredth of a centimetre (`Tools/webjointest.sh`); and with `GG_LOCAL=1` the script's own link, opened in a real
+hundredth of a centimetre (`Tools/webjointest.sh`); the same at phone size, with the joined player taking a machine
+and setting it down by touch (`GG_JOIN_PHONE=1`); and with `GG_LOCAL=1` the script's own link, opened in a real
 browser tab, joined the hosting window and showed its hole. What is not: the two tunnels (WebSocket through
 Cloudflare), any real network delay, more than one friend, a friend on a phone, and what the two players look like
-to each other. The browser version still has no Play together in its own menu: the link does the joining.
+to each other. The browser version's own menu has Play together with a join by address (it cannot host); the link
+makes typing unnecessary.
 
 ## On a real phone
 
