@@ -18,41 +18,50 @@ A puzzle golf game on tiny solar systems, built in **Unreal Engine 5.9** (previe
 ```
 GravityGolf.uproject          plugins: ModelContextProtocol + AllToolsets (MCP), Python, ProceduralMesh
 Source/GravityGolf/
-  */Sim/GGSim.*               deterministic 2D physics (planets, wells, cup, stardust, bounds)
-  */Hole/GGHoleLoader.*       JSON -> GG::FHole (+ visual looks); sim (x,y) maps to world (Y,X)
-  */Game/GGHoleDirector.*     builds the scene, steps the sim at 240 Hz, aiming, wells, strokes
-  */Game/GGGameMode.*         spawns the director; command-line automation (-GGHole, -GGShot, -GGCapture...)
-  */Game/GGPlayerController.* mouse input; GGCameraPawn: orbit camera; GGHUD: placeholder HUD
-Content/Holes/*.json          hole definitions
-Tools/build_materials.py      generates /Game/Materials (custom HLSL inside material nodes)
+  */Sim/GGSim.*               deterministic 3D ball physics (boxes, surfaces, attractors, cup)
+  */Game/GGCourse.*           loads Content/Courses/<level>.json, steps the sim at 240 Hz, ball/attractors/flag
+  */Game/GGGolfer.*           first-person character: walk, carry attractors (E), swing (hold click), loft (scroll)
+  */Game/GGGameMode.*         starts the course matching the level name; automation flags (-GGView, -GGShot, -GGCapture)
+  */Game/GGHUD.*              placeholder HUD
+Content/Courses/*.json        collision boxes + rules, written by Tools/courses/<level>.py (plain Python)
+Tools/levels/<level>.py       builds the level in the editor from the course JSON plus dressing (common.py helpers)
+Tools/build_materials.py      generates /Game/Materials (custom HLSL: triplanar scans, ocean, ball, glow)
+Tools/fab_assets.json         Fab/Megascans packs the levels need. They are gitignored; reinstall via the Fab toolset
+Tools/editor.sh               start the editor and wait until its MCP server is idle
 Tools/mcp.py                  shell client for the editor's MCP server
-Tests/Sim/run.sh              standalone sim tests (+ --sweep brute-force solver)
+Tests/Sim/run.sh              standalone sim tests
 ```
 
 ## Commands
 
 ```bash
 UE="/Users/Shared/Epic Games/UE_5.9"
-Tests/Sim/run.sh [--sweep]                                   # sim tests, no Unreal needed
+Tests/Sim/run.sh                                             # sim tests, no Unreal needed
+python3 Tools/courses/terraces.py                            # regenerate a course JSON
 "$UE/Engine/Build/BatchFiles/Mac/Build.sh" GravityGolfEditor Mac Development -project="$PWD/GravityGolf.uproject"
-Tools/run_python.sh Tools/build_materials.py                 # headless; only when the editor is closed
+Tools/editor.sh                                              # start the editor, wait for MCP
 ```
 
-When the editor is open (usual case), work through the Unreal MCP (`mcp__unreal__*`):
+Work through the Unreal MCP (`mcp__unreal__*`) while the editor is open:
 
-- Run Python with `editor_toolset.toolsets.python_scripting.PythonScriptingTools.execute_python`, using
-  `runpy.run_path('<abs path>')` for repo scripts.
-- Compile C++ with `LiveCodingToolset.CompileLiveCoding`. Live Coding can't change class layouts or UPROPERTYs. For
-  those, close the editor and use Build.sh.
-- Play and look: `EditorToolset.EditorAppToolset.StartPIE`, then
-  `SceneCaptureToolset.SceneCaptureToolset.CaptureGameViewport`, then `StopPIE`.
+- Run repo scripts with `editor_toolset.toolsets.python_scripting.PythonScriptingTools.execute_python` and
+  `runpy.run_path('<abs path>', run_name='__main__')`. Long scripts can time out on the client yet still finish;
+  check the log.
+- C++ changes that touch class layouts need the editor closed: `EditorAppToolset.ExitEditor`, Build.sh, then
+  `Tools/editor.sh`.
+- Play and look: `EditorAppToolset.StartPIE` (warmupSeconds 10+), `SceneCaptureToolset.CaptureGameViewport` with
+  the PIE world from `ListWorlds`, then `StopPIE`.
 - Read the log with `ConsoleToolset.LogsToolset.GetLogEntries`.
+- Fab installs: `FabToolset.InstallFabListing`, then save dirty packages.
 
-Headless screenshot without the editor: launch `UnrealEditor.app` with
-`-game -GGCapture=/abs/out.png [-GGShot=angle,power] [-GGWell=x,y]`.
+## Gotchas
 
-## Environment
-
-macOS 27 with Xcode 27.2. UE 5.9 supports Xcode up to 27.9. The Metal toolchain is installed
-(`xcodebuild -downloadComponent MetalToolchain`). The default map is `/Engine/Maps/Entry`; the game mode builds
-everything at runtime.
+- A standalone `-game` launch (Tools/capture.sh) hung at startup compiling global shaders after ray tracing was
+  enabled. Use PIE captures until that's understood.
+- The first editor start after changing renderer settings recompiles shaders and rebuilds Nanite data for the
+  Megaplants trees (several minutes). MCP tools return "slow task" until it finishes.
+- Megaplants need `r.Nanite.Foliage` and `r.Nanite.AllowAssemblies`, or the trees render bare.
+- Post-process exposure min/max brightness are luminance values, not EV; setting them high makes the game look
+  like night.
+- macOS 27 with Xcode 27.2 works (UE 5.9 allows up to 27.9). The Metal toolchain must be installed
+  (`xcodebuild -downloadComponent MetalToolchain`).

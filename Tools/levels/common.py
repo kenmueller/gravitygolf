@@ -13,12 +13,16 @@ SPHERE = "/Engine/BasicShapes/Sphere.Sphere"
 
 
 def fresh_level(path):
-    """Recreate a level from scratch so the script fully defines it."""
-    LES.load_level("/Engine/Maps/Entry", unsaved_changes_policy=unreal.LevelEditorUnsavedChangesPolicy.DISCARD)
+    """Open the level empty so the script fully defines it."""
+    discard = unreal.LevelEditorUnsavedChangesPolicy.DISCARD
     if ASSETS.does_asset_exist(path):
-        ASSETS.delete_asset(path)
-    if not LES.new_level(path, False):
-        raise RuntimeError(f"could not create {path}")
+        LES.load_level(path, unsaved_changes_policy=discard)
+        for actor in EAS.get_all_level_actors():
+            EAS.destroy_actor(actor)
+    else:
+        LES.load_level("/Engine/Maps/Entry", unsaved_changes_policy=discard)
+        if not LES.new_level(path, False):
+            raise RuntimeError(f"could not create {path}")
 
 
 def rotator(pitch=0.0, yaw=0.0, roll=0.0):
