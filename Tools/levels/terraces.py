@@ -112,7 +112,7 @@ def course_geometry(m):
     for b in course["boxes"]:
         if b["look"] == "hedge":
             hedge_row(b, heather, m)
-        elif b["name"] == "Great_Wall":
+        elif b["look"] == "wall":
             great_wall(b, m)
         elif b["shape"] == "cylinder":
             tall = b["size"][2] > 400
@@ -314,4 +314,5 @@ halo(mats, course_data)
 floating_islands(mats)
 sea_and_horizon(mats)
 markers(course_data, mats)
+c.player_start(course_data)
 c.LES.save_current_level()

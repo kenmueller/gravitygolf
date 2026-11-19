@@ -1,6 +1,7 @@
 {
 	"id": "terraces",
 	"name": "The Terraces",
+	"level": "Terraces",
 	"par": 1,
 	"ballRadius": 6,
 	"gravity": [
@@ -33,7 +34,8 @@
 				-650,
 				0
 			],
-			"radius": 520
+			"radius": 520,
+			"kind": "court"
 		}
 	],
 	"safeZones": [],
@@ -160,8 +162,9 @@
 				300
 			],
 			"surface": "stone",
-			"look": "stone",
+			"look": "wall",
 			"shape": "box"
 		}
-	]
+	],
+	"next": "SaltMirror"
 }

@@ -1,0 +1,203 @@
+{
+	"id": "saltmirror",
+	"name": "Salt Mirror",
+	"level": "SaltMirror",
+	"par": 2,
+	"ballRadius": 6,
+	"gravity": [
+		0,
+		0,
+		-980
+	],
+	"killZ": -1400,
+	"tee": {
+		"position": [
+			500,
+			380,
+			6
+		],
+		"yaw": 0
+	},
+	"cup": {
+		"position": [
+			5600,
+			420,
+			0
+		],
+		"radius": 42,
+		"captureSpeed": 650
+	},
+	"noMachine": [
+		{
+			"position": [
+				2950,
+				-640,
+				0
+			],
+			"radius": 240,
+			"kind": "pad"
+		},
+		{
+			"position": [
+				5600,
+				420,
+				0
+			],
+			"radius": 520,
+			"kind": "court"
+		}
+	],
+	"safeZones": [
+		{
+			"position": [
+				2950,
+				-640,
+				0
+			],
+			"radius": 180
+		}
+	],
+	"attractors": [
+		{
+			"position": [
+				700,
+				-450,
+				0
+			],
+			"strength": 420,
+			"range": 1900,
+			"coreHeight": 45,
+			"movable": true
+		}
+	],
+	"boxes": [
+		{
+			"name": "Crust",
+			"center": [
+				3200.0,
+				0,
+				-15
+			],
+			"size": [
+				6400,
+				1900,
+				30
+			],
+			"surface": "green",
+			"look": "crust",
+			"shape": "box"
+		},
+		{
+			"name": "BrineL",
+			"center": [
+				3200.0,
+				-2450.0,
+				-15
+			],
+			"size": [
+				12400,
+				3000,
+				30
+			],
+			"surface": "sand",
+			"look": "brine",
+			"shape": "box"
+		},
+		{
+			"name": "BrineR",
+			"center": [
+				3200.0,
+				2450.0,
+				-15
+			],
+			"size": [
+				12400,
+				3000,
+				30
+			],
+			"surface": "sand",
+			"look": "brine",
+			"shape": "box"
+		},
+		{
+			"name": "BrineStart",
+			"center": [
+				-1500.0,
+				0,
+				-15
+			],
+			"size": [
+				3000,
+				1900,
+				30
+			],
+			"surface": "sand",
+			"look": "brine",
+			"shape": "box"
+		},
+		{
+			"name": "BrineEnd",
+			"center": [
+				7900.0,
+				0,
+				-15
+			],
+			"size": [
+				3000,
+				1900,
+				30
+			],
+			"surface": "sand",
+			"look": "brine",
+			"shape": "box"
+		},
+		{
+			"name": "MonolithA",
+			"center": [
+				1900,
+				-500.0,
+				300
+			],
+			"size": [
+				140,
+				1500,
+				600
+			],
+			"surface": "stone",
+			"look": "monolith",
+			"shape": "box"
+		},
+		{
+			"name": "MonolithB",
+			"center": [
+				4300,
+				500.0,
+				300
+			],
+			"size": [
+				140,
+				1500,
+				600
+			],
+			"surface": "stone",
+			"look": "monolith",
+			"shape": "box"
+		},
+		{
+			"name": "SafePad1",
+			"center": [
+				2950,
+				-640,
+				-10
+			],
+			"size": [
+				306.0,
+				306.0,
+				20
+			],
+			"surface": "sand",
+			"look": "pad",
+			"shape": "box"
+		}
+	]
+}

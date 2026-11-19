@@ -304,6 +304,96 @@ def build_ocean():
     finish(material, path)
 
 
-for build in (build_surface, build_glow, build_ball, build_ocean, build_scan):
+SALT = r"""
+// Salt crust: pale polygons with raised rims, like a dried lake bed. 2D Voronoi on the ground plane.
+struct GGCell
+{
+    float2 Hash(float2 P)
+    {
+        P = float2(dot(P, float2(127.1, 311.7)), dot(P, float2(269.5, 183.3)));
+        return frac(sin(P) * 43758.5453);
+    }
+};
+GGCell H;
+float2 P = WorldPos.xy / CellSize;
+float2 I = floor(P);
+float2 F = frac(P);
+float F1 = 8.0;
+float F2 = 8.0;
+float2 Id = 0;
+for (int Y = -1; Y <= 1; Y++)
+for (int X = -1; X <= 1; X++)
+{
+    float2 G = float2(X, Y);
+    float2 R = G + H.Hash(I + G) - F;
+    float D = dot(R, R);
+    if (D < F1) { F2 = F1; F1 = D; Id = I + G; }
+    else if (D < F2) { F2 = D; }
+}
+float Edge = sqrt(F2) - sqrt(F1);
+float Rim = 1.0 - smoothstep(0.0, RimWidth, Edge);
+float Shade = 1.0 - smoothstep(RimWidth, RimWidth * 3.0, Edge);
+float Tone = 0.9 + 0.1 * H.Hash(Id).x;
+float Grain = H.Hash(floor(WorldPos.xy * 0.7)).x;
+RoughnessOut = lerp(0.62, 0.45, Rim) + (Grain - 0.5) * 0.08;
+float3 Color = Tint.rgb * Tone * (0.97 + 0.03 * Grain);
+Color = lerp(Color * lerp(1.0, 0.86, Shade), Tint.rgb * 1.08, Rim);
+return Color;
+"""
+
+MIRROR = r"""
+// A film of brine over salt: almost a perfect mirror, with ripples too small to see except in the reflections.
+float2 P = WorldPos.xy / 100.0;
+float Distance = length(WorldPos - CameraPos) / 100.0;
+float2 Slope = 0;
+const float2 Dirs[4] = { float2(1, 0.3), float2(-0.4, 1), float2(0.8, -0.6), float2(-0.9, -0.2) };
+const float Lens[4] = { 7.0, 3.1, 1.3, 0.6 };
+for (int I = 0; I < 4; I++)
+{
+    float2 D = normalize(Dirs[I]);
+    float K = 6.2831853 / Lens[I];
+    float Visible = saturate(Lens[I] * 70.0 / max(Distance, 1.0) - 0.5);
+    Slope += D * cos(dot(D, P) * K - Time * (0.25 + 0.2 * I)) * Visible;
+}
+return normalize(float3(-Slope.x * Ripple, -Slope.y * Ripple, 1.0));
+"""
+
+
+def build_salt():
+    material, path = fresh("M_GG_Salt")
+    world = node(material, unreal.MaterialExpressionWorldPosition, -900, 0)
+    cell = scalar_param(material, "CellSize", 130.0, -900, 120)
+    rim = scalar_param(material, "RimWidth", 0.045, -900, 220)
+    tint = vector_param(material, "Tint", (0.8, 0.78, 0.74, 1), -900, 320)
+    crust = custom(material, SALT, ["WorldPos", "CellSize", "RimWidth", "Tint"], -500, 100,
+                   outputs=[("RoughnessOut", unreal.CustomMaterialOutputType.CMOT_FLOAT1)])
+    for source, pin in [(world, "WorldPos"), (cell, "CellSize"), (rim, "RimWidth"), (tint, "Tint")]:
+        MEL.connect_material_expressions(source, "", crust, pin)
+    MEL.connect_material_property(crust, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    MEL.connect_material_property(crust, "RoughnessOut", unreal.MaterialProperty.MP_ROUGHNESS)
+    finish(material, path)
+
+
+def build_mirror():
+    material, path = fresh("M_GG_Mirror")
+    material.set_editor_property("tangent_space_normal", False)
+    world = node(material, unreal.MaterialExpressionWorldPosition, -900, 0)
+    camera = node(material, unreal.MaterialExpressionCameraPositionWS, -900, 80)
+    time = node(material, unreal.MaterialExpressionTime, -900, 150)
+    ripple = scalar_param(material, "Ripple", 0.006, -900, 300)
+    waves = custom(material, MIRROR, ["WorldPos", "CameraPos", "Time", "Ripple"], -500, 100)
+    for source, pin in [(world, "WorldPos"), (camera, "CameraPos"), (time, "Time"), (ripple, "Ripple")]:
+        MEL.connect_material_expressions(source, "", waves, pin)
+    MEL.connect_material_property(waves, "", unreal.MaterialProperty.MP_NORMAL)
+    MEL.connect_material_property(vector_param(material, "BaseColor", (0.2, 0.2, 0.19, 1), -500, -200), "",
+                                  unreal.MaterialProperty.MP_BASE_COLOR)
+    MEL.connect_material_property(scalar_param(material, "Roughness", 0.015, -500, 300), "",
+                                  unreal.MaterialProperty.MP_ROUGHNESS)
+    MEL.connect_material_property(scalar_param(material, "Specular", 0.9, -500, 400), "",
+                                  unreal.MaterialProperty.MP_SPECULAR)
+    finish(material, path)
+
+
+for build in (build_surface, build_glow, build_ball, build_ocean, build_scan, build_salt, build_mirror):
     build()
 unreal.log("GG: materials done")

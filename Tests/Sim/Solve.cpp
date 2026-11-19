@@ -1,6 +1,6 @@
-// Proves the puzzle law for a course with the real physics:
-//   1. NECESSARY: with no machine, no swing sinks the ball.
-//   2. SOLVABLE:  with the machine placed well, a comfortable range of swings sinks it.
+// Proves the puzzle law for a course with the real physics. For every leg (tee -> safe zones -> cup):
+//   1. NECESSARY: the leg can't be done with no machine, nor (when a hole has several) with any single machine.
+//   2. SOLVABLE:  with the machines placed well, a comfortable range of swings does it, and most placements don't.
 // Usage: Tests/Sim/solve.sh <course id>      (reads Saved/SimTest/<id>.course, written by Tools/courses/<id>.py)
 #include "Sim/GGSim.h"
 
@@ -14,12 +14,25 @@
 
 using namespace GG;
 
+struct FMachineDef
+{
+	double Strength = 0, Range = 0, CoreHeight = 0, StartX = 0, StartY = 0;
+};
+
+struct FHint
+{
+	int Leg = 0;
+	double Yaw = 0, Power = 0;
+	std::vector<FVec3> Spots;
+};
+
 struct FSetup
 {
 	FCourse Course;
-	double Strength = 0, Range = 0, CoreHeight = 0;
 	double MinX = 0, MinY = 0, MaxX = 0, MaxY = 0;
+	std::vector<FMachineDef> Machines;
 	std::vector<FVec3> NoMachine; // x, y, radius
+	std::vector<FHint> Hints;
 };
 
 static bool Load(const char* Path, FSetup& S)
@@ -31,9 +44,15 @@ static bool Load(const char* Path, FSetup& S)
 	}
 	FCourse& C = S.Course;
 	In >> C.Tee.X >> C.Tee.Y >> C.Tee.Z >> C.Cup.X >> C.Cup.Y >> C.Cup.Z >> C.CupRadius >> C.CupCaptureSpeed;
-	In >> C.BallRadius >> C.KillZ;
-	In >> S.Strength >> S.Range >> S.CoreHeight >> S.MinX >> S.MinY >> S.MaxX >> S.MaxY;
+	In >> C.BallRadius >> C.KillZ >> S.MinX >> S.MinY >> S.MaxX >> S.MaxY;
 	int Count = 0;
+	In >> Count;
+	for (int I = 0; I < Count; ++I)
+	{
+		FMachineDef M;
+		In >> M.Strength >> M.Range >> M.CoreHeight >> M.StartX >> M.StartY;
+		S.Machines.push_back(M);
+	}
 	In >> Count;
 	for (int I = 0; I < Count; ++I)
 	{
@@ -57,16 +76,22 @@ static bool Load(const char* Path, FSetup& S)
 		B.Surface = static_cast<ESurface>(Surface);
 		C.Boxes.push_back(B);
 	}
+	In >> Count;
+	for (int I = 0; I < Count; ++I)
+	{
+		FHint H;
+		In >> H.Leg >> H.Yaw >> H.Power;
+		for (size_t M = 0; M < S.Machines.size(); ++M)
+		{
+			FVec3 Spot;
+			In >> Spot.X >> Spot.Y;
+			H.Spots.push_back(Spot);
+		}
+		S.Hints.push_back(H);
+	}
 	return static_cast<bool>(In);
 }
 
-static FVec3 Launch(double YawDegrees, double Power)
-{
-	const double R = YawDegrees * 3.14159265358979323846 / 180.0;
-	return {std::cos(R) * Power * 3000.0, std::sin(R) * Power * 3000.0, 0.0};
-}
-
-/** Counts the swings that sink the ball over a yaw/power grid. */
 /** A leg runs from Start to a target: safe zone Target, or the cup when Target is -1. */
 struct FLeg
 {
@@ -74,22 +99,32 @@ struct FLeg
 	int Target;
 };
 
+static FVec3 Launch(double YawDegrees, double Power)
+{
+	const double R = YawDegrees * 3.14159265358979323846 / 180.0;
+	return {std::cos(R) * Power * 3000.0, std::sin(R) * Power * 3000.0, 0.0};
+}
+
+static bool Reaches(const FSetup& S, const FLeg& Leg, const std::vector<FAttractor>& Machines, double Yaw, double Power)
+{
+	FSim Sim;
+	Sim.Begin(S.Course, Machines, Leg.Start, Launch(Yaw, Power));
+	const EBallState End = Sim.Run();
+	return Leg.Target < 0 ? End == EBallState::Sunk : (End == EBallState::AtRest && Sim.Ball().SafeZone == Leg.Target);
+}
+
+/** Counts the swings that complete the leg over a yaw/power grid. */
 static int CountSolutions(const FSetup& S, const FLeg& Leg, const std::vector<FAttractor>& Machines, double YawStep,
 	double PowerStep, double* BestYaw = nullptr, double* BestPower = nullptr)
 {
-	int Sunk = 0;
+	int Count = 0;
 	for (double Yaw = -180.0; Yaw < 180.0; Yaw += YawStep)
 	{
 		for (double Power = 0.05; Power <= 1.0001; Power += PowerStep)
 		{
-			FSim Sim;
-			Sim.Begin(S.Course, Machines, Leg.Start, Launch(Yaw, Power));
-			const EBallState End = Sim.Run();
-			const bool bReached = Leg.Target < 0 ? End == EBallState::Sunk
-				: (End == EBallState::AtRest && Sim.Ball().SafeZone == Leg.Target);
-			if (bReached)
+			if (Reaches(S, Leg, Machines, Yaw, Power))
 			{
-				++Sunk;
+				++Count;
 				if (BestYaw)
 				{
 					*BestYaw = Yaw;
@@ -98,26 +133,17 @@ static int CountSolutions(const FSetup& S, const FLeg& Leg, const std::vector<FA
 			}
 		}
 	}
-	return Sunk;
-}
-
-static bool InsideAnyBox(const FCourse& C, double X, double Y)
-{
-	for (const FBox& B : C.Boxes)
-	{
-		if (B.Max.Z > 20.0 && X > B.Min.X - 40 && X < B.Max.X + 40 && Y > B.Min.Y - 40 && Y < B.Max.Y + 40)
-		{
-			return true;
-		}
-	}
-	return false;
+	return Count;
 }
 
 static bool Allowed(const FSetup& S, double X, double Y)
 {
-	if (InsideAnyBox(S.Course, X, Y))
+	for (const FBox& B : S.Course.Boxes)
 	{
-		return false;
+		if (B.Max.Z > 20.0 && X > B.Min.X - 40 && X < B.Max.X + 40 && Y > B.Min.Y - 40 && Y < B.Max.Y + 40)
+		{
+			return false;
+		}
 	}
 	for (const FVec3& Zone : S.NoMachine)
 	{
@@ -129,22 +155,16 @@ static bool Allowed(const FSetup& S, double X, double Y)
 	return true;
 }
 
-static bool SolveLeg(const FSetup& S, const FLeg& Leg, const char* Name)
+struct FSpot
 {
-	std::printf("LEG %s\n", Name);
+	double X, Y;
+	int Solutions;
+	double Yaw, Power;
+};
 
-	// 1. Necessity: a fine sweep with no machine at all.
-	const int Bare = CountSolutions(S, Leg, {}, 0.25, 0.0125);
-	std::printf("  NECESSARY: %d of %d swings succeed with no machine  ->  %s\n", Bare, 1440 * 77,
-		Bare == 0 ? "ok" : "FAIL (solvable without the machine)");
-
-	// 2. Solvability: try the machine on a grid of spots; for each, count the swings that work.
-	struct FSpot
-	{
-		double X, Y;
-		int Solutions;
-		double Yaw, Power;
-	};
+/** Tries one machine on a grid of spots; fills in how many swings work at each. Returns the sorted spots. */
+static std::vector<FSpot> SweepSpots(const FSetup& S, const FLeg& Leg, const FMachineDef& M, double YawStep, double PowerStep)
+{
 	std::vector<FSpot> Spots;
 	for (double X = S.MinX; X <= S.MaxX; X += 150.0)
 	{
@@ -156,7 +176,6 @@ static bool SolveLeg(const FSetup& S, const FLeg& Leg, const char* Name)
 			}
 		}
 	}
-
 	std::atomic<size_t> Next{0};
 	std::vector<std::thread> Workers;
 	for (unsigned T = 0; T < std::max(1u, std::thread::hardware_concurrency()); ++T)
@@ -165,8 +184,8 @@ static bool SolveLeg(const FSetup& S, const FLeg& Leg, const char* Name)
 			for (size_t I = Next++; I < Spots.size(); I = Next++)
 			{
 				FSpot& Spot = Spots[I];
-				const std::vector<FAttractor> Machines = {{{Spot.X, Spot.Y, S.CoreHeight}, S.Strength, S.Range}};
-				Spot.Solutions = CountSolutions(S, Leg, Machines, 1.0, 0.025, &Spot.Yaw, &Spot.Power);
+				const std::vector<FAttractor> Machines = {{{Spot.X, Spot.Y, M.CoreHeight}, M.Strength, M.Range}};
+				Spot.Solutions = CountSolutions(S, Leg, Machines, YawStep, PowerStep, &Spot.Yaw, &Spot.Power);
 			}
 		});
 	}
@@ -174,29 +193,103 @@ static bool SolveLeg(const FSetup& S, const FLeg& Leg, const char* Name)
 	{
 		Worker.join();
 	}
-
 	std::sort(Spots.begin(), Spots.end(), [](const FSpot& A, const FSpot& B) { return A.Solutions > B.Solutions; });
-	int Working = 0;
-	for (const FSpot& Spot : Spots)
+	return Spots;
+}
+
+static bool SolveLeg(const FSetup& S, const FLeg& Leg, int LegIndex, const char* Name)
+{
+	std::printf("LEG %s\n", Name);
+	bool bPass = true;
+
+	const int Bare = CountSolutions(S, Leg, {}, 0.25, 0.0125);
+	std::printf("  NECESSARY: %d of %d swings succeed with no machine  ->  %s\n", Bare, 1440 * 77,
+		Bare == 0 ? "ok" : "FAIL (solvable without any machine)");
+	bPass &= Bare == 0;
+
+	if (S.Machines.size() == 1)
 	{
-		Working += Spot.Solutions > 0;
-	}
-	std::printf("  SOLVABLE: %d of %zu machine spots work\n", Working, Spots.size());
-	for (size_t I = 0; I < Spots.size() && I < 6 && Spots[I].Solutions > 0; ++I)
-	{
-		std::printf("    machine at (%5.0f, %5.0f): %3d swings work, e.g. yaw %6.1f power %.3f\n", Spots[I].X, Spots[I].Y,
-			Spots[I].Solutions, Spots[I].Yaw, Spots[I].Power);
+		const std::vector<FSpot> Spots = SweepSpots(S, Leg, S.Machines[0], 1.0, 0.025);
+		int Working = 0;
+		for (const FSpot& Spot : Spots)
+		{
+			Working += Spot.Solutions > 0;
+		}
+		std::printf("  SOLVABLE: %d of %zu machine spots work\n", Working, Spots.size());
+		for (size_t I = 0; I < Spots.size() && I < 5 && Spots[I].Solutions > 0; ++I)
+		{
+			std::printf("    machine at (%5.0f, %5.0f): %3d swings work, e.g. yaw %6.1f power %.3f\n", Spots[I].X, Spots[I].Y,
+				Spots[I].Solutions, Spots[I].Yaw, Spots[I].Power);
+		}
+		// A good puzzle: some spots work, most don't, and the best spot forgives imperfect swings.
+		const int Best = Spots.empty() ? 0 : Spots[0].Solutions;
+		const double Share = Spots.empty() ? 0.0 : static_cast<double>(Working) / Spots.size();
+		std::printf("    best spot tolerance: %d swings (need 12+)  ->  %s\n", Best, Best >= 12 ? "ok" : "FAIL (too fiddly)");
+		std::printf("    share of spots that work: %.0f%% (need under 35%%)  ->  %s\n", Share * 100.0,
+			Share < 0.35 ? "ok" : "FAIL (placement doesn't matter)");
+		return bPass && Working > 0 && Best >= 12 && Share < 0.35;
 	}
 
-	// A good puzzle: some spots work, most don't, and the best spot forgives imperfect swings.
-	const int Best = Spots.empty() ? 0 : Spots[0].Solutions;
-	const double Share = Spots.empty() ? 0.0 : static_cast<double>(Working) / Spots.size();
-	const bool bForgiving = Best >= 12;
-	const bool bNotEverywhere = Share < 0.35;
-	std::printf("    best spot tolerance: %d swings (need 12+)  ->  %s\n", Best, bForgiving ? "ok" : "FAIL (too fiddly)");
-	std::printf("    share of spots that work: %.0f%% (need under 35%%)  ->  %s\n", Share * 100.0,
-		bNotEverywhere ? "ok" : "FAIL (placement doesn't matter)");
-	return Bare == 0 && Working > 0 && bForgiving && bNotEverywhere;
+	// Several machines: each one alone must fail, and the designer's intended answer must work with room to spare.
+	for (size_t M = 0; M < S.Machines.size(); ++M)
+	{
+		const std::vector<FSpot> Spots = SweepSpots(S, Leg, S.Machines[M], 2.0, 0.05);
+		int Working = 0;
+		for (const FSpot& Spot : Spots)
+		{
+			Working += Spot.Solutions > 0;
+		}
+		std::printf("  NECESSARY: machine %zu alone works from %d of %zu spots  ->  %s\n", M + 1, Working, Spots.size(),
+			Working == 0 ? "ok" : "FAIL (one machine is enough)");
+		if (Working > 0)
+		{
+			std::printf("    e.g. at (%.0f, %.0f) yaw %.1f power %.3f\n", Spots[0].X, Spots[0].Y, Spots[0].Yaw, Spots[0].Power);
+		}
+		bPass &= Working == 0;
+	}
+
+	const FHint* Hint = nullptr;
+	for (const FHint& H : S.Hints)
+	{
+		if (H.Leg == LegIndex)
+		{
+			Hint = &H;
+		}
+	}
+	if (!Hint)
+	{
+		std::printf("  SOLVABLE: FAIL (no intended solution given for this leg)\n");
+		return false;
+	}
+	std::vector<FAttractor> Machines;
+	for (size_t M = 0; M < S.Machines.size(); ++M)
+	{
+		Machines.push_back({{Hint->Spots[M].X, Hint->Spots[M].Y, S.Machines[M].CoreHeight}, S.Machines[M].Strength, S.Machines[M].Range});
+	}
+	const bool bExact = Reaches(S, Leg, Machines, Hint->Yaw, Hint->Power);
+	double Yaw = 0, Power = 0;
+	const int Swings = CountSolutions(S, Leg, Machines, 1.0, 0.025, &Yaw, &Power);
+	// Nudge each machine a pace in four directions: the answer shouldn't depend on centimeters.
+	int Robust = 0;
+	int Trials = 0;
+	for (size_t M = 0; M < Machines.size(); ++M)
+	{
+		for (int Dir = 0; Dir < 4; ++Dir)
+		{
+			std::vector<FAttractor> Nudged = Machines;
+			Nudged[M].Position.X += (Dir == 0 ? 75.0 : Dir == 1 ? -75.0 : 0.0);
+			Nudged[M].Position.Y += (Dir == 2 ? 75.0 : Dir == 3 ? -75.0 : 0.0);
+			++Trials;
+			Robust += CountSolutions(S, Leg, Nudged, 1.0, 0.025) > 0;
+		}
+	}
+	std::printf("  SOLVABLE: intended answer %s; %d swings work there (need 12+); %d of %d nudged placements still work (need half)\n",
+		bExact ? "works" : "DOES NOT WORK", Swings, Robust, Trials);
+	if (!bExact && Swings > 0)
+	{
+		std::printf("    a swing that does work: yaw %.1f power %.3f\n", Yaw, Power);
+	}
+	return bPass && Swings >= 12 && Robust * 2 >= Trials;
 }
 
 int main(int Argc, char** Argv)
@@ -223,7 +316,7 @@ int main(int Argc, char** Argv)
 		{
 			std::snprintf(Name, sizeof(Name), "%d: to the cup", Leg + 1);
 		}
-		bPass &= SolveLeg(S, {Start, Leg < Zones ? Leg : -1}, Name);
+		bPass &= SolveLeg(S, {Start, Leg < Zones ? Leg : -1}, Leg, Name);
 		if (Leg < Zones)
 		{
 			Start = S.Course.SafeZones[Leg].Center;

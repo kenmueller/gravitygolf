@@ -80,6 +80,13 @@ def material_instance(parent_path, name, scalars=None, vectors=None, folder="/Ga
     return instance
 
 
+def player_start(course):
+    """Where the player appears: just behind the ball at the tee, facing down the hole."""
+    tee = course["tee"]["position"]
+    yaw = course["tee"]["yaw"]
+    spawn(unreal.PlayerStart, (tee[0] - 170, tee[1] - 45, tee[2] + 110), (0, yaw, 0), "PlayerStart", "Course")
+
+
 def sky_and_sun(sun_pitch=-8.0, sun_yaw=135.0, sun_lux=10.0, fog_density=0.015, exposure_bias=0.0, sun_kelvin=5200.0,
                 sky_intensity=1.0):
     """Physically based sky: atmosphere, volumetric clouds, height fog, real-time sky light and the sun."""
@@ -130,7 +137,7 @@ def sky_and_sun(sun_pitch=-8.0, sun_yaw=135.0, sun_lux=10.0, fog_density=0.015, 
     settings.set_editor_property("override_bloom_intensity", True)
     settings.set_editor_property("bloom_intensity", 0.45)
     settings.set_editor_property("override_lens_flare_intensity", True)
-    settings.set_editor_property("lens_flare_intensity", 0.15)
+    settings.set_editor_property("lens_flare_intensity", 0.0)
     settings.set_editor_property("override_vignette_intensity", True)
     settings.set_editor_property("vignette_intensity", 0.28)
     settings.set_editor_property("override_film_grain_intensity", True)

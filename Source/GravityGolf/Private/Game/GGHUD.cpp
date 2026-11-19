@@ -36,7 +36,7 @@ void AGGHUD::DrawHUD()
 	DrawRect(FLinearColor(1.f, 1.f, 1.f, 0.85f), CX - 1.5f * S, CY - 1.5f * S, 3.f * S, 3.f * S);
 
 	DrawText(Course->CourseName().ToUpper(), Text, 40.f * S, 32.f * S, Font, 1.5f * S);
-	DrawText(FString::Printf(TEXT("Attempts %d"), Course->Strokes()), Dim, 40.f * S, 66.f * S, Font,
+	DrawText(FString::Printf(TEXT("Swings %d"), Course->Strokes()), Dim, 40.f * S, 66.f * S, Font,
 		1.1f * S);
 
 	if (!Course->StatusText().IsEmpty())

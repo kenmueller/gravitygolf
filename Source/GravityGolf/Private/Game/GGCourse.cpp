@@ -452,13 +452,20 @@ void AGGCourse::FinishStroke(GG::EBallState State)
 	{
 	case GG::EBallState::Sunk:
 		CurrentPhase = EGGPhase::Sunk;
-		Status = StrokeCount == 1 ? TEXT("Solved in one attempt!") : FString::Printf(TEXT("Solved in %d attempts"), StrokeCount);
+		{
+			// A perfect solve takes one swing per leg.
+			const int32 Legs = static_cast<int32>(Course.SafeZones.size()) + 1;
+			Status = StrokeCount <= Legs ? FString::Printf(TEXT("Solved. Perfect: %d swing%s"), StrokeCount, StrokeCount == 1 ? TEXT("") : TEXT("s"))
+										 : FString::Printf(TEXT("Solved in %d swings (perfect is %d)"), StrokeCount, Legs);
+		}
 		break;
 	case GG::EBallState::AtRest:
 		if (Sim.Ball().SafeZone >= 0)
 		{
-			// Resting in a safe zone banks the progress: the next swing starts here.
-			Lie = Sim.Ball().Position;
+			// Resting in a safe zone banks the progress. The pad settles the ball at its center, so the next
+			// swing always starts from the same known spot (which is also what the solver proves from).
+			const GG::FSafeZone& Zone = Course.SafeZones[Sim.Ball().SafeZone];
+			Lie = Zone.Center + GG::FVec3{0.0, 0.0, Course.BallRadius};
 			LastSafe = Lie;
 			CurrentPhase = EGGPhase::Ready;
 			Notify(TEXT("Safe."));

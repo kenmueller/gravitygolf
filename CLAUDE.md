@@ -102,6 +102,8 @@ Work through the Unreal MCP (`mcp__unreal__*`) while the editor is open:
   Megaplants trees (several minutes). MCP tools return "slow task" until it finishes.
 - After `ExitEditor`, the MCP port can stay held for a few seconds. If a fresh editor logs "MCP server listener
   could not start on port 8000", kill it and run `Tools/editor.sh` again.
+- The editor's content-folder monitoring is turned off in config. With it on, a new `Content/Courses/*.json`
+  triggers a DataTable import dialog that blocks every MCP call ("slow task") until someone clicks it.
 - Megaplants need `r.Nanite.Foliage` and `r.Nanite.AllowAssemblies`, or the trees render bare.
 - Post-process exposure min/max brightness are luminance values, not EV; setting them high makes the game look
   like night.
