@@ -22,7 +22,14 @@ static int GLeg = 0;
 
 static std::map<std::pair<int, int>, int> Scan(FSetup S, double X, double Y, double MinX)
 {
-	const std::vector<FAttractor> Machines = {{{X, Y, S.Machines[0].CoreHeight}, S.Machines[0].Strength, S.Machines[0].Range}};
+	std::vector<FAttractor> Machines = {{{X, Y, S.Machines[0].CoreHeight}, S.Machines[0].Strength, S.Machines[0].Range}};
+	// A hole with two machines: the second stands where GG_FIXED says (x,y), for instance on a weight plate.
+	if (S.Machines.size() > 1 && std::getenv("GG_FIXED"))
+	{
+		double FX = 0, FY = 0;
+		std::sscanf(std::getenv("GG_FIXED"), "%lf,%lf", &FX, &FY);
+		Machines.push_back({{FX, FY, S.Machines[1].CoreHeight}, S.Machines[1].Strength, S.Machines[1].Range});
+	}
 	const double Capture = S.Course.CupCaptureSpeed;
 	// The real cup is taken out of the way so it can't catch anything during the scan.
 	S.Course.Cup = {1e7, 1e7, 0};

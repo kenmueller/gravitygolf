@@ -102,10 +102,22 @@ between holes.** (Keys 1 to 9 now.)
 - **Hole 8 is a choice more than a deduction.** Seven plinths, one right: a player can try them in turn. The lines
   can be reasoned out, but nothing forces it. And its second answer is not pretty: the ball skims the long wall,
   nearly dies, and is reeled through the gap. It passes every check and I would not call it elegant.
-- **Hole 9 is clear rather than hard.** Three plates, read the colours, see the line: most players will have it in
-  a few minutes, and a careless one can try all three. As a last hole it gathers what the course taught; it is
-  not the stumper the course still lacks. Its first draft had a second answer (kill the ball on the south wall and
-  it is reeled through a different plate and gate); moving the plates back from the wall closed it.
+- **Hole 9 is clear rather than hard, and its name oversells it.** Three plates, see which one points at the pad,
+  done: most players will have it in a few minutes, and a careless one can try all three. I tested the stated idea
+  by uncrossing the wires: the answer did not change, because the pad's position alone picks the plate. So the
+  crossing is decoration, which is exactly what my own rule exists to catch. I then tried twice to make it
+  necessary with a second machine (one as the weight on a far plate of the gate's colour, one as the engine) and
+  both failed for the same reason: once the right gate is open the target is either in a straight line, so the
+  engine is not needed, or it needs a turn at speed, which gives a handful of working swings. The hole that ships
+  is the proven single-machine one, described truthfully in its course file. As a last hole it gathers what the
+  course taught; it is not the stumper the course still lacks. Its first draft also had a second answer (kill the
+  ball on the south wall and it is reeled through a different plate and gate); moving the plates back closed it.
+- **The deeper finding, after five failed designs this session:** in this physics the forgiving move is a straight
+  reel (ball, machine, target in a line), and a straight reel from where the ball lies never needs the machine for
+  direction. Turning the ball is what makes a machine necessary, and turning is fiddly unless walls funnel it or the
+  ball is first killed against a wall. Harder holes need either a new tool that turns the ball reliably (a deflector,
+  a rail, a one-way gate) or holes built around the kill-and-collect move, taught on purpose. That is a design
+  decision worth a conversation.
 - **Three other designs failed first.** A machine pinned to a weight plate that must also bend the ball is too
   fiddly (no cup position gets twelve working swings). Sand cannot pass a ball from one machine to another (a
   stopped ball is never pulled, and sand holds harder than any machine pulls). A three-swing finale passed the

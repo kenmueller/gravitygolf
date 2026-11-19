@@ -180,6 +180,75 @@ static bool SolveLeg(const FSetup& S, const FLeg& Leg, int LegIndex, const char*
 		std::printf("  SOLVABLE: FAIL (no intended solution given for this leg)\n");
 		return false;
 	}
+	if (!S.Plinths.empty() && S.Machines.size() == 2)
+	{
+		// Plinths make placement a choice among a few spots, so every choice can be tried: each way of standing the
+		// two machines on two different plinths. The intended one must work with room to spare, and few others may.
+		struct FPair
+		{
+			size_t A, B;
+			int Swings;
+			double Yaw, Power;
+		};
+		std::vector<FPair> Pairs;
+		for (size_t A = 0; A < S.Plinths.size(); ++A)
+		{
+			for (size_t B = 0; B < S.Plinths.size(); ++B)
+			{
+				if (A != B)
+				{
+					Pairs.push_back({A, B, 0, 0, 0});
+				}
+			}
+		}
+		std::atomic<size_t> Next{0};
+		std::vector<std::thread> Workers;
+		for (unsigned T = 0; T < std::max(1u, std::thread::hardware_concurrency()); ++T)
+		{
+			Workers.emplace_back([&]() {
+				for (size_t I = Next++; I < Pairs.size(); I = Next++)
+				{
+					FPair& Pair = Pairs[I];
+					const std::vector<FAttractor> Machines = {
+						{{S.Plinths[Pair.A].X, S.Plinths[Pair.A].Y, S.Machines[0].CoreHeight}, S.Machines[0].Strength, S.Machines[0].Range},
+						{{S.Plinths[Pair.B].X, S.Plinths[Pair.B].Y, S.Machines[1].CoreHeight}, S.Machines[1].Strength, S.Machines[1].Range}};
+					Pair.Swings = CountSolutions(S, Leg, Machines, 1.0, 0.025, &Pair.Yaw, &Pair.Power);
+				}
+			});
+		}
+		for (std::thread& Worker : Workers)
+		{
+			Worker.join();
+		}
+		std::sort(Pairs.begin(), Pairs.end(), [](const FPair& A, const FPair& B) { return A.Swings > B.Swings; });
+		int Working = 0;
+		int Intended = 0;
+		for (const FPair& Pair : Pairs)
+		{
+			Working += Pair.Swings > 0;
+			const bool bIntended = std::fabs(S.Plinths[Pair.A].X - Hint->Spots[0].X) < 1 && std::fabs(S.Plinths[Pair.A].Y - Hint->Spots[0].Y) < 1
+				&& std::fabs(S.Plinths[Pair.B].X - Hint->Spots[1].X) < 1 && std::fabs(S.Plinths[Pair.B].Y - Hint->Spots[1].Y) < 1;
+			if (bIntended)
+			{
+				Intended = Pair.Swings;
+			}
+			if (Pair.Swings > 0 && (GListAll || bIntended || &Pair - &Pairs[0] < 6))
+			{
+				std::printf("    machines at (%5.0f, %5.0f) and (%5.0f, %5.0f): %4d swings work, e.g. yaw %6.1f power %.3f%s\n", S.Plinths[Pair.A].X,
+					S.Plinths[Pair.A].Y, S.Plinths[Pair.B].X, S.Plinths[Pair.B].Y, Pair.Swings, Pair.Yaw, Pair.Power, bIntended ? "   <- intended" : "");
+			}
+		}
+		const double Share = Pairs.empty() ? 0.0 : static_cast<double>(Working) / Pairs.size();
+		std::vector<FAttractor> Machines;
+		for (size_t M = 0; M < 2; ++M)
+		{
+			Machines.push_back({{Hint->Spots[M].X, Hint->Spots[M].Y, S.Machines[M].CoreHeight}, S.Machines[M].Strength, S.Machines[M].Range});
+		}
+		const bool bExact = Reaches(S, Leg, Machines, Hint->Yaw, Hint->Power);
+		std::printf("  SOLVABLE: %d of %zu ways to stand the machines work (%.0f%%, need under 35%%); the intended way has %d swings (need 12+); its recorded swing %s\n",
+			Working, Pairs.size(), Share * 100.0, Intended, bExact ? "works" : "DOES NOT WORK");
+		return bPass && Intended >= 12 && Share < 0.35 && bExact;
+	}
 	std::vector<FAttractor> Machines;
 	for (size_t M = 0; M < S.Machines.size(); ++M)
 	{

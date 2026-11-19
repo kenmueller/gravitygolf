@@ -1,15 +1,21 @@
 #!/usr/bin/env python3
 """Hole 9, Crossed Wires. The last hole.
 
-THE IDEA: "a weight opens a gate, a machine pulls along a line: find the plate whose line runs through its own
-gate." Two walls cross the hall, each with three gates of light, each gate a different colour. In front of each wall
-lie three heavy plates in the same three colours: a plate holds open the gate of its colour for as long as a machine
-stands on it. There is one machine. Standing on a plate it does two things at once: it opens that plate's gate, and it
-draws the ball in and lets it go along the line from the ball through itself. The wiring is crossed, so for two of
-the three plates that line ends at a gate the plate does not open. One plate's line runs through its own gate.
+THE IDEA: "the weight is also the engine." Two walls cross the hall, each with three gates of light, each gate a
+different colour. In front of each wall lie three heavy plates in the same three colours: a plate holds open the gate
+of its colour for as long as a machine stands on it. There is one machine. Standing on a plate it does two things at
+once: it opens that plate's gate, and it draws the ball in and lets it go along the line from the ball through
+itself. Only one plate's line runs through the gate it opens and on to the target.
 
-Everything the course has taught is in it: the pull (1), the pad (2), the plate and gate (4), the weight (7), the
-plinths and the line (8). And nothing here is a matter of aim: any soft swing toward the right plate goes in.
+This is the hole that hole 7 was meant to be. Everything the course taught is in it: the pull (1), the pad (2), the
+plate and gate (4), the weight (7), the plinths and the line (8). Nothing here is a matter of aim: any soft swing
+toward the right plate goes in.
+
+WHAT THE CROSSED WIRING DOES AND DOES NOT DO (tested, by my own rule): with the wiring uncrossed the answer is the
+same plate. The target's position alone singles it out, because only one plate's line leads there. The crossing is
+there for the eye: the two wrong plates visibly open gates their own lines do not reach. Three designs that tried to
+make the crossing necessary failed (see docs/DEVLOG.md): once the right gate is open the target is either in a
+straight line from the ball, so nothing needs a second machine, or it needs a turn at speed, which is fiddly.
 """
 
 import os

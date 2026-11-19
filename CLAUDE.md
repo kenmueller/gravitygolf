@@ -185,13 +185,20 @@ console and read the pass list in the log before guessing.
   rectangles that never overlap, sand included, so its sand works.
 - Keys are not axes: `BindAxisKey(EKeys::W, ...)` trips an engine ensure at startup. Read W A S D with
   `IsInputKeyDown` in Tick.
+- The forgiving move in this physics is a straight reel: ball, machine and target in one line (hundreds of working
+  swings). But a straight reel from where the ball lies never needs the machine for direction: if the line is open
+  a plain putt does it. A machine is necessary only where the ball must turn (fiddly: a dozen swings) or where it
+  also opens the way (a weight plate on the line: hole 9). `Tests/Sim/solve.sh` now tries every pair of plinths on
+  a two-machine hole with plinths; `cupscan.sh` takes `GG_LEG` and `GG_FIXED=x,y` (a second machine's spot).
 - Design notes from holes that did not work. (1) A machine pinned to one spot (a weight plate) that also has to bend
   the ball is too fiddly: in open ground at most a dozen swings cross any one square slowly enough to drop, and the
   proof wants twelve that sink. Forgiving holes come from the player choosing the spot, or from walls that funnel.
   (2) Sand cannot hand a ball from one machine to the next: a ball that has stopped is not "approaching", so nothing
   pulls it, and sand's hold (882 cm/s2) is stronger than any pull (420). (3) An attractor never pulls a ball at rest.
 - Adding a hole: its course and level scripts, an entry in `UGGSave::Holes()` (GGSave.cpp), the previous course's
-  `next_level`, and the level lists in `Tools/smoke.sh`, `Tools/perf.sh`, `Tools/regen.sh` and `Tools/web.sh`.
+  `next_level`, the level lists in `Tools/smoke.sh`, `Tools/perf.sh`, `Tools/regen.sh`, `Tools/web.sh` (MAPS) and
+  `Tools/webtest.sh` (tour), a `hole-<Level>` fixture in `Build/Wasm/fixtures.json`, a number key in GGGolfer, and
+  the table in `docs/VISION.md`. The ending card appears on whichever hole has no `next_level`.
 - Test a hole's stated idea, not only the hole: change what the idea depends on (move the cup, hold the gate open)
   and check the proof changes. Hole 6's timed gate turned out to be decoration this way.
 - An attractor is also a cannon: a ball tapped toward it is drawn in and released along the line through it.
