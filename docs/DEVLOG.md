@@ -158,8 +158,10 @@ between holes, 0 is hole 10, minus is 11, equals is 12 and the left bracket is 1
   I had written could not have caught it; it has that case now, with a control beside it.
 - *After You* passed its proof on the first design, which no hole since the fourth has done. Either the planner
   makes design easier (it tells me at once whether an order exists) or the hole is simpler than I think. Its second
-  swing has 15 working swings, near the floor of 12. Its look is the weakest of the thirteen: the hall at noon is a
-  beige floor under a plain blue sky, and the gates' colours wash out in sunlight.
+  swing has 15 working swings, near the floor of 12. Its first look was the weakest of the thirteen (the hall at
+  noon: a beige floor under a plain blue sky, the gates washed out), so it was relit as evening: a low amber sun
+  from the side, long shadows, the gates the brightest things in the picture. Better, but the near half of the
+  first yard now lies in the south wall's shadow.
 - *Frame rates* for the two newest holes read exactly 60.0 with every frame at 16.7 ms: the session had become
   capped at 60 (the GPU time was 12 ms, and Lantern Court, re-measured beside them, read 60.0 too, an hour after
   reading 76). I could not find what capped it; the screen may have gone to sleep. They are not slower than their
