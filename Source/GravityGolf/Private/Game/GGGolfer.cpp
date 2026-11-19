@@ -81,8 +81,6 @@ void AGGGolfer::SetupPlayerInputComponent(UInputComponent* Input)
 	Input->BindKey(EKeys::LeftMouseButton, IE_Pressed, this, &AGGGolfer::SwingPressed);
 	Input->BindKey(EKeys::LeftMouseButton, IE_Released, this, &AGGGolfer::SwingReleased);
 	Input->BindKey(EKeys::E, IE_Pressed, this, &AGGGolfer::Interact);
-	Input->BindKey(EKeys::MouseScrollUp, IE_Pressed, this, &AGGGolfer::LoftUp);
-	Input->BindKey(EKeys::MouseScrollDown, IE_Pressed, this, &AGGGolfer::LoftDown);
 	Input->BindKey(EKeys::R, IE_Pressed, this, &AGGGolfer::ResetHole);
 	Input->BindKey(EKeys::B, IE_Pressed, this, &AGGGolfer::GoToBall);
 	Input->BindKey(EKeys::RightMouseButton, IE_Pressed, this, &AGGGolfer::WatchPressed);
@@ -351,7 +349,7 @@ void AGGGolfer::Tick(float DeltaSeconds)
 	if (IsCarrying())
 	{
 		// Carried at the hip, a little ahead.
-		C->MoveMachine(Carried, HoldPoint() - FVector(0, 0, 150.0), true);
+		C->MoveMachine(Carried, HoldPoint() - FVector(0, 0, 95.0), true);
 	}
 
 	// Hold right mouse to watch the ball through a long lens.

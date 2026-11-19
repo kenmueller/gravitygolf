@@ -75,6 +75,22 @@ void AGGGameMode::BeginPlay()
 	FParse::Value(FCommandLine::Get(), TEXT("GGCaptureDelay="), CaptureDelay);
 }
 
+void AGGGameMode::GGShot(float Yaw, float Power)
+{
+	if (Course)
+	{
+		Course->Swing(FRotator(0.f, Yaw, 0.f).Vector(), Power);
+	}
+}
+
+void AGGGameMode::GGMachine(float X, float Y, float Z)
+{
+	if (Course)
+	{
+		Course->MoveMachine(0, FVector(X, Y, Z), false);
+	}
+}
+
 void AGGGameMode::PlacePlayer()
 {
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
@@ -113,7 +129,7 @@ void AGGGameMode::Tick(float DeltaSeconds)
 	if (bHasShot && !bShotFired && Elapsed >= ShotDelay && Course)
 	{
 		bShotFired = true;
-		Course->Swing(FRotator(Shot.Y, Shot.X, 0.0).Vector(), Shot.Z);
+		Course->Swing(FRotator(0.0, Shot.X, 0.0).Vector(), Shot.Z);
 	}
 
 	if (!CapturePath.IsEmpty())

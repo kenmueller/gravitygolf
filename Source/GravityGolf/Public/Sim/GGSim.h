@@ -72,8 +72,6 @@ struct FPhysics
 	double AttractorSoftening = 80.0;
 	/** Normal impact speed below which the ball settles instead of bouncing. */
 	double BounceThreshold = 60.0;
-	/** Fraction of tangential speed kept through a bounce. */
-	double BounceGrip = 0.8;
 	double RestSpeed = 6.0;
 	double RestTime = 0.35;
 	double CupCaptureSpeed = 320.0;

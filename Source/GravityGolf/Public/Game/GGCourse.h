@@ -95,6 +95,8 @@ private:
 	EGGPhase CurrentPhase = EGGPhase::Ready;
 	GG::FVec3 Lie;
 	GG::FVec3 PreviousPosition;
+	GG::FVec3 RestPosition;
+	double CoreHeight = 45.0;
 	double Accumulator = 0.0;
 	double PhaseTime = 0.0;
 	int32 StrokeCount = 0;

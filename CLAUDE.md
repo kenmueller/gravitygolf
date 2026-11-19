@@ -13,6 +13,21 @@ A puzzle golf game on tiny solar systems, built in **Unreal Engine 5.9** (previe
 - **Latest and experimental.** Prefer the newest engine features. Research current releases rather than relying on
   memory.
 
+## Puzzle law (Ken's rule)
+
+This is a puzzle game. The player must think. Every hole is designed so its components are **necessary**:
+
+1. **Impossible without the tools.** With no machine placed, no swing sinks the ball. Banks, lucky bounces and
+   brute force must all fail.
+2. **Solvable by an idea.** With the tools placed well, a comfortable range of swings sinks it. The hard part is
+   working out *where things go and why*, never pixel-perfect aim.
+3. **Proven, not assumed.** `Tests/Sim/solve.sh <course>` brute-forces both claims with the real physics. A hole
+   doesn't ship until it prints PASS. Re-run it after any change to the course or the physics.
+4. **One swing.** Each attempt is a single swing from the tee. If the ball stops anywhere but the cup, it returns.
+   (Multiple strokes would let players walk the ball around every obstacle.)
+5. **The club is a putter.** The ball rolls. Height, curves and anything else come from the machines.
+6. **One new idea per hole**, taught by the level itself.
+
 ## Critique everything (Ken's rule)
 
 Claude is the only developer, so nobody else will catch a weak decision. After every meaningful step, critique it

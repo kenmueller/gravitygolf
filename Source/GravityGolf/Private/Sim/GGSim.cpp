@@ -24,6 +24,10 @@ struct FSurfaceProps
 	double Restitution;
 	/** Rolling resistance as a multiple of the force pressing the ball into the surface. */
 	double Rolling;
+	/** Fraction of tangential speed kept through a bounce. */
+	double Grip;
+	/** Speed lost per second while touching, whatever the load. Soft surfaces (hedges, sand) grab the ball. */
+	double Drag;
 };
 
 FSurfaceProps PropsFor(ESurface Surface)
@@ -31,16 +35,16 @@ FSurfaceProps PropsFor(ESurface Surface)
 	switch (Surface)
 	{
 	case ESurface::Green:
-		return {0.3, 0.09};
+		return {0.3, 0.09, 0.8, 0.0};
 	case ESurface::Stone:
-		return {0.55, 0.06};
+		return {0.55, 0.06, 0.8, 0.0};
 	case ESurface::Sand:
-		return {0.05, 0.9};
+		return {0.05, 0.9, 0.1, 14.0};
 	case ESurface::Ice:
-		return {0.5, 0.01};
+		return {0.5, 0.01, 0.95, 0.0};
 	case ESurface::Grass:
 	default:
-		return {0.35, 0.25};
+		return {0.35, 0.25, 0.8, 0.0};
 	}
 }
 
@@ -184,7 +188,7 @@ void FSim::SubStep(double H, std::vector<FEvent>* Events)
 			if (Impact > Physics.BounceThreshold)
 			{
 				NewVn = Impact * Surface.Restitution;
-				Tangent = Tangent * Physics.BounceGrip;
+				Tangent = Tangent * Surface.Grip;
 				Emit(Events, EEventType::Bounce, Box.Surface, Impact, B.Position);
 			}
 			else if (!bWasOnGround && N.Z > 0.5)
@@ -201,6 +205,12 @@ void FSim::SubStep(double H, std::vector<FEvent>* Events)
 			const double Speed = Length(Tangent);
 			const double Decel = Surface.Rolling * Load * H;
 			Tangent = Speed > Decel ? Tangent * ((Speed - Decel) / Speed) : FVec3{};
+		}
+
+		if (Surface.Drag > 0.0)
+		{
+			const double Keep = 1.0 - Surface.Drag * H;
+			Tangent = Tangent * (Keep > 0.0 ? Keep : 0.0);
 		}
 
 		B.Velocity = Tangent + N * NewVn;

@@ -43,22 +43,31 @@ is a puzzle campaign. With friends it plays like Golf With Your Friends, with ev
 
 ## The game
 
-### Core loop: walk, place, swing, watch
-- **Walk.** Each hole is a self-contained garden: a puzzle course inside a vast landscape. Walk it on foot to read
-  the slopes, hazards and machinery.
-- **Place.** You carry a handful of artifacts (attractors, repulsors and later inventions) and set them on the
-  course. Some machinery is fixed in place.
-- **Swing.** From beside the ball: look to aim, hold to set power, release. A short guide line shows the start of
-  the path.
-- **Watch.** The camera follows the ball as the machinery bends its flight. The ball comes to rest and you walk to
-  it for the next stroke. Scoring is golf: strokes, par and a medal under par, plus optional relics to collect.
+### Core loop: explore, think, set up, swing
+- **Explore.** Each hole is a self-contained garden. Walk it on foot to find the machines, the gates, the switches
+  and the cup.
+- **Think.** With no machine placed, the cup can't be reached. Work out what the ball has to do and what has to be
+  where for that to happen.
+- **Set up.** Carry the machines into place. Some are locked away, and getting them is part of the puzzle.
+- **Swing.** One swing from the tee with a putter. The ball rolls; everything else comes from the machines. If the
+  ball stops anywhere but the cup, it returns to the tee.
+
+### Difficulty: walkthrough-hard
+Ken's bar: people should need to look up walkthroughs. Hard to figure out, easy to execute.
+- **Tools interact.** Attractor (pulls), repulsor (pushes), plate (changes which way is down in a zone), relay
+  (catches the ball and re-launches it in a pre-set direction), splitter (one ball becomes two), timer gate (opens
+  for a few seconds after the ball crosses a switch).
+- **Scarcity and access.** Fewer machines than the obvious solution needs. Machines locked behind gates only the
+  ball can open. Spots reachable only by using another machine first. The order of operations is a puzzle.
+- **The ball does errands.** In one swing it may have to hit a switch, pass the gate that opened, be caught by a
+  relay and only then reach the cup.
+- **Fairness.** Once the idea is found, the swing is forgiving. The solver requires a wide tolerance.
 
 ### Puzzle design rules
-- Solutions are ideas, not pixel-perfect aims. A server-side solver measures each intended solution's tolerance
-  window and fuzzes for unintended shortcuts.
-- Free retries, and a ghost of your last attempt.
-- Each level is its own idea and its own place. Rules can change per level: gravity sideways, courses on walls,
-  balls that float in water, time that slows in a field.
+- **Necessity:** every hole is impossible without its tools. `Tests/Sim/solve.sh` proves it with the real physics.
+- **Solvability:** the same solver proves a solution exists and measures its tolerance.
+- **One new idea per hole,** taught by the level itself. Later holes combine ideas.
+- Free retries, and a ghost of the last attempt.
 
 ### Levels (each one different)
 | Level | Place | Idea |
@@ -73,17 +82,19 @@ is a puzzle campaign. With friends it plays like Golf With Your Friends, with ev
 | Floating Gardens | Islands in the sky around a gravity core | Orbits: the 2022 game's soul as the finale |
 
 ### Playing together
-- **Same Hole:** everyone plays the same garden at once, on foot, with no turns. Every solution replays together at
-  the end of the hole.
-- **Chaos Field:** everyone's machinery affects everyone's ball.
-- **Co-op:** split toolkits, so players have to talk.
-- **Build-off, Daily Hole and Streamer Cup:** as in the first proposal.
-- **Avatars (required):** players always see each other. Everyone has a full-body character that walks, carries
-  machinery and swings, with emotes and cosmetics. Unreal's free MetaHuman and mannequin animation sets cover the
-  base; the style is original.
-- **Bots, like CS:GO:** easy, medium and hard bots fill empty slots or give a solo player opponents. They walk the
-  course as avatars too. Because the simulation is deterministic, a bot searches shots with the real physics, then
-  adds aim and power error by difficulty: hard bots find near-optimal lines, easy bots make believable mistakes.
+- **Co-op, the main multiplayer mode (2 players, later up to 4).** Partners solve the same hole together, like
+  Talos-style co-op. Holes are built so one person can't do it alone:
+  - Machines that must be held or operated while the other swings.
+  - Split courts: each partner can only reach half the garden, and machines are passed across gaps (or by gravity).
+  - Two balls, two cups, one shared field: each partner's setup affects the other's shot.
+  - Timed handoffs: one partner's ball opens a gate for the other's.
+- **Versus.** Two teams (or solo players) race to solve the same hole in mirrored gardens. First to sink it wins.
+- **Avatars (required):** players always see each other: full-body characters that walk, carry machines and swing,
+  with emotes and cosmetics.
+- **Bots, like CS:GO:** easy, medium and hard partners or opponents fill empty slots. A bot plans with the same
+  solver that proves the holes, then acts it out on foot; difficulty sets how fast and how reliably it finds the
+  idea. A co-op bot can also take instructions ("hold that", "stand there").
+- **Daily Hole, Build-off, Streamer Cup:** as in the first proposal.
 
 ### Beautiful
 - **Look:** monumental and serene. Sunlit natural landscapes inhabited by vast, weathered structures of an unknown

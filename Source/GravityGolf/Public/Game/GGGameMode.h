@@ -28,6 +28,14 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 
+	/** Console: swing with a yaw in degrees and power 0..1. Lets automated checks replay solver results. */
+	UFUNCTION(Exec)
+	void GGShot(float Yaw, float Power);
+
+	/** Console: stand machine 0 at a ground position. */
+	UFUNCTION(Exec)
+	void GGMachine(float X, float Y, float Z);
+
 private:
 	void PlacePlayer();
 

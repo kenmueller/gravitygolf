@@ -18,9 +18,8 @@ DEFINE_LOG_CATEGORY_STATIC(LogGGCourse, Log, All);
 
 namespace
 {
-constexpr double PenaltyPause = 1.5;
-/** Height of a machine's field center above its feet. */
-constexpr double CoreHeight = 118.0;
+/** Seconds the ball lies where it stopped before returning to the tee. */
+constexpr double ReturnPause = 1.6;
 
 FVector ToUnreal(GG::FVec3 V)
 {
@@ -68,26 +67,6 @@ GG::ESurface ParseSurface(const FString& Surface)
 	return GG::ESurface::Stone;
 }
 
-FString ScoreName(int32 Strokes, int32 Par)
-{
-	if (Strokes == 1)
-	{
-		return TEXT("Hole in one!");
-	}
-	switch (Strokes - Par)
-	{
-	case -2:
-		return TEXT("Eagle!");
-	case -1:
-		return TEXT("Birdie");
-	case 0:
-		return TEXT("Par");
-	case 1:
-		return TEXT("Bogey");
-	default:
-		return Strokes < Par ? TEXT("Albatross!") : FString::Printf(TEXT("+%d"), Strokes - Par);
-	}
-}
 } // namespace
 
 AGGCourse::AGGCourse()
@@ -143,6 +122,7 @@ bool AGGCourse::Load(const FString& CourseId)
 	{
 		const TSharedPtr<FJsonObject> A = Value->AsObject();
 		const GG::FVec3 Base = ReadVec(A, TEXT("position"));
+		CoreHeight = A->GetNumberField(TEXT("coreHeight"));
 		Attractors.push_back({Base + GG::FVec3{0, 0, CoreHeight}, A->GetNumberField(TEXT("strength")), A->GetNumberField(TEXT("range"))});
 		Movable.Add(A->GetBoolField(TEXT("movable")));
 		MachineBases.Add(ToUnreal(Base));
@@ -252,24 +232,24 @@ void AGGCourse::BuildMachine(int32 Index)
 	{
 		const FRotator Yaw(0.f, 120.f * Leg + 30.f, 0.f);
 		// Each leg leans out from the housing to a foot on the ground.
-		const FVector Top = Yaw.RotateVector(FVector(8.0, 0.0, 78.0));
-		const FVector Foot = Yaw.RotateVector(FVector(42.0, 0.0, 0.0));
+		const FVector Top = Yaw.RotateVector(FVector(7.0, 0.0, CoreHeight - 22.0));
+		const FVector Foot = Yaw.RotateVector(FVector(34.0, 0.0, 0.0));
 		const FVector Axis = (Top - Foot);
 		AddMesh(Cylinder, Iron,
 			FTransform(FRotationMatrix::MakeFromZ(Axis).Rotator(), (Top + Foot) * 0.5, FVector(0.035, 0.035, Axis.Size() / 100.0)),
 			Machine);
 		AddMesh(Sphere, Bronze, FTransform(FRotator::ZeroRotator, Foot + FVector(0, 0, 2.5), FVector(0.07)), Machine);
 	}
-	AddMesh(Cylinder, Bronze, FTransform(FRotator::ZeroRotator, FVector(0, 0, 84.0), FVector(0.26, 0.26, 0.14)), Machine);
-	AddMesh(Cylinder, Iron, FTransform(FRotator::ZeroRotator, FVector(0, 0, 93.0), FVector(0.2, 0.2, 0.05)), Machine);
-	AddMesh(Cylinder, Glow(Color, 25.f), FTransform(FRotator::ZeroRotator, FVector(0, 0, 91.5), FVector(0.27, 0.27, 0.012)), Machine);
+	AddMesh(Cylinder, Bronze, FTransform(FRotator::ZeroRotator, FVector(0, 0, CoreHeight - 19.0), FVector(0.2, 0.2, 0.1)), Machine);
+	AddMesh(Cylinder, Iron, FTransform(FRotator::ZeroRotator, FVector(0, 0, CoreHeight - 12.5), FVector(0.15, 0.15, 0.03)), Machine);
+	AddMesh(Cylinder, Glow(Color, 25.f), FTransform(FRotator::ZeroRotator, FVector(0, 0, CoreHeight - 13.5), FVector(0.21, 0.21, 0.01)), Machine);
 	for (int32 Prong = 0; Prong < 3; ++Prong)
 	{
-		const FVector At = FRotator(0.f, 120.f * Prong + 90.f, 0.f).RotateVector(FVector(17.0, 0.0, 108.0));
-		AddMesh(Cylinder, Bronze, FTransform(FRotator::ZeroRotator, At, FVector(0.025, 0.025, 0.3)), Machine);
+		const FVector At = FRotator(0.f, 120.f * Prong + 90.f, 0.f).RotateVector(FVector(12.0, 0.0, CoreHeight - 2.0));
+		AddMesh(Cylinder, Bronze, FTransform(FRotator::ZeroRotator, At, FVector(0.018, 0.018, 0.2)), Machine);
 	}
 	UStaticMeshComponent* Core = AddMesh(Sphere, Glow(Color, 70.f),
-		FTransform(FRotator::ZeroRotator, FVector(0, 0, CoreHeight), FVector(0.2)), Machine);
+		FTransform(FRotator::ZeroRotator, FVector(0, 0, CoreHeight), FVector(0.14)), Machine);
 	Core->SetCastShadow(false);
 	MachineCores.Add(Core);
 
@@ -402,15 +382,17 @@ void AGGCourse::FinishStroke(GG::EBallState State)
 	{
 	case GG::EBallState::Sunk:
 		CurrentPhase = EGGPhase::Sunk;
-		Status = ScoreName(StrokeCount, Course.Par);
+		Status = StrokeCount == 1 ? TEXT("Solved in one attempt!") : FString::Printf(TEXT("Solved in %d attempts"), StrokeCount);
 		break;
 	case GG::EBallState::AtRest:
-		Lie = Sim.Ball().Position;
-		CurrentPhase = EGGPhase::Ready;
+		// One swing per attempt: a ball that stops short goes back to the tee.
+		RestPosition = Sim.Ball().Position;
+		Status = TEXT("Not in. Back to the tee.");
+		CurrentPhase = EGGPhase::Penalty;
 		break;
 	default:
-		++StrokeCount;
-		Status = TEXT("Lost ball  +1");
+		RestPosition = Sim.Ball().Position;
+		Status = TEXT("Lost. Back to the tee.");
 		CurrentPhase = EGGPhase::Penalty;
 		break;
 	}
@@ -458,8 +440,9 @@ void AGGCourse::Tick(float DeltaSeconds)
 			Trail.RemoveAt(0);
 		}
 	}
-	else if (CurrentPhase == EGGPhase::Penalty && PhaseTime > PenaltyPause)
+	else if (CurrentPhase == EGGPhase::Penalty && PhaseTime > ReturnPause)
 	{
+		Status.Reset();
 		CurrentPhase = EGGPhase::Ready;
 		Trail.Reset();
 	}
@@ -470,7 +453,7 @@ void AGGCourse::Tick(float DeltaSeconds)
 	const float Pulse = 1.f + 0.08f * FMath::Sin(GetWorld()->GetTimeSeconds() * 2.2f);
 	for (UStaticMeshComponent* Core : MachineCores)
 	{
-		Core->SetRelativeScale3D(FVector(0.2f * Pulse));
+		Core->SetRelativeScale3D(FVector(0.14f * Pulse));
 	}
 
 	// The ball draws its path in light, fading behind it.
@@ -492,6 +475,10 @@ FVector AGGCourse::BallLocation() const
 	if (CurrentPhase == EGGPhase::Sunk)
 	{
 		return ToUnreal(Sim.Ball().Position);
+	}
+	if (CurrentPhase == EGGPhase::Penalty)
+	{
+		return ToUnreal(RestPosition);
 	}
 	return ToUnreal(Lie);
 }

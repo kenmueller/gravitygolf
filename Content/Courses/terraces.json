@@ -1,7 +1,7 @@
 {
 	"id": "terraces",
 	"name": "The Terraces",
-	"par": 3,
+	"par": 1,
 	"ballRadius": 6,
 	"gravity": [
 		0,
@@ -19,418 +19,43 @@
 	},
 	"cup": {
 		"position": [
-			7600,
-			500,
-			-640
+			3600,
+			0,
+			0
 		],
 		"radius": 18
+	},
+	"plaza": {
+		"position": [
+			3600,
+			-900,
+			0
+		],
+		"radius": 700
 	},
 	"attractors": [
 		{
 			"position": [
-				2300,
-				700,
-				9
+				1100,
+				800,
+				0
 			],
 			"strength": 135000000.0,
-			"range": 1300,
+			"range": 1500,
+			"coreHeight": 45,
 			"movable": true
 		}
 	],
 	"boxes": [
 		{
-			"name": "Terrace1_Lawn",
+			"name": "Lawn",
 			"center": [
-				1500.0,
+				3200.0,
 				0,
 				-15
 			],
 			"size": [
-				3000,
-				2600,
-				30
-			],
-			"surface": "grass",
-			"look": "grass",
-			"shape": "box"
-		},
-		{
-			"name": "Terrace1_Body",
-			"center": [
-				1500.0,
-				0,
-				-1530
-			],
-			"size": [
-				3000,
-				2840,
-				3000
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Terrace1_ParapetL",
-			"center": [
-				1500.0,
-				-1360.0,
-				40
-			],
-			"size": [
-				3000,
-				120,
-				140
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Terrace1_ParapetR",
-			"center": [
-				1500.0,
-				1360.0,
-				40
-			],
-			"size": [
-				3000,
-				120,
-				140
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Terrace1_Step0",
-			"center": [
-				3022.5,
-				-1050.0,
-				-20
-			],
-			"size": [
-				45,
-				300,
-				40
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Terrace1_Step1",
-			"center": [
-				3067.5,
-				-1050.0,
-				-60
-			],
-			"size": [
-				45,
-				300,
-				40
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Terrace1_Step2",
-			"center": [
-				3112.5,
-				-1050.0,
-				-100
-			],
-			"size": [
-				45,
-				300,
-				40
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Terrace1_Step3",
-			"center": [
-				3157.5,
-				-1050.0,
-				-140
-			],
-			"size": [
-				45,
-				300,
-				40
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Terrace1_Step4",
-			"center": [
-				3202.5,
-				-1050.0,
-				-180
-			],
-			"size": [
-				45,
-				300,
-				40
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Terrace1_Step5",
-			"center": [
-				3247.5,
-				-1050.0,
-				-220
-			],
-			"size": [
-				45,
-				300,
-				40
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Terrace1_Step6",
-			"center": [
-				3292.5,
-				-1050.0,
-				-260
-			],
-			"size": [
-				45,
-				300,
-				40
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Terrace1_Step7",
-			"center": [
-				3337.5,
-				-1050.0,
-				-300
-			],
-			"size": [
-				45,
-				300,
-				40
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Terrace2_Lawn",
-			"center": [
-				4500.0,
-				0,
-				-335
-			],
-			"size": [
-				3000,
-				2600,
-				30
-			],
-			"surface": "grass",
-			"look": "grass",
-			"shape": "box"
-		},
-		{
-			"name": "Terrace2_Body",
-			"center": [
-				4500.0,
-				0,
-				-1850
-			],
-			"size": [
-				3000,
-				2840,
-				3000
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Terrace2_ParapetL",
-			"center": [
-				4500.0,
-				-1360.0,
-				-280
-			],
-			"size": [
-				3000,
-				120,
-				140
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Terrace2_ParapetR",
-			"center": [
-				4500.0,
-				1360.0,
-				-280
-			],
-			"size": [
-				3000,
-				120,
-				140
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Terrace2_Step0",
-			"center": [
-				6022.5,
-				-1050.0,
-				-340
-			],
-			"size": [
-				45,
-				300,
-				40
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Terrace2_Step1",
-			"center": [
-				6067.5,
-				-1050.0,
-				-380
-			],
-			"size": [
-				45,
-				300,
-				40
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Terrace2_Step2",
-			"center": [
-				6112.5,
-				-1050.0,
-				-420
-			],
-			"size": [
-				45,
-				300,
-				40
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Terrace2_Step3",
-			"center": [
-				6157.5,
-				-1050.0,
-				-460
-			],
-			"size": [
-				45,
-				300,
-				40
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Terrace2_Step4",
-			"center": [
-				6202.5,
-				-1050.0,
-				-500
-			],
-			"size": [
-				45,
-				300,
-				40
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Terrace2_Step5",
-			"center": [
-				6247.5,
-				-1050.0,
-				-540
-			],
-			"size": [
-				45,
-				300,
-				40
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Terrace2_Step6",
-			"center": [
-				6292.5,
-				-1050.0,
-				-580
-			],
-			"size": [
-				45,
-				300,
-				40
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Terrace2_Step7",
-			"center": [
-				6337.5,
-				-1050.0,
-				-620
-			],
-			"size": [
-				45,
-				300,
-				40
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "box"
-		},
-		{
-			"name": "Terrace3_Lawn",
-			"center": [
-				7500.0,
-				0,
-				-655
-			],
-			"size": [
-				3000,
+				6400,
 				2600,
 				30
 			],
@@ -439,14 +64,14 @@
 			"shape": "box"
 		},
 		{
-			"name": "Terrace3_Body",
+			"name": "Body",
 			"center": [
-				7500.0,
+				3200.0,
 				0,
-				-2170
+				-1530
 			],
 			"size": [
-				3000,
+				6400,
 				2840,
 				3000
 			],
@@ -455,63 +80,79 @@
 			"shape": "box"
 		},
 		{
-			"name": "Terrace3_ParapetL",
+			"name": "HedgeL",
 			"center": [
-				7500.0,
-				-1360.0,
-				-600
+				3200.0,
+				-1240.0,
+				70
 			],
 			"size": [
-				3000,
+				6400,
 				120,
 				140
 			],
-			"surface": "stone",
-			"look": "stone",
+			"surface": "sand",
+			"look": "hedge",
 			"shape": "box"
 		},
 		{
-			"name": "Terrace3_ParapetR",
+			"name": "HedgeR",
 			"center": [
-				7500.0,
-				1360.0,
-				-600
+				3200.0,
+				1240.0,
+				70
 			],
 			"size": [
-				3000,
+				6400,
 				120,
 				140
 			],
-			"surface": "stone",
-			"look": "stone",
+			"surface": "sand",
+			"look": "hedge",
 			"shape": "box"
 		},
 		{
-			"name": "Ruin_Wall",
+			"name": "HedgeEnd",
 			"center": [
-				4500,
-				-350,
-				130
+				6340,
+				0,
+				70
 			],
 			"size": [
-				180,
-				1900,
-				900
+				120,
+				2600,
+				140
 			],
-			"surface": "stone",
-			"look": "stone",
+			"surface": "sand",
+			"look": "hedge",
 			"shape": "box"
 		},
 		{
-			"name": "Ruin_Wall_Stub",
+			"name": "HedgeStart",
 			"center": [
-				4500,
-				1150,
-				-210
+				60,
+				0,
+				70
 			],
 			"size": [
-				180,
-				300,
+				120,
+				2600,
+				140
+			],
+			"surface": "sand",
+			"look": "hedge",
+			"shape": "box"
+		},
+		{
+			"name": "Court_Back",
+			"center": [
+				2960.0,
+				0,
+				110
+			],
+			"size": [
+				120,
+				1080,
 				220
 			],
 			"surface": "stone",
@@ -519,116 +160,84 @@
 			"shape": "box"
 		},
 		{
-			"name": "Green_Backstop",
+			"name": "Court_Front",
 			"center": [
-				9060,
+				4240.0,
 				0,
-				-580
+				110
 			],
 			"size": [
 				120,
-				2840,
-				180
+				1080,
+				220
 			],
 			"surface": "stone",
 			"look": "stone",
 			"shape": "box"
 		},
 		{
-			"name": "Column0",
+			"name": "Court_SideL",
 			"center": [
-				8850,
-				-1100,
-				-315.0
+				3600.0,
+				-480.0,
+				110
 			],
 			"size": [
-				110,
-				110,
-				650
+				1400,
+				120,
+				220
 			],
 			"surface": "stone",
 			"look": "stone",
-			"shape": "cylinder"
+			"shape": "box"
 		},
 		{
-			"name": "Column1",
+			"name": "Court_SideR_Near",
 			"center": [
-				8850,
-				-660,
-				-510.0
+				3150.0,
+				480.0,
+				110
 			],
 			"size": [
-				110,
-				110,
-				260
+				500,
+				120,
+				220
 			],
 			"surface": "stone",
 			"look": "stone",
-			"shape": "cylinder"
+			"shape": "box"
 		},
 		{
-			"name": "Column2",
+			"name": "Court_SideR_Far",
 			"center": [
-				8850,
-				-220,
-				-315.0
+				4050.0,
+				480.0,
+				110
 			],
 			"size": [
-				110,
-				110,
-				650
+				500,
+				120,
+				220
 			],
 			"surface": "stone",
 			"look": "stone",
-			"shape": "cylinder"
+			"shape": "box"
 		},
 		{
-			"name": "Column3",
+			"name": "Wing",
 			"center": [
-				8850,
-				220,
-				-315.0
+				2960.0,
+				720.0,
+				110
 			],
 			"size": [
-				110,
-				110,
-				650
+				120,
+				360,
+				220
 			],
 			"surface": "stone",
 			"look": "stone",
-			"shape": "cylinder"
-		},
-		{
-			"name": "Column4",
-			"center": [
-				8850,
-				660,
-				-510.0
-			],
-			"size": [
-				110,
-				110,
-				260
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "cylinder"
-		},
-		{
-			"name": "Column5",
-			"center": [
-				8850,
-				1100,
-				-315.0
-			],
-			"size": [
-				110,
-				110,
-				650
-			],
-			"surface": "stone",
-			"look": "stone",
-			"shape": "cylinder"
+			"shape": "box"
 		}
 	]
 }
