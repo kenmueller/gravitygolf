@@ -492,6 +492,15 @@ void AGGHUD::MenuMove(int32 Rows, int32 Columns)
 	{
 		RunAction(Items[Selected], Columns);
 	}
+	else if (Columns != 0 && MenuPerColumn > 0)
+	{
+		// A list in two columns: left and right step across to the same row of the other column.
+		const int32 Across = Selected + Columns * MenuPerColumn;
+		if (Items.IsValidIndex(Across) && Items[Across].bEnabled)
+		{
+			Selected = Across;
+		}
+	}
 }
 
 void AGGHUD::MenuActivate()
@@ -880,15 +889,32 @@ void AGGHUD::DrawMenu()
 		Top = Canvas->ClipY * 0.27f;
 	}
 
-	// Long lists (the Workshop's menu) take smaller rows so they fit the screen.
-	const float Room = Canvas->ClipY * 0.9f - Top;
-	const float Row = FMath::Min((bTouch ? 84.f : 66.f) * S, Room / FMath::Max(Items.Num(), 1));
-	const float Width = FMath::Min(760.f * S, Canvas->ClipX * 0.92f);
-	const float Left = CX - Width * 0.5f;
-	for (int32 I = 0; I < Items.Num(); ++I)
+	// A long list (thirteen holes, a shelf of Workshop designs) goes in two columns, with Back centred under both,
+	// rather than in one column of rows too thin to read or to put a finger on. (On a phone held sideways the hole
+	// list's rows were 17 pixels tall, under three millimetres.)
+	const int32 Count = Items.Num();
+	const float Comfortable = (bTouch ? 58.f : 40.f) * S;
+	const bool bTwo = Count >= 8 && (Canvas->ClipY * 0.9f - Top) / Count < Comfortable;
+	const bool bBackBelow = bTwo && Items.Last().Action == TEXT("Back");
+	const int32 Listed = bBackBelow ? Count - 1 : Count;
+	const int32 PerColumn = bTwo ? (Listed + 1) / 2 : Listed;
+	MenuPerColumn = bTwo ? PerColumn : 0;
+	if (bTwo)
+	{
+		Top = Canvas->ClipY * 0.23f;
+	}
+	const float Room = Canvas->ClipY * (bTouch ? 0.96f : 0.9f) - Top;
+	const float Row = FMath::Min((bTouch ? 84.f : 66.f) * S, Room / FMath::Max(PerColumn + (bBackBelow ? 1 : 0), 1));
+	const float Gap = 28.f * S;
+	const float Width = bTwo ? FMath::Min(720.f * S, (Canvas->ClipX * 0.96f - Gap) * 0.5f) : FMath::Min(760.f * S, Canvas->ClipX * 0.92f);
+	for (int32 I = 0; I < Count; ++I)
 	{
 		FItem& Item = Items[I];
-		const float Y = Top + Row * I;
+		const bool bUnder = bBackBelow && I == Count - 1;
+		const int32 Column = bTwo && !bUnder ? I / PerColumn : 0;
+		const float Left = bUnder || !bTwo ? CX - Width * 0.5f : Column == 0 ? CX - Gap * 0.5f - Width : CX + Gap * 0.5f;
+		const float Middle = Left + Width * 0.5f;
+		const float Y = Top + Row * (bUnder ? PerColumn : bTwo ? I % PerColumn : I);
 		Item.Rect = FBox2D(FVector2D(Left, Y), FVector2D(Left + Width, Y + Row - 6.f * S));
 		const bool bChosen = I == Selected && Item.bEnabled;
 		if (bChosen)
@@ -901,7 +927,7 @@ void AGGHUD::DrawMenu()
 		const float TextY = Y + (Row - 6.f * S) * 0.5f - TextSize * 0.7f;
 		if (Item.Value.IsEmpty())
 		{
-			Label(Item.Label, CX, TextY, TextSize, Color, true, bChosen);
+			Label(Item.Label, Middle, TextY, TextSize, Color, true, bChosen);
 		}
 		else
 		{
@@ -909,7 +935,7 @@ void AGGHUD::DrawMenu()
 			// Values sit in a right-hand column; an arrow each side says they can be changed.
 			const bool bChange = Adjustable(Item);
 			const FString Shown = bChange && bChosen ? FString::Printf(TEXT("<   %s   >"), *Item.Value) : Item.Value;
-			Label(Shown, Left + Width * 0.74f, TextY + TextSize * 0.1f, TextSize * 0.8f, bChosen ? Gold : Color, true);
+			Label(Shown, Left + Width * (bTwo ? 0.8f : 0.74f), TextY + TextSize * 0.1f, TextSize * 0.8f, bChosen ? Gold : Color, true);
 		}
 	}
 

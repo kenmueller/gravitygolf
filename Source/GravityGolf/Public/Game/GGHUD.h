@@ -42,6 +42,8 @@ public:
 	void CloseMenu();
 	/** Move the highlight by rows, or change the highlighted value by columns. */
 	void MenuMove(int32 Rows, int32 Columns);
+	/** Rows in each column when the open menu is laid out in two columns; zero when it is a single column. */
+	int32 MenuPerColumn = 0;
 	void MenuActivate();
 	/** Back one screen; from the pause screen, back to the game. */
 	void MenuBack();

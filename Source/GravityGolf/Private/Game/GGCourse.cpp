@@ -846,9 +846,17 @@ void AGGCourse::BuildMirror(int32 Index)
 	Bronze->SetScalarParameterValue(TEXT("Metallic"), 1.f);
 	Bronze->SetScalarParameterValue(TEXT("Roughness"), 0.38f);
 	UMaterialInstanceDynamic* Glass = UMaterialInstanceDynamic::Create(SurfaceBase, this);
+#if PLATFORM_WASM || PLATFORM_IOS || PLATFORM_ANDROID
+	// The phone renderer (which the web uses) has nothing for a perfect mirror to reflect, and draws one black. There
+	// the glass is a pale sheet instead: it still reads as glass in a frame, which is what the player needs of it.
+	Glass->SetVectorParameterValue(TEXT("BaseColor"), FLinearColor(0.5f, 0.62f, 0.72f));
+	Glass->SetScalarParameterValue(TEXT("Metallic"), 0.f);
+	Glass->SetScalarParameterValue(TEXT("Roughness"), 0.18f);
+#else
 	Glass->SetVectorParameterValue(TEXT("BaseColor"), FLinearColor(0.82f, 0.86f, 0.9f));
 	Glass->SetScalarParameterValue(TEXT("Metallic"), 1.f);
 	Glass->SetScalarParameterValue(TEXT("Roughness"), 0.03f);
+#endif
 
 	USceneComponent* Machine = NewObject<USceneComponent>(this);
 	Machine->SetMobility(EComponentMobility::Movable);

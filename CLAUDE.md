@@ -113,6 +113,7 @@ UE="/Users/Shared/Epic Games/UE_5.9"
 Tests/Sim/run.sh                                             # sim tests, no Unreal needed
 python3 Tools/courses/terraces.py                            # regenerate a course JSON
 Tools/rebuild.sh                                             # close editor, compile C++, restart editor with MCP
+Tools/rebuild.sh only                                        # the same, but leave the editor closed
 Tools/editor.sh                                              # start one editor, wait for MCP (retries if the port is held)
 ```
 
@@ -246,6 +247,12 @@ console and read the pass list in the log before guessing.
   Standing inside a shut grille, nobody picks a machine up or sets one down (otherwise it is taken from inside the
   bars and walked out the far side). The rival carries in the planner's order too, though it still walks through
   walls like the ghost it is.
+- `until ! pgrep -f "Tools/testall.sh"; do sleep 5; done` never ends: `pgrep -f` matches the waiting shell's own
+  command line, which contains the pattern. Write the pattern so it cannot match itself (`"[T]ools/testall.sh"`).
+  Two such waits sat in the background for four hours and held up the session's own bookkeeping.
+- Menus are laid out by `AGGHUD::DrawMenu`: one column until the rows would be thinner than a finger, then two with
+  Back centred beneath. Check any new menu at phone size (`Tools/webtest.sh phone-menus`): the list of holes had
+  rows under 3 mm tall once it reached thirteen.
 - Never edit a shell script while it is running: `sh` reads the file as it goes, and a script changed under it fails
   with a syntax error at whatever line it had reached (`Tools/webtest.sh` did, after passing).
 - sh: `[ a ] && [ b ] || [ c ] && [ d ]` is `((a && b) || c) && d`. It made a test report three failures the game
