@@ -87,6 +87,7 @@ Tools/nettest.sh              two players in the editor; compares both copies of
 Tools/hosttest.sh [Level]     two standalone copies of the game: one hosts, one joins by address
 Tools/rivaltest.sh [Level ...]   the rival bot plays a hole at each skill, time sped up; reports time and swings
 Tools/workshoptest.sh         works the Workshop without hands: every tool, undo, hole codes, touch, the proof, a test play
+Tests/Sim/cupscan.sh <course> <min x> <ax> <ay> <bx> <by>   design aid: cup spots that a machine at A serves and one at B cannot
 Tests/Sim/design.sh <json> solve|search|probe   the standalone tools on a Workshop design (`GGWorkshop json <file>` writes one)
 Tools/net.sh <player|all> "<cmd>"    run a console command on one player's machine (GGNet where|carry|place|swing...)
 ```
@@ -179,6 +180,11 @@ console and read the pass list in the log before guessing.
   Workshop cuts a design's squares into rectangles that never overlap, in a fixed order, for that reason.
 - Keys are not axes: `BindAxisKey(EKeys::W, ...)` trips an engine ensure at startup. Read W A S D with
   `IsInputKeyDown` in Tick.
+- Design notes from holes that did not work. (1) A machine pinned to one spot (a weight plate) that also has to bend
+  the ball is too fiddly: in open ground at most a dozen swings cross any one square slowly enough to drop, and the
+  proof wants twelve that sink. Forgiving holes come from the player choosing the spot, or from walls that funnel.
+  (2) Sand cannot hand a ball from one machine to the next: a ball that has stopped is not "approaching", so nothing
+  pulls it, and sand's hold (882 cm/s2) is stronger than any pull (420). (3) An attractor never pulls a ball at rest.
 - Adding a hole: its course and level scripts, an entry in `UGGSave::Holes()` (GGSave.cpp), the previous course's
   `next_level`, and the level lists in `Tools/smoke.sh`, `Tools/perf.sh`, `Tools/regen.sh` and `Tools/web.sh`.
 - Test a hole's stated idea, not only the hole: change what the idea depends on (move the cup, hold the gate open)

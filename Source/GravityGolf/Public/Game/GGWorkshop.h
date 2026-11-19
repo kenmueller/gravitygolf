@@ -199,7 +199,8 @@ private:
 
 	FGGDesign Current;
 	TArray<FString> History;
-	EGGTool CurrentTool = EGGTool::Wall;
+	/** Move harms nothing: a first stray click or tap (the one that wakes touch controls, say) paints no wall. */
+	EGGTool CurrentTool = EGGTool::Move;
 	bool bBuilding = false;
 	FString Note;
 	double NoteTime = 0.0;

@@ -120,7 +120,6 @@ check("a kept hole reopens", s.get("plates") == 2 and s.get("pads") == 1 and "Op
 # Touch: the first tap switches to touch controls; then a tool tile and a drag on the ground.
 s = state("new")
 touch(0, 0, 0.9, 0.5); touch(0, 2, 0.9, 0.5)
-state("undo")
 touch(0, 0, 0.235, 0.905); touch(0, 2, 0.235, 0.905)
 s = state()
 check("a tap on a tool tile chooses it", "sand" in s.get("message", "").lower(), s.get("message"))

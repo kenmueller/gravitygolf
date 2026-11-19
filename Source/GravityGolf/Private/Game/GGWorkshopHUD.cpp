@@ -157,6 +157,8 @@ void AGGHUD::DrawWorkshop(AGGWorkshop* Workshop)
 	const float H = Canvas->ClipY;
 	const FGGDesign& Design = Workshop->Design();
 	ShopButtons.Reset();
+	// Words are sized for a desk screen; on a phone they are scaled up to stay readable.
+	const float T = bTouch ? FMath::Max(S, H / 620.f) : S;
 
 	// ---- on the ground: what the tools can't show by building it.
 	const float Thin = FMath::Max(1.5f, 2.f * S);
@@ -181,9 +183,9 @@ void AGGHUD::DrawWorkshop(AGGWorkshop* Workshop)
 		Label(FString::FromInt(I + 1), At.X, At.Y - 14.f * S, 20.f * S, Design.Plates[I].bWeight ? ShopPush : FLinearColor(0.1f, 0.05f, 0.f), true, true);
 	}
 	const FVector TeeAt = Project(FVector(Design.Tee.X, Design.Tee.Y, 0.0), false);
-	Label(TEXT("TEE"), TeeAt.X, TeeAt.Y + 16.f * S, 15.f * S, ShopDim, true, true);
+	Label(TEXT("TEE"), TeeAt.X, TeeAt.Y + 16.f * S, 15.f * T, ShopDim, true, true);
 	const FVector CupAt = Project(FVector(Design.Cup.X, Design.Cup.Y, 270.0), false);
-	Label(TEXT("CUP"), CupAt.X, CupAt.Y - 26.f * S, 15.f * S, ShopDim, true, true);
+	Label(TEXT("CUP"), CupAt.X, CupAt.Y - 26.f * T, 15.f * T, ShopDim, true, true);
 	for (int32 I = 0; I < Design.Pads.Num(); ++I)
 	{
 		const FVector At = Project(FVector(Design.Pads[I].X, Design.Pads[I].Y, 0.0), false);
@@ -234,34 +236,34 @@ void AGGHUD::DrawWorkshop(AGGWorkshop* Workshop)
 
 	// ---- top left: the hole's name, and how far along its proof is.
 	const float Pad = 28.f * S;
-	Label(Design.Name.ToUpper(), Pad + 12.f * S, 26.f * S, 26.f * S, ShopInk, false, true);
+	Label(Design.Name.ToUpper(), Pad + 12.f * S, 26.f * S, 26.f * T, ShopInk, false, true);
 	const bool bSolved = Design.Solved();
 	const bool bProven = bSolved && Design.Necessary == 1;
 	auto Step = [&](float Y, const TCHAR* Text, int32 State) {
 		// State: 1 done, 0 open, -1 failed.
 		const FLinearColor Color = State > 0 ? ShopGood : State < 0 ? ShopBad : ShopDim;
-		const FVector2D Dot(Pad + 22.f * S, Y + 12.f * S);
-		Ring(Dot, 8.f * S, Color, 2.f * S);
+		const FVector2D Dot(Pad + 22.f * T, Y + 12.f * T);
+		Ring(Dot, 8.f * T, Color, 2.f * T);
 		if (State != 0)
 		{
-			Disc(Dot, 5.f * S, Color);
+			Disc(Dot, 5.f * T, Color);
 		}
-		Label(Text, Pad + 42.f * S, Y, 18.f * S, Color);
+		Label(Text, Pad + 42.f * T, Y, 18.f * T, Color);
 	};
-	Step(66.f * S, bSolved ? TEXT("You have solved it") : TEXT("Test it and solve it yourself"), bSolved ? 1 : 0);
-	Step(96.f * S, Workshop->Proving() ? TEXT("Checking that no swing works without the machines...")
+	Step(26.f * S + 40.f * T, bSolved ? TEXT("You have solved it") : TEXT("Test it and solve it yourself"), bSolved ? 1 : 0);
+	Step(26.f * S + 70.f * T, Workshop->Proving() ? TEXT("Checking that no swing works without the machines...")
 		: Design.Necessary == 1 ? TEXT("No swing works without the machines")
 		: Design.Necessary == -1 ? TEXT("A plain swing does it: not a puzzle yet") : TEXT("Check that it can't be done without the machines"),
 		Workshop->Proving() ? 0 : Design.Necessary);
 	if (Workshop->Proving())
 	{
-		const float BarW = 300.f * S;
-		DrawRect(FLinearColor(0.f, 0.f, 0.f, 0.5f), Pad + 42.f * S, 124.f * S, BarW, 6.f * S);
-		DrawRect(ShopGold, Pad + 42.f * S, 124.f * S, BarW * Workshop->ProofProgress(), 6.f * S);
+		const float BarW = 300.f * T;
+		DrawRect(FLinearColor(0.f, 0.f, 0.f, 0.5f), Pad + 42.f * T, 26.f * S + 98.f * T, BarW, 6.f * T);
+		DrawRect(ShopGold, Pad + 42.f * T, 26.f * S + 98.f * T, BarW * Workshop->ProofProgress(), 6.f * T);
 	}
 	else if (bProven)
 	{
-		Label(TEXT("PROVEN PUZZLE"), Pad + 12.f * S, 126.f * S, 20.f * S, ShopGold, false, true);
+		Label(TEXT("PROVEN PUZZLE"), Pad + 12.f * S, 26.f * S + 100.f * T, 20.f * T, ShopGold, false, true);
 	}
 
 	// ---- top right: the buttons.
@@ -316,8 +318,8 @@ void AGGHUD::DrawWorkshop(AGGWorkshop* Workshop)
 	}
 	// The chosen tool's name, and either what the Workshop last said or what the tool does.
 	const FString& Said = Workshop->Message();
-	Label(FString(AGGWorkshop::ToolName(Tool)).ToUpper(), W * 0.5f, Top - 74.f * S, 20.f * S, ShopGold, true, true);
-	Label(Said.IsEmpty() ? FString(AGGWorkshop::ToolHelp(Tool)) : Said, W * 0.5f, Top - 44.f * S, 19.f * S, ShopInk, true);
+	Label(FString(AGGWorkshop::ToolName(Tool)).ToUpper(), W * 0.5f, Top - 14.f * S - 60.f * T, 20.f * T, ShopGold, true, true);
+	Label(Said.IsEmpty() ? FString(AGGWorkshop::ToolHelp(Tool)) : Said, W * 0.5f, Top - 14.f * S - 30.f * T, 19.f * T, ShopInk, true);
 
 	if (!bTouch)
 	{
@@ -326,7 +328,7 @@ void AGGHUD::DrawWorkshop(AGGWorkshop* Workshop)
 	}
 	else
 	{
-		Label(TEXT("Two fingers slide and zoom the view"), W * 0.5f, H - 25.f * S, 15.f * S, ShopDim, true);
+		Label(TEXT("Two fingers slide and zoom the view"), W * 0.5f, H - 27.f * S, 13.f * T, ShopDim, true);
 	}
 }
 
