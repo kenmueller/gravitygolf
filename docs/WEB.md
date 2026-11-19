@@ -39,6 +39,18 @@ log. Nobody has confirmed the picture.
 Not done: a real phone in a real hand (see below: one command serves it; nobody has held it yet), Safari and Firefox,
 frame-rate measurement, a Shipping build, saved progress across page reloads (untested).
 
+## Letting a friend play
+
+```bash
+Tools/share.sh           # a temporary public link (Cloudflare quick tunnel, no account); Ctrl-C closes it
+```
+
+The game is served from this Mac and the link reaches only the web build's files. It lasts while the command runs
+and its name is random each time. It is HTTPS, so it also works on a phone on any network, which gets round a Wi-Fi
+that keeps devices apart. The web version has no playing together: each visitor has their own game. The tunnel hands
+requests to the local server addressed to localhost, because the server refuses names it does not know. Written on
+2026-11-19 when Ken asked for it; opening the link is his to do, and it had not been tried end to end when written.
+
 ## On a real phone
 
 ```bash

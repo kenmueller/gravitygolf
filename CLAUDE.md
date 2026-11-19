@@ -91,6 +91,8 @@ Tools/look.sh <Level> <prefix> ["x,y,z,pitch,yaw" ...]   open a level, start pla
 Tools/py.sh <file.py>         run Python in the open editor; the value of the last expression is returned
 Tools/web.sh [config] [host]  package for the web (Wasm + WebGPU) with the source engine at ~/UE59; see docs/WEB.md
 Tools/webtest.sh [play|phone|tour]   run the web build in Chrome with screenshots (tour: every hole's solution)
+Tools/share.sh [check]        a temporary public link to the web build (a Cloudflare quick tunnel to this Mac), for a
+                              friend to play; the only tool that puts the game on the internet. Ken runs it, not Claude
 Tools/webplay.sh [browser]    serve the web build on this Mac and open it in Safari (default) or the browser named
 Tools/phone.sh [check]        serve the web build to a real phone on the LAN over HTTPS (address and QR code); check proves it is reachable
 Tools/nettest.sh              two players in the editor; compares both copies of the hole after every step
