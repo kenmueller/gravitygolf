@@ -37,6 +37,10 @@ public:
 	UPROPERTY()
 	float Volume = 1.f;
 
+	/** The music's share of the volume. */
+	UPROPERTY()
+	float Music = 0.7f;
+
 	/** 0 low to 3 highest. */
 	UPROPERTY()
 	int32 Quality = 3;

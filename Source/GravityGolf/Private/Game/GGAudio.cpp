@@ -8,6 +8,7 @@
 #include "Misc/Paths.h"
 #include "Sound/SoundWaveProcedural.h"
 #include "TimerManager.h"
+#include "Async/Async.h"
 
 #include <atomic>
 
@@ -62,7 +63,7 @@ struct FTone
 FString ExportFolder;
 FString ExportName;
 
-void WriteWav(const FString& Path, const TArray<float>& Samples, float Volume)
+void WriteWav(const FString& Path, const TArray<float>& Samples, float Volume, int32 SampleRate = Rate)
 {
 	TArray<uint8> File;
 	auto Put32 = [&](uint32 Value) { File.Append(reinterpret_cast<const uint8*>(&Value), 4); };
@@ -74,8 +75,8 @@ void WriteWav(const FString& Path, const TArray<float>& Samples, float Volume)
 	Put32(16);
 	Put16(1);
 	Put16(1);
-	Put32(Rate);
-	Put32(Rate * 2);
+	Put32(SampleRate);
+	Put32(SampleRate * 2);
 	Put16(2);
 	Put16(16);
 	File.Append(reinterpret_cast<const uint8*>("data"), 4);
@@ -89,7 +90,7 @@ void WriteWav(const FString& Path, const TArray<float>& Samples, float Volume)
 	}
 	FFileHelper::SaveArrayToFile(File, *Path);
 	UE_LOG(LogTemp, Display, TEXT("Sound %s: %.2f s, peak before clipping %.2f, played at volume %.2f"), *FPaths::GetBaseFilename(Path),
-		static_cast<float>(Samples.Num()) / Rate, Peak, Volume);
+		static_cast<float>(Samples.Num()) / SampleRate, Peak, Volume);
 }
 
 void Play(UObject* WorldContext, const FVector& Location, const FTone& Tone, float Volume)
@@ -259,6 +260,180 @@ std::atomic<int32> AmbienceFeeds{0};
 
 TWeakObjectPtr<UAudioComponent> AmbienceVoice;
 
+// ---- Music. Each place has four slow chords that come round every minute or so, played by a soft pad (two voices a
+// hair apart in pitch, so it shimmers), and now and then a single glass note from the same key with an echo after
+// it. Nothing has a beat: it is there to be thought over, not listened to. It is written out once, quietly, at a
+// quarter of the usual sample rate (nothing in it is above 4 kHz), and looped.
+constexpr int32 MusicRate = 11025;
+
+struct FScore
+{
+	/** Four chords of four notes, as piano keys (60 is middle C), lowest first. */
+	int32 Chords[4][4];
+	/** The five notes the glass picks from: the key's pentatonic, which sits well over every chord. */
+	int32 Glass[5];
+	float ChordSeconds;
+	int32 Seed;
+};
+
+FScore ScoreFor(const FString& Kind)
+{
+	if (Kind == TEXT("canyon"))
+	{
+		// A Dorian: warm and dry. Am7, D over A, Em7, Am. (No two notes of a chord sit a semitone apart, here or in
+		// any place: nobody making this can hear whether such a rub is lush or sour.)
+		return {{{45, 52, 55, 60}, {45, 54, 57, 62}, {52, 55, 59, 62}, {45, 52, 57, 64}}, {69, 72, 74, 76, 79}, 15.f, 203};
+	}
+	if (Kind == TEXT("night"))
+	{
+		// E minor: Em7, Cmaj7, Am7, Bm7. The slowest.
+		return {{{52, 59, 62, 67}, {48, 55, 59, 64}, {45, 55, 60, 64}, {47, 54, 57, 62}}, {76, 79, 81, 83, 86}, 18.f, 307};
+	}
+	if (Kind == TEXT("water"))
+	{
+		// F Lydian: bright and unresolved. Fmaj7, G over F, Am7, Cadd9 over E.
+		return {{{53, 60, 64, 69}, {53, 59, 62, 67}, {57, 60, 64, 67}, {52, 60, 62, 67}}, {72, 74, 76, 79, 81}, 16.f, 401};
+	}
+	if (Kind == TEXT("hum"))
+	{
+		// C major, plain: the Workshop is for working in. Cadd9, Am7, Fmaj7, G6.
+		return {{{48, 55, 62, 64}, {45, 55, 60, 64}, {53, 57, 60, 64}, {43, 55, 59, 64}}, {72, 74, 76, 79, 81}, 17.f, 509};
+	}
+	// "wind": D major, open. Dadd9, Bm7, Gmaj7, Asus4.
+	return {{{50, 57, 64, 66}, {47, 57, 62, 66}, {55, 59, 62, 66}, {45, 57, 62, 64}}, {74, 76, 78, 81, 83}, 16.f, 101};
+}
+
+double KeyHz(int32 Key)
+{
+	return 440.0 * FMath::Pow(2.0, (Key - 69) / 12.0);
+}
+
+TArray<float> MakeMusic(const FString& Kind)
+{
+	const FScore Score = ScoreFor(Kind);
+	const int32 ChordSamples = FMath::RoundToInt32(Score.ChordSeconds * MusicRate);
+	const int32 Total = ChordSamples * 4;
+	TArray<float> Out;
+	Out.SetNumZeroed(Total);
+	FRandomStream Random(Score.Seed);
+
+	// The pad. Each chord swells in over five seconds and dies away over seven, across the start of the next, and
+	// the last one across the start of the first: the loop has no seam.
+	const float Attack = 5.f;
+	const float Release = 7.f;
+	const int32 Ring = ChordSamples + FMath::RoundToInt32(Release * MusicRate);
+	for (int32 Chord = 0; Chord < 4; ++Chord)
+	{
+		for (int32 Note = 0; Note < 4; ++Note)
+		{
+			// The low notes carry it; the top ones are quieter.
+			const float Gain = 1.f - 0.14f * Note;
+			for (int32 Voice = 0; Voice < 2; ++Voice)
+			{
+				const double Hz = KeyHz(Score.Chords[Chord][Note]) * (Voice == 0 ? 0.9983 : 1.0017);
+				const double Step = 2.0 * PI * Hz / MusicRate;
+				double Phase = Random.FRandRange(0.f, 2.f * PI);
+				const float Sway = Random.FRandRange(0.f, 2.f * PI);
+				const float SwayHz = Random.FRandRange(0.06f, 0.11f);
+				for (int32 I = 0; I < Ring; ++I)
+				{
+					const float T = static_cast<float>(I) / MusicRate;
+					float Envelope = T < Attack ? 0.5f - 0.5f * FMath::Cos(PI * T / Attack) : 1.f;
+					if (I > ChordSamples)
+					{
+						const float Out01 = static_cast<float>(I - ChordSamples) / (Ring - ChordSamples);
+						Envelope *= 0.5f + 0.5f * FMath::Cos(PI * Out01);
+					}
+					const float Breath = 0.8f + 0.2f * FMath::Sin(2.f * PI * SwayHz * T + Sway);
+					const float P = static_cast<float>(Phase);
+					const float Tone = FMath::Sin(P) + 0.28f * FMath::Sin(2.f * P) + 0.09f * FMath::Sin(3.f * P);
+					Out[(Chord * ChordSamples + I) % Total] += Tone * Envelope * Breath * Gain;
+					Phase += Step;
+					if (Phase > 2.0 * PI)
+					{
+						Phase -= 2.0 * PI;
+					}
+				}
+			}
+		}
+	}
+
+	// The glass: one note every few seconds, struck softly, with two fainter echoes.
+	const float Seconds = static_cast<float>(Total) / MusicRate;
+	for (float At = Random.FRandRange(2.f, 5.f); At < Seconds; At += Random.FRandRange(3.f, 7.5f))
+	{
+		const double Hz = KeyHz(Score.Glass[Random.RandRange(0, 4)]);
+		const float Gain = Random.FRandRange(0.5f, 1.1f);
+		for (int32 Echo = 0; Echo < 3; ++Echo)
+		{
+			const int32 Start = FMath::RoundToInt32((At + Echo * 0.43f) * MusicRate);
+			const float EchoGain = Gain * FMath::Pow(0.38f, static_cast<float>(Echo));
+			const int32 Length = 6 * MusicRate;
+			for (int32 I = 0; I < Length; ++I)
+			{
+				const float T = static_cast<float>(I) / MusicRate;
+				const float Envelope = FMath::Min(T / 0.012f, 1.f) * FMath::Exp(-T / 1.5f);
+				const float P = static_cast<float>(2.0 * PI * Hz * T);
+				Out[(Start + I) % Total] += (FMath::Sin(P) + 0.18f * FMath::Sin(2.f * P)) * Envelope * EchoGain;
+			}
+		}
+	}
+
+	// One quiet level for every place: about 9 dB under a footstep and 6 over the air.
+	double Sum = 0.0;
+	for (const float Sample : Out)
+	{
+		Sum += static_cast<double>(Sample) * Sample;
+	}
+	const float Level = static_cast<float>(FMath::Sqrt(Sum / FMath::Max(Out.Num(), 1)));
+	const float Scale = Level > 1e-6f ? 0.024f / Level : 1.f;
+	for (float& Sample : Out)
+	{
+		Sample *= Scale;
+	}
+	return Out;
+}
+
+std::atomic<int32> MusicFeeds{0};
+std::atomic<int32> MusicSerial{0};
+TWeakObjectPtr<UAudioComponent> MusicVoice;
+
+/** A sound that plays a stretch of samples round and round for as long as its voice lives. */
+USoundWaveProcedural* Looping(TSharedRef<TArray<int16>> Pcm, int32 SampleRate, std::atomic<int32>* Feeds)
+{
+	USoundWaveProcedural* Wave = NewObject<USoundWaveProcedural>(GetTransientPackage());
+	Wave->SetSampleRate(SampleRate);
+	Wave->NumChannels = 1;
+	Wave->Duration = INDEFINITELY_LOOPING_DURATION;
+	Wave->SoundGroup = SOUNDGROUP_Effects;
+	Wave->bLooping = true;
+	int32 Position = 0;
+	Wave->OnSoundWaveProceduralUnderflow = FOnSoundWaveProceduralUnderflow::CreateLambda(
+		[Pcm, Position, Feeds](USoundWaveProcedural* Sound, int32 SamplesNeeded) mutable {
+			++*Feeds;
+			int32 Left = FMath::Max(SamplesNeeded, 4096);
+			while (Left > 0)
+			{
+				const int32 Count = FMath::Min(Left, Pcm->Num() - Position);
+				Sound->QueueAudio(reinterpret_cast<const uint8*>(Pcm->GetData() + Position), Count * sizeof(int16));
+				Position = (Position + Count) % Pcm->Num();
+				Left -= Count;
+			}
+		});
+	return Wave;
+}
+
+TSharedRef<TArray<int16>> ToPcm(const TArray<float>& Samples)
+{
+	TSharedRef<TArray<int16>> Pcm = MakeShared<TArray<int16>>();
+	Pcm->SetNumUninitialized(Samples.Num());
+	for (int32 I = 0; I < Samples.Num(); ++I)
+	{
+		(*Pcm)[I] = static_cast<int16>(FMath::Clamp(Samples[I], -1.f, 1.f) * 32000.f);
+	}
+	return Pcm;
+}
+
 int32 NextSeed()
 {
 	static int32 Seed = 1;
@@ -379,6 +554,8 @@ void GGAudio::Export(const FString& Folder)
 	{
 		UE_LOG(LogTemp, Display, TEXT("Ambience: fed %d times; voice %s"), AmbienceFeeds.load(),
 			AmbienceVoice.IsValid() && AmbienceVoice->IsPlaying() ? TEXT("playing") : TEXT("not playing"));
+		UE_LOG(LogTemp, Display, TEXT("Music: fed %d times; voice %s"), MusicFeeds.load(),
+			MusicVoice.IsValid() && MusicVoice->IsPlaying() ? TEXT("playing") : TEXT("not playing"));
 		return;
 	}
 	// Every sound the game makes, written out as it would be played, so it can be measured (nobody building this
@@ -405,6 +582,7 @@ void GGAudio::Export(const FString& Folder)
 	for (const TCHAR* Kind : {TEXT("wind"), TEXT("canyon"), TEXT("night"), TEXT("water"), TEXT("hum")})
 	{
 		WriteWav(Folder / (FString(TEXT("bed_")) + Kind + TEXT(".wav")), MakeBed(Kind), 1.f);
+		WriteWav(Folder / (FString(TEXT("music_")) + Kind + TEXT(".wav")), MakeMusic(Kind), 1.f, MusicRate);
 	}
 	ExportFolder.Reset();
 }
@@ -421,32 +599,7 @@ void GGAudio::Ambience(UObject* WorldContext, const FString& Kind)
 		Old->Stop();
 	}
 	// The bed is handed to the sound a piece at a time, round and round, for as long as it is asked for.
-	const TArray<float> Bed = MakeBed(Kind);
-	TSharedRef<TArray<int16>> Pcm = MakeShared<TArray<int16>>();
-	Pcm->SetNumUninitialized(Bed.Num());
-	for (int32 I = 0; I < Bed.Num(); ++I)
-	{
-		(*Pcm)[I] = static_cast<int16>(FMath::Clamp(Bed[I], -1.f, 1.f) * 32000.f);
-	}
-	USoundWaveProcedural* Wave = NewObject<USoundWaveProcedural>(GetTransientPackage());
-	Wave->SetSampleRate(Rate);
-	Wave->NumChannels = 1;
-	Wave->Duration = INDEFINITELY_LOOPING_DURATION;
-	Wave->SoundGroup = SOUNDGROUP_Effects;
-	Wave->bLooping = true;
-	int32 Position = 0;
-	Wave->OnSoundWaveProceduralUnderflow = FOnSoundWaveProceduralUnderflow::CreateLambda(
-		[Pcm, Position](USoundWaveProcedural* Sound, int32 SamplesNeeded) mutable {
-			++AmbienceFeeds;
-			int32 Left = FMath::Max(SamplesNeeded, 4096);
-			while (Left > 0)
-			{
-				const int32 Count = FMath::Min(Left, Pcm->Num() - Position);
-				Sound->QueueAudio(reinterpret_cast<const uint8*>(Pcm->GetData() + Position), Count * sizeof(int16));
-				Position = (Position + Count) % Pcm->Num();
-				Left -= Count;
-			}
-		});
+	USoundWaveProcedural* Wave = Looping(ToPcm(MakeBed(Kind)), Rate, &AmbienceFeeds);
 	AmbienceVoice = UGameplayStatics::SpawnSound2D(World, Wave, UGGSave::Get().Volume);
 	UE_LOG(LogTemp, Display, TEXT("Ambience: %s (%s)"), *Kind, AmbienceVoice.IsValid() ? TEXT("playing") : TEXT("no voice"));
 }
@@ -454,6 +607,52 @@ void GGAudio::Ambience(UObject* WorldContext, const FString& Kind)
 void GGAudio::SetAmbienceVolume(float Volume)
 {
 	if (UAudioComponent* Voice = AmbienceVoice.Get())
+	{
+		Voice->SetVolumeMultiplier(FMath::Max(Volume, 0.001f));
+	}
+}
+
+void GGAudio::Music(UObject* WorldContext, const FString& Kind)
+{
+	UWorld* World = WorldContext ? WorldContext->GetWorld() : nullptr;
+	if (!World || Kind.IsEmpty() || Kind == TEXT("none"))
+	{
+		return;
+	}
+	if (UAudioComponent* Old = MusicVoice.Get())
+	{
+		Old->Stop();
+	}
+	// Writing a minute of it out takes a few tenths of a second: done off to one side, so the hole does not open
+	// with a hitch, and started when it is ready (unless another place has asked for its own by then).
+	const int32 Serial = ++MusicSerial;
+	TWeakObjectPtr<UWorld> WeakWorld(World);
+	auto Start = [Serial, WeakWorld, Kind](TSharedRef<TArray<int16>> Pcm) {
+		UWorld* Live = WeakWorld.Get();
+		if (!Live || Serial != MusicSerial.load())
+		{
+			return;
+		}
+		const UGGSave& Save = UGGSave::Get();
+		MusicVoice = UGameplayStatics::SpawnSound2D(Live, Looping(Pcm, MusicRate, &MusicFeeds), FMath::Max(Save.Volume * Save.Music, 0.001f));
+		UE_LOG(LogTemp, Display, TEXT("Music: %s (%s)"), *Kind, MusicVoice.IsValid() ? TEXT("playing") : TEXT("no voice"));
+	};
+	if (FPlatformProcess::SupportsMultithreading())
+	{
+		Async(EAsyncExecution::ThreadPool, [Kind, Start]() {
+			TSharedRef<TArray<int16>> Pcm = ToPcm(MakeMusic(Kind));
+			AsyncTask(ENamedThreads::GameThread, [Pcm, Start]() { Start(Pcm); });
+		});
+	}
+	else
+	{
+		Start(ToPcm(MakeMusic(Kind)));
+	}
+}
+
+void GGAudio::SetMusicVolume(float Volume)
+{
+	if (UAudioComponent* Voice = MusicVoice.Get())
 	{
 		Voice->SetVolumeMultiplier(FMath::Max(Volume, 0.001f));
 	}

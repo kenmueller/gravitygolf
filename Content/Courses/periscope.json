@@ -457,5 +457,6 @@
 		}
 	],
 	"next": "Wires",
-	"ambience": "night"
+	"ambience": "wind",
+	"music": "night"
 }

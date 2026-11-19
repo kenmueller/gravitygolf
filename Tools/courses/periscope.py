@@ -73,5 +73,7 @@ c.placement_area(150, Y0 + 100, X1 - 150, Y1 - 100)
 c.solution(0, [(1600, 0), (1600, 700)], yaw=0, power=0.6, turns=[0, 0])
 # The U: south to the bottom row, east past the end of the blind wall, and north again to the cup.
 c.solution(1, [(4200, 0), (5050, 0)], yaw=-90, power=0.35, turns=[1, 0])
-c.extra["ambience"] = "night"
+# Open salt has wind, not crickets; the music is the night's.
+c.extra["ambience"] = "wind"
+c.extra["music"] = "night"
 c.write()

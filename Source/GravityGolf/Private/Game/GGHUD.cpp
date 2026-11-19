@@ -457,6 +457,7 @@ void AGGHUD::BuildMenu()
 		Add(TEXT("Look speed"), TEXT("Sensitivity"), FString::Printf(TEXT("%d%%"), FMath::RoundToInt32(Save.LookSensitivity * 100.f)));
 		Add(TEXT("Look up and down"), TEXT("Invert"), Save.bInvertLook ? TEXT("Inverted") : TEXT("Normal"));
 		Add(TEXT("Sound"), TEXT("Volume"), FString::Printf(TEXT("%d%%"), FMath::RoundToInt32(Save.Volume * 100.f)));
+		Add(TEXT("Music"), TEXT("Music"), Save.Music < 0.05f ? FString(TEXT("Off")) : FString::Printf(TEXT("%d%%"), FMath::RoundToInt32(Save.Music * 100.f)));
 		Add(TEXT("Picture quality"), TEXT("Quality"), Qualities[FMath::Clamp(Save.Quality, 0, 3)]);
 		static const TCHAR* Rivals[] = {TEXT("None"), TEXT("Easy"), TEXT("Medium"), TEXT("Hard")};
 		Add(TEXT("Rival to race"), TEXT("Rival"), Rivals[FMath::Clamp(Save.Rival, 0, 3)]);
@@ -505,7 +506,7 @@ void AGGHUD::MenuActivate()
 bool AGGHUD::Adjustable(const FItem& Item)
 {
 	// Rows whose value steps left and right. The others only show a value beside their name.
-	static const FName Steps[] = {TEXT("Sensitivity"), TEXT("Invert"), TEXT("Volume"), TEXT("Quality"), TEXT("Rival")};
+	static const FName Steps[] = {TEXT("Sensitivity"), TEXT("Invert"), TEXT("Volume"), TEXT("Music"), TEXT("Quality"), TEXT("Rival")};
 	return !Item.Value.IsEmpty() && Algo::Find(Steps, Item.Action) != nullptr;
 }
 
@@ -830,6 +831,12 @@ void AGGHUD::RunAction(const FItem& Item, int32 Direction)
 		{
 			Save.Volume = FMath::Clamp(FMath::RoundToFloat((Save.Volume + 0.1f * Step) * 10.f) / 10.f, 0.f, 1.f);
 			GGAudio::SetAmbienceVolume(Save.Volume);
+			GGAudio::SetMusicVolume(Save.Volume * Save.Music);
+		}
+		else if (Action == TEXT("Music"))
+		{
+			Save.Music = FMath::Clamp(FMath::RoundToFloat((Save.Music + 0.1f * Step) * 10.f) / 10.f, 0.f, 1.f);
+			GGAudio::SetMusicVolume(Save.Volume * Save.Music);
 		}
 		else if (Action == TEXT("Quality"))
 		{

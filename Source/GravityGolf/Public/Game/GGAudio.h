@@ -22,6 +22,9 @@ void GateShut(UObject* WorldContext, const FVector& Location);
 /** The air of a place, looping under everything: "wind", "canyon", "night", "water" or "hum". */
 void Ambience(UObject* WorldContext, const FString& Kind);
 void SetAmbienceVolume(float Volume);
+/** Slow music for a place, under everything else: four chords and a glass note now and then. Same names as the air. */
+void Music(UObject* WorldContext, const FString& Kind);
+void SetMusicVolume(float Volume);
 /** Write every sound to a folder as WAV files, as the game would play them, for measuring. */
 void Export(const FString& Folder);
 } // namespace GGAudio

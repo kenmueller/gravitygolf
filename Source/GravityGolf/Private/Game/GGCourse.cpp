@@ -448,7 +448,15 @@ bool AGGCourse::LoadText(const FString& Text, const FString& CourseId)
 		// The air of the place, once per level.
 		FString Bed;
 		Json->TryGetStringField(TEXT("ambience"), Bed);
-		GGAudio::Ambience(this, Bed.IsEmpty() ? FString(TEXT("wind")) : Bed);
+		if (Bed.IsEmpty())
+		{
+			Bed = TEXT("wind");
+		}
+		GGAudio::Ambience(this, Bed);
+		// The music is in the key of the place's air unless the hole names another ("music").
+		FString Key;
+		Json->TryGetStringField(TEXT("music"), Key);
+		GGAudio::Music(this, Key.IsEmpty() ? Bed : Key);
 	}
 	return true;
 }
@@ -702,6 +710,39 @@ void AGGCourse::BuildActors()
 			->SetCastShadow(false);
 	}
 
+	// Where a hole has several plates, colour alone tells which gate each one opens, and one player in twelve cannot
+	// tell these colours apart. So each plate also carries a number of dots, and its gates the same number of studs.
+	const bool bMarks = Course.Switches.size() > 1;
+	if (bMarks)
+	{
+		UMaterialInstanceDynamic* Ink = UMaterialInstanceDynamic::Create(LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/M_GG_Surface.M_GG_Surface")), this);
+		Ink->SetVectorParameterValue(TEXT("BaseColor"), FLinearColor(0.004f, 0.004f, 0.005f));
+		Ink->SetScalarParameterValue(TEXT("Roughness"), 0.9f);
+		for (int32 I = 0; I < static_cast<int32>(Course.Switches.size()); ++I)
+		{
+			const GG::FSwitch& Switch = Course.Switches[I];
+			const int32 Count = I + 1;
+			// Dark dots on a light plate's glowing disc; glowing dots on a weight plate's iron.
+			UMaterialInterface* Dot = Switch.bWeight ? static_cast<UMaterialInterface*>(SwitchMaterials[I]) : Ink;
+			const double Size = Switch.Radius * 0.24 / 100.0;
+			const double Step = Switch.Radius * 0.42;
+			// Laid out as on a die, which everyone reads at a glance.
+			static const int8 Die[6][6][2] = {
+				{{0, 0}},
+				{{-1, -1}, {1, 1}},
+				{{-1, -1}, {0, 0}, {1, 1}},
+				{{-1, -1}, {-1, 1}, {1, -1}, {1, 1}},
+				{{-1, -1}, {-1, 1}, {0, 0}, {1, -1}, {1, 1}},
+				{{-1, -1}, {-1, 0}, {-1, 1}, {1, -1}, {1, 0}, {1, 1}}};
+			const int32 Face = FMath::Min(Count, 6) - 1;
+			for (int32 D = 0; D <= Face; ++D)
+			{
+				const FVector At = ToUnreal(Switch.Center) + FVector(Die[Face][D][0] * Step, Die[Face][D][1] * Step, Switch.bWeight ? 1.9 : 0.9);
+				AddMesh(Cylinder, Dot, FTransform(FRotator::ZeroRotator, At, FVector(Size, Size, 0.004)))->SetCastShadow(false);
+			}
+		}
+	}
+
 	// Gates: bars of light across an opening. They drop into the ground while the gate is open.
 	for (const GG::FGate& Gate : Course.Gates)
 	{
@@ -723,6 +764,18 @@ void AGGCourse::BuildActors()
 			const double Along = (Bar + 0.5) / Count * Length - Length * 0.5;
 			const FVector At = bAlongY ? FVector(0, Along, Height * 0.5) : FVector(Along, 0, Height * 0.5);
 			AddMesh(Cylinder, Light, FTransform(FRotator::ZeroRotator, At, FVector(0.035, 0.035, Height / 100.0)), Bars)->SetCastShadow(false);
+		}
+		if (bMarks)
+		{
+			// The studs: as many as the dots on this gate's plate, in a row above the gate. They stay when the bars drop,
+			// so an open gate can still be told from its neighbours.
+			const int32 Studs = Gate.Switch + 1;
+			for (int32 Stud = 0; Stud < Studs; ++Stud)
+			{
+				const double Offset = (Stud - (Studs - 1) * 0.5) * 17.0;
+				const FVector At = FVector(Center.X, Center.Y, Max.Z + 16.0) + (bAlongY ? FVector(0, Offset, 0) : FVector(Offset, 0, 0));
+				AddMesh(Sphere, Light, FTransform(FRotator::ZeroRotator, At, FVector(0.09, 0.09, 0.09)))->SetCastShadow(false);
+			}
 		}
 		GateBars.Add(Bars);
 		GateLevel.Add(1.f);
