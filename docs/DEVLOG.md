@@ -149,8 +149,10 @@ between holes, 0 is hole 10, minus is 11, equals is 12 and the left bracket is 1
   pass a shut grille") is the only teaching. Leapfrog itself is a tutorial, not a hard hole: one dead end (carry
   the second machine straight to the far plate and the first can never follow) and then it is done. Its swing has
   only 18 working swings out of 110,000, which is not the "easy part" its own description claims. Not verified:
-  a human walking it (my test moves the player in straight jumps), two players carrying at once, touch on a real
-  screen. The rival now makes its carries in an order the grilles allow.
+  a human walking it (my tests move the player in straight jumps), touch on a real screen. Two players: the joined
+  player made all three carries through the grilles and the host's swing sank the ball, both copies of the hole
+  agreeing at every step, and the host refused the joined player's attempt to set a machine down beyond a shut
+  grille (`Tools/nettest_grille.sh`). The rival now makes its carries in an order the grilles allow.
 - *I found a hole in the grille rule by rereading it, not by testing it.* Empty hands walk into a shut grille, and
   my first rule let someone standing inside the bars pick a machine up and walk out the far side with it. The test
   I had written could not have caught it; it has that case now, with a control beside it.

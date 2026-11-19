@@ -98,6 +98,7 @@ Tools/hosttest.sh [Level]     two standalone copies of the game: one hosts, one 
 Tools/nettest_workshop.sh     two players in the Workshop: the host builds, tests and solves; both copies compared
 Tools/rivaltest.sh [Level ...]   the rival bot plays a hole at each skill, time sped up; reports time and swings
 Tools/grilletest.sh           in the editor, on hole 11: a shut grille stops a carried machine, an open one does not
+Tools/nettest_grille.sh       two players on hole 11: the joined player makes the carries; both copies compared
 Tools/workshoptest.sh         works the Workshop without hands: every tool, undo, hole codes, touch, the proof, a test play
 Tests/Sim/cupscan.sh <course> <min x> <ax> <ay> <bx> <by>   design aid: cup spots that a machine at A serves and one at B cannot
 Tests/Sim/design.sh <json> solve|search|probe   the standalone tools on a Workshop design (`GGWorkshop json <file>` writes one)
