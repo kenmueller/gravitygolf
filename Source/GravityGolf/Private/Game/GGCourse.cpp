@@ -708,6 +708,14 @@ void AGGCourse::BuildActors()
 		}
 		AddMesh(Cylinder, Material, FTransform(FRotator::ZeroRotator, ToUnreal(Switch.Center) + FVector(0, 0, 0.5), FVector(Scale, Scale, 0.006)))
 			->SetCastShadow(false);
+		// A dark groove inside the rim, so that from above the plate is a made thing and not a flat disc of colour.
+		UMaterialInstanceDynamic* Groove = UMaterialInstanceDynamic::Create(LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/M_GG_Surface.M_GG_Surface")), this);
+		Groove->SetVectorParameterValue(TEXT("BaseColor"), FLinearColor(0.01f, 0.01f, 0.012f));
+		Groove->SetScalarParameterValue(TEXT("Roughness"), 0.6f);
+		AddMesh(Cylinder, Groove, FTransform(FRotator::ZeroRotator, ToUnreal(Switch.Center) + FVector(0, 0, 0.6), FVector(Scale * 0.84, Scale * 0.84, 0.006)))
+			->SetCastShadow(false);
+		AddMesh(Cylinder, Material, FTransform(FRotator::ZeroRotator, ToUnreal(Switch.Center) + FVector(0, 0, 0.7), FVector(Scale * 0.76, Scale * 0.76, 0.006)))
+			->SetCastShadow(false);
 	}
 
 	// Where a hole has several plates, colour alone tells which gate each one opens, and one player in twelve cannot
@@ -725,7 +733,7 @@ void AGGCourse::BuildActors()
 			// Dark dots on a light plate's glowing disc; glowing dots on a weight plate's iron.
 			UMaterialInterface* Dot = Switch.bWeight ? static_cast<UMaterialInterface*>(SwitchMaterials[I]) : Ink;
 			const double Size = Switch.Radius * 0.24 / 100.0;
-			const double Step = Switch.Radius * 0.42;
+			const double Step = Switch.Radius * (Switch.bWeight ? 0.42 : 0.34);
 			// Laid out as on a die, which everyone reads at a glance.
 			static const int8 Die[6][6][2] = {
 				{{0, 0}},
@@ -737,7 +745,7 @@ void AGGCourse::BuildActors()
 			const int32 Face = FMath::Min(Count, 6) - 1;
 			for (int32 D = 0; D <= Face; ++D)
 			{
-				const FVector At = ToUnreal(Switch.Center) + FVector(Die[Face][D][0] * Step, Die[Face][D][1] * Step, Switch.bWeight ? 1.9 : 0.9);
+				const FVector At = ToUnreal(Switch.Center) + FVector(Die[Face][D][0] * Step, Die[Face][D][1] * Step, Switch.bWeight ? 1.9 : 1.1);
 				AddMesh(Cylinder, Dot, FTransform(FRotator::ZeroRotator, At, FVector(Size, Size, 0.004)))->SetCastShadow(false);
 			}
 		}

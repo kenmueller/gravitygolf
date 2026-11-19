@@ -497,10 +497,11 @@ if (AuroraStrength > 0.0 && V.z > 0.02)
     float3 Glow = 0;
     // Each pixel starts its walk at a different depth, differently every frame, and the picture's own smoothing over
     // time blends the steps away. (Walked in step, fourteen samples drew fourteen thin lines, like a contour map.)
-    // Detail is 1 on a computer and 0 in the phone renderer (which the web uses too): there the walk takes a third of
-    // the steps over smoother noise, and its dither holds still, since nothing blends frames together.
-    int Count = Detail > 0.5 ? 18 : 6;
-    float Jitter = N.Hash(V * 791.0 + frac(Time * 7.3) * 13.0 * Detail);
+    // Detail is 1 on a computer and 0 in the phone renderer (which the web uses too). Nothing blends frames together
+    // there, so a dither shows as grain: the walk is taken in step instead, over smoother noise, in ten steps, whose
+    // lines the wide curtains hide well enough.
+    int Count = Detail > 0.5 ? 18 : 10;
+    float Jitter = Detail > 0.5 ? N.Hash(V * 791.0 + frac(Time * 7.3) * 13.0) : 0.5;
     for (int Step = 0; Step < Count; Step++)
     {
         float T = (Step + Jitter) / Count;

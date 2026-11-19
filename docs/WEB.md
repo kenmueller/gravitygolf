@@ -8,6 +8,7 @@ Tools/web.sh Development     # package (about 2 minutes once the engine is built
 Tools/webtest.sh             # run it in Chrome: desktop play and phone touch, with screenshots
 Tools/webtest.sh tour        # every hole: open it, picture from the tee, play its recorded solution
 Tools/webtest.sh workshop workshop-phone    # the level editor, with a mouse and at phone size with touch
+Tools/phone.sh               # serve it to a real phone on the same Wi-Fi (HTTPS, prints the address and a QR code)
 ../gravitygolf-web/Saved/Web/play-gravitygolf.sh    # serve it and play it yourself in your browser
 ```
 
@@ -19,15 +20,34 @@ What the browser runs showed (Chrome 156, M4 Max, the engine's harness):
 | First download | about 68 MB before the game is ready; about 100 MB in all (42 MB of code, 54 MB of content) |
 | Memory | 512 MB heap at peak |
 | Renderer | the mobile deferred tier, no WebGPU errors |
-| Works | title screen, menus, walking, carrying machines, the swing, the physics (all nine holes' recorded solutions sink the ball, in the same number of swings as on the desktop), touch stick and buttons under phone emulation (852x393), the Workshop (building with mouse clicks and with touch, its check, a test play) |
+| Works | title screen, menus, walking, carrying machines, the swing, the physics (all eleven holes' recorded solutions sink the ball, in the same number of swings as on the desktop), touch stick and buttons under phone emulation (852x393), the Workshop (building with mouse clicks and with touch, its check, a test play) |
 
 What is different from the desktop game on the web:
 - No bounced light, no ray tracing, shadows from cascaded shadow maps. Clear sky (a dome), no volumetric clouds.
 - Scanned plants are replaced by simple generated ones (`SM_Web_Pine`, `SM_Web_Shrub`).
 - World textures are capped at 1K.
 
-Not done: a real phone (emulation only so far; a phone on the LAN needs HTTPS, see the engine's `serve.py --tls-cert`),
-Safari and Firefox, frame-rate measurement, a Shipping build, saved progress across page reloads (untested).
+Not done: a real phone in a real hand (see below: one command serves it; nobody has held it yet), Safari and Firefox,
+frame-rate measurement, a Shipping build, saved progress across page reloads (untested).
+
+## On a real phone
+
+```bash
+Tools/phone.sh           # serve the last web build to the local network over HTTPS; prints the address and a QR code
+Tools/phone.sh check     # start it, fetch the page through this Mac's own network address, stop: proves it is reachable
+```
+
+A phone runs the game only from a secure page, so the script makes a certificate for this Mac's name and addresses
+(kept in `Saved/PhoneCert`, made again when the addresses change) and serves HTTPS with the headers the game needs.
+The phone warns that it does not know the certificate; choose to visit anyway. Nothing leaves the local network.
+
+Found while writing it: the Mac's firewall decides per program. The system Python (`/usr/bin/python3`) was already
+allowed to accept connections; Homebrew's newer Python was not, and the symptom is a connection that opens and then
+never answers. The script uses the system Python for that reason. If macOS asks, allow it.
+
+What `check` proves: the page is served over HTTPS at the Mac's network address with the isolation headers. What it
+does not: that Safari on an iPhone accepts a home-made certificate for a page that needs WebGPU and shared memory. If
+it refuses, the fallback is a certificate the phone trusts (`mkcert`, and installing its root on the phone).
 
 ## What Unreal 5.9 offers
 

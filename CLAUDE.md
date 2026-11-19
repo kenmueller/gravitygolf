@@ -59,8 +59,9 @@ Source/GravityGolf/
   */Game/GGCourse.*           loads Content/Courses/<level>.json, steps the sim at 240 Hz, ball/attractors/flag
   */Game/GGGolfer.*           first-person character: walk, keys, gamepad and touch; carry machines, swing, menus
   */Game/GGGameMode.*         starts the course matching the level name; console commands (GGDemo, GGHole, GGPerf, GGView...)
-  */Game/GGAudio.*            runtime-synthesized sounds (footsteps, strike, bounce, cup, machine) and a looping bed of
-                              air per place (a course's "ambience": wind, canyon, night, water, hum)
+  */Game/GGAudio.*            runtime-synthesized sounds (footsteps, strike, bounce, cup, machine), a looping bed of
+                              air per place (a course's "ambience": wind, canyon, night, water, hum) and slow music
+                              per place (the same names; a course's "music" if it differs from its air)
   */Game/GGHUD.*              play HUD, touch controls, solved card and the menus (title, pause, holes, settings)
   */Game/GGSave.*             saved progress and settings; the list of holes in play order
   */Game/GGRival.*            the bot to race: plays the hole in a ghost copy of its own, at three skills
@@ -88,6 +89,7 @@ Tools/look.sh <Level> <prefix> ["x,y,z,pitch,yaw" ...]   open a level, start pla
 Tools/py.sh <file.py>         run Python in the open editor; the value of the last expression is returned
 Tools/web.sh [config] [host]  package for the web (Wasm + WebGPU) with the source engine at ~/UE59; see docs/WEB.md
 Tools/webtest.sh [play|phone|tour]   run the web build in Chrome with screenshots (tour: every hole's solution)
+Tools/phone.sh [check]        serve the web build to a real phone on the LAN over HTTPS (address and QR code); check proves it is reachable
 Tools/nettest.sh              two players in the editor; compares both copies of the hole after every step
 Tools/sounds.sh               writes every sound the game makes to WAV and measures it (length, level, pitch, brightness)
 Tools/hosttest.sh [Level]     two standalone copies of the game: one hosts, one joins by address
@@ -211,6 +213,13 @@ console and read the pass list in the log before guessing.
   proof wants twelve that sink. Forgiving holes come from the player choosing the spot, or from walls that funnel.
   (2) Sand cannot hand a ball from one machine to the next: a ball that has stopped is not "approaching", so nothing
   pulls it, and sand's hold (882 cm/s2) is stronger than any pull (420). (3) An attractor never pulls a ball at rest.
+- Nobody building this can hear it. Sound is judged by `Tools/sounds.sh` (levels, pitch, brightness, clipping) and
+  the music also by its notes: every chord's spectrum must show the notes written, the loop's seam must be smaller
+  than an ordinary step between samples, and no chord may hold two notes a semitone apart (three did at first).
+- Python servers and the Mac's firewall: `/usr/bin/python3` may accept connections from the network; Homebrew's
+  Python may not, and the connection then opens and hangs. `Tools/phone.sh` uses the system one.
+- A shell function run in the background (`serve &`) is a subshell: `$!` is the subshell, and killing it leaves the
+  real program running and holding its port. Start the program itself in the background.
 - Adding a hole: its course and level scripts, an entry in `UGGSave::Holes()` (GGSave.cpp), the previous course's
   `next_level`, the level lists in `Tools/smoke.sh`, `Tools/perf.sh`, `Tools/regen.sh`, `Tools/web.sh` (MAPS) and
   `Tools/webtest.sh` (tour), a `hole-<Level>` fixture in `Build/Wasm/fixtures.json`, a number key in GGGolfer, and

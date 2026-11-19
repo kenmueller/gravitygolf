@@ -28,6 +28,6 @@ runpy.run_path("/Users/ken/Code/gravitygolf/Tools/levels/saltmirror.py", run_nam
              "AuroraHigh": (0.5, 0.18, 1.0, 1)}),
     "monolith_height": 700,
     "edge_lights": True,
-    "web_ambient": 2.6,
+    "web_ambient": 1.3,
     "web_tint": (0.75, 0.85, 1.0),
 }})

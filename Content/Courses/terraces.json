@@ -178,7 +178,10 @@
 				]
 			],
 			"yaw": 44,
-			"power": 0.275
+			"power": 0.275,
+			"turns": [
+				0
+			]
 		}
 	],
 	"next": "SaltMirror",

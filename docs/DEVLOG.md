@@ -8,40 +8,102 @@ Newest first. Each entry says what changed, what was verified, and an honest cri
 left click to swing (aim is where you look, longer hold is harder), E picks up and sets down a machine, R returns
 the ball, Backspace resets the hole, B jumps you to the ball, right click watches the ball, hold Space while the
 ball rolls to run it fast. **F1 plays the
-solution for the leg you are on (a hole solved that way is not recorded). Tab opens the menu. Keys 1 to 7 jump
-between holes.** (Keys 1 to 9, and 0 for hole 10.)
+solution for the leg you are on (a hole solved that way is not recorded). Tab opens the menu. Keys 1 to 9 jump
+between holes, 0 is hole 10 and the minus key is hole 11.** F turns a mirror.
 
-**Three things to try, in this order**
-1. **Holes 5, 8, 9 and 10** (press the number; 0 is hole 10). Five is the first one meant to be hard: the cup is
-   behind you, behind a gate. Eight: machines stand only on seven plinths. Nine: a new machine, the mirror (F turns
-   it). Ten is the last hole: a weight, a mirror, and plates whose colours have to be read. Try them without F1.
+**Four things to try, in this order**
+1. **Holes 5, 8, 9, 10 and 11** (press the number; 0 is hole 10, minus is hole 11). Five is the first one meant to
+   be hard: the cup is behind you, behind a gate. Eight: machines stand only on seven plinths. Nine: a new machine,
+   the mirror (F turns it). Ten, Periscope, is the newest and the best looking: two mirrors, the salt at night under
+   an aurora. Eleven is the last hole: a weight, a mirror, and plates whose colours have to be read. Try them
+   without F1.
 2. **The Workshop** (Tab, then Workshop). Build a hole: pick a tool along the bottom, drag on the table. Press T to
    test it, T again to come back. CHECK runs every swing without the machines; solving it yourself in a test is the
    other half of the proof. Tab has Keep, My holes, and a code you can copy to a friend.
 3. **Playing together.** Tab, Play together, Host this hole. A second copy of the game on your network joins by
    typing this machine's address there. (I tested it with two copies on this Mac: `Tools/hosttest.sh`.)
+4. **Your phone.** Run `Tools/phone.sh` in a terminal, point the phone's camera at the square it prints (same
+   Wi-Fi), and choose to visit the page when the phone warns about the certificate. Tell me what happens. This is
+   the one thing in the whole project I have no way to try: I can prove the Mac serves the game correctly
+   (`Tools/phone.sh check` does) and that touch works in Chrome's phone mode, not that a real phone runs it.
 
 **What I need from you** (things I cannot judge)
-1. **Swing feel and sound.** I have never heard the game, but I can now measure it (`Tools/sounds.sh`): every
+1. **Swing feel and sound.** I have never heard the game, but I can measure it (`Tools/sounds.sh`): every
    sound exists, none clips, and their levels sit within 10 dB of each other. Measuring showed the footsteps were
    as bright as cymbals (fixed) and that the worlds were silent between events (each place now has a quiet bed of
-   air: wind, canyon wind, night with crickets, water, and a hum in the Workshop). Whether any of it sounds good is
-   still yours to say.
+   air). **There is now music**: four slow chords per place and a glass note now and then, about 9 dB under a
+   footstep. I checked what can be checked without ears: every chord contains exactly the notes I wrote, no chord
+   holds two notes a semitone apart, the level never drops out, and the loop has no seam. Whether it is pleasant
+   or irritating is yours to say; Settings has a Music volume (and Off).
 2. **Do the holes make you think?** Holes 1 to 4 teach, 5 to 7 examine. Which felt like a puzzle and which felt
    like aiming?
 3. **The Workshop with real hands.** I drove every tool through the game's own input code (console strokes, fake
    touches, and real mouse clicks in Chrome), but nobody has dragged a wall with a mouse for ten minutes. Tell me
    the first thing that annoys you.
 4. **The look in motion.** Stills flatter it. Walk each world and tell me the first thing that looks cheap.
-5. **A real phone.** The browser build passes in Chrome's phone emulation. A real phone needs it served over HTTPS
-   on your network, which is a decision for you (see `docs/WEB.md`).
+5. **A real phone.** See "Your phone" above: one command, and I need you to hold the phone.
 
 **Decisions waiting on you**
 - The name. "Gravity Golf" is used by other games (see VISION, Competition).
 - Publishing the web build. It runs locally; nothing is public, and I will not publish without your word.
-- More holes or more polish next. There are ten holes, and the tenth is written as the last. Holes 8 to 10 took
-  eight designs between them (five thrown away; the reasons are in the entry below). My recommendation: holes are
-  the game, so that is where the next long stretch should go, with the Workshop as the place to prototype them.
+- More holes or more polish next. There are eleven holes, and the eleventh is written as the last. I did not wait
+  for the answer: I kept doing both (a new hole, then the worst-looking hole made better). Say if you want one or
+  the other.
+
+## 2026-11-19, session 3 (autonomous): Periscope, music, a phone command
+
+**Changed**
+- **Hole 10, Periscope** (the finale is now hole 11). Two mirrors on fifteen plinths. First an S: out, up and along,
+  over a plate that opens a slit in a black wall. Then a U round a blind wall to the cup, with the two glasses facing
+  different ways. The proof tries all 960 ways to stand and turn two mirrors on each swing: one works.
+- **Its place: the salt at night.** A moon far too large low over the brine, an aurora over the far end, both drawn
+  by the sky itself so the brine mirrors them. Black walls outlined in light.
+- **A mirror's frame is dead.** The end of the frame had been acting as a second, smaller mirror turned the other
+  way, and (once made soft) a full swing still dribbled past it onto a pad. Each was a second answer on two holes.
+  A ball that runs into the end of a frame now stops there. The finale went from two answers a swing to one.
+- **Music.** Four slow chords per place (D major for open ground, A Dorian in the canyon, E minor at night, F
+  Lydian in the flooded hall, C major in the Workshop) and a glass note every few seconds. Written out by the game
+  at start, off the main thread. Settings has a Music volume.
+- **Plates and gates are marked by number as well as colour.** Dots like a die on the plate, the same number of
+  studs over its gates, on any hole with more than one plate. The finale depends on telling five colours apart,
+  and one man in twelve cannot.
+- **Light plates have a rim and a groove** instead of being a flat disc of colour.
+- **Lantern Court and Second Wind are brighter.** From the tee the paving was a black plane.
+- **`Tools/phone.sh`**: serves the web build to a phone on the same Wi-Fi over HTTPS, with a certificate made on
+  the spot, and prints the address and a QR code. `check` proves the Mac's side.
+- `Tools/look.sh`: open a level, play, save pictures from the tee and from any views given.
+
+**Verified** (results at the end of this entry are from the runs made after the last change)
+- Sim tests pass, with a new one for the frame's end. All eleven proofs pass.
+- Periscope in the engine: its recorded answer sinks the ball in two swings; the rival finishes it at all three
+  skills (50 s, 96 s, 249 s).
+- In Chrome, from the web build made before the music: all eleven holes' answers sink the ball, the Workshop works
+  with a mouse and with touch at phone size, the phone-size play test passes.
+- The music, by measurement: the notes written are the notes played (within 3 cents, which is the shimmer), level
+  steady within 3 dB, loop seam smaller than an ordinary step between samples, peak 20 dB under full scale.
+
+**Critique**
+- *Decisions.* I added a hole when the finale already existed, which meant renumbering. The reason: holes 9 and 11
+  each teach the mirror as one of two tools, and nothing made the player compose two mirrors. What would make it
+  wrong: if Periscope turns out easier than the finale's neighbours, it is a third tutorial late in the game. With
+  plinths, the hole is pure deduction; a player who sees it will solve it in minutes. It is a good puzzle, not a
+  hard one. Nothing in this game is yet "look up a walkthrough" hard, and Ken asked for that.
+- *The first design failed the proof twice*, usefully. A straight putt went over the plate and through the gate
+  (I had put the plate on a line with both). And the second swing had two working swings out of 110,000 because it
+  left the pad through the pad's own backstop. Both are now notes in CLAUDE.md.
+- *The look.* The first pictures were bad: a white sticker of a moon with a bar of light across it, a black void
+  for the sea, a black rectangle for a wall. Three rounds fixed the worst thing each time. The aurora drew as
+  fourteen contour lines until its ray walk was dithered. What is still weak: the crust is a plain lit floor, and
+  the aurora is soft glow rather than sharp curtains. On the web the brine does not mirror anything, so that
+  version loses the picture's best part.
+- *Music is the riskiest thing in this entry.* I cannot hear it. I chose the most conservative music there is
+  (slow consonant pads, a pentatonic glass note) and tested everything testable, but "in tune and steady" is not
+  "good". It is quiet and it has an off switch for that reason.
+- *The field arrows* (blue arrowheads that stream along a machine's pull) look like debug marks in a still
+  picture. I looked at replacing them and kept them: they move, and they are how a placement is read. A player
+  might still find them ugly.
+- *Process.* I blamed a hung connection on TLS before testing plain HTTP, which showed in one step that it was the
+  firewall. And a server I thought I had stopped kept the port, because I had killed a subshell instead of it.
 
 ## 2026-11-19, session 2 (autonomous): the Workshop, a rival, an ending, real host and join
 

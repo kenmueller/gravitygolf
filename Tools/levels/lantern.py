@@ -176,7 +176,8 @@ def surroundings(m):
 c.fresh_level(LEVEL)
 mats = materials()
 # The moon stands behind the tee and to the left; its light comes over the player's shoulder.
-c.night_sky(**VARIANT.get("moon", dict(moon_pitch=-28.0, moon_yaw=38.0)))
+# (Brighter than a night would be: at the first settings the paving was a black plane and only the lanterns showed.)
+c.night_sky(**{"moon_lux": 0.7, "exposure_bias": -0.3, **VARIANT.get("moon", dict(moon_pitch=-28.0, moon_yaw=38.0))})
 with open(COURSE) as f:
     course_data = json.load(f)
 course_geometry(course_data, mats)

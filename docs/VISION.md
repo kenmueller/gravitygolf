@@ -130,7 +130,13 @@ Holes 1 to 4 are the tutorial. Hole 5 is the first exam: everything so far, on b
   shared as a short code. Mouse, gamepad and touch; it runs in the browser build. A Workshop hole can be hosted and
   played together (the host builds, everyone plays), and the rival can race one once it has been solved. Not built:
   a place to browse other people's holes, the solver's remaining checks in-game (one machine alone must fail).
-- Nine holes in six looks, the ninth written as the last, and a fast-forward for a rolling ball (hold Space).
+- Eleven holes in five places (each place seen at two or three hours of the day), the eleventh written as the last,
+  and a fast-forward for a rolling ball (hold Space).
+- Three machines: the attractor, the repulsor and the mirror. Plates, gates, pads and plinths.
+- Sound made by the game itself: thirteen effects, a bed of air per place, and slow music per place (four chords and
+  a glass note; its own volume setting). All of it measured rather than heard (`Tools/sounds.sh`).
+- Plates and gates are marked by number as well as colour (dots like a die on the plate, the same number of studs
+  over its gates), for players who cannot tell the colours apart.
 - An ending: the last hole's card closes the course and leads to the Workshop.
 
 ### Beautiful
