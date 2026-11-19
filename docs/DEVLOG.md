@@ -75,6 +75,7 @@ between holes.** (Keys 1 to 8 now.)
   the proof both ways, a test play that records the answer).
 - The standalone solver agrees with the in-game check on the starter hole (0 of 110,880 swings without the machine).
 - In Chrome: the Workshop with real mouse clicks, and at phone size with touch (tap a tool, drag, pinch, TEST).
+  All eight holes boot and their recorded answers sink the ball there, with the same swing counts as on the desktop.
 - `Tools/hosttest.sh`: two standalone copies of the game; the joiner connects by address and loads the host's hole.
 - `Tools/smoke.sh` (seven holes), `Tools/nettest.sh` (13 of 13), sim tests: all pass after the changes.
 - Frame rate from the tee: Workshop 80 fps, Colonnade 63 fps (it read 44 last time only because a web build was
@@ -104,8 +105,8 @@ between holes.** (Keys 1 to 8 now.)
   now glow the same colour (a hole with one plate looks as before). Not yet judged in a hole with several.
 - **The look.** The Workshop is the cleanest screen in the game, and the plainest: flat white and one glow colour.
   Fine for a tool. The test view's daytime sky fights the glowing table; dusk would suit it better.
-- The rival can race a Workshop hole once you have solved it (it follows your recorded answer). Untested beyond
-  compiling: I have not watched it do so.
+- The rival can race a Workshop hole once you have solved it (it follows your recorded answer). Checked once: at
+  hard it solved the starter hole in 31 seconds and 3 swings.
 - **The rival is slow to watch** (easy takes 19 minutes on hole 5) and only ever replays the recorded answer with
   errors; it does not think.
 - **Process.** My tests had been writing solves and test holes into your save file. They now use a scratch save

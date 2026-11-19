@@ -7,6 +7,7 @@ locally for now.
 Tools/web.sh Development     # package (about 2 minutes once the engine is built)
 Tools/webtest.sh             # run it in Chrome: desktop play and phone touch, with screenshots
 Tools/webtest.sh tour        # every hole: open it, picture from the tee, play its recorded solution
+Tools/webtest.sh workshop workshop-phone    # the level editor, with a mouse and at phone size with touch
 ../gravitygolf-web/Saved/Web/play-gravitygolf.sh    # serve it and play it yourself in your browser
 ```
 
@@ -18,7 +19,7 @@ What the browser runs showed (Chrome 156, M4 Max, the engine's harness):
 | First download | about 68 MB before the game is ready; about 100 MB in all (42 MB of code, 54 MB of content) |
 | Memory | 512 MB heap at peak |
 | Renderer | the mobile deferred tier, no WebGPU errors |
-| Works | title screen, menus, walking, carrying machines, the swing, the physics (recorded solutions sink the ball), touch stick and buttons under phone emulation (852x393) |
+| Works | title screen, menus, walking, carrying machines, the swing, the physics (all eight holes' recorded solutions sink the ball, in the same number of swings as on the desktop), touch stick and buttons under phone emulation (852x393), the Workshop (building with mouse clicks and with touch, its check, a test play) |
 
 What is different from the desktop game on the web:
 - No bounced light, no ray tracing, shadows from cascaded shadow maps. Clear sky (a dome), no volumetric clouds.
