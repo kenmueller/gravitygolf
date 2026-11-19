@@ -497,19 +497,23 @@ if (AuroraStrength > 0.0 && V.z > 0.02)
     float3 Glow = 0;
     // Each pixel starts its walk at a different depth, differently every frame, and the picture's own smoothing over
     // time blends the steps away. (Walked in step, fourteen samples drew fourteen thin lines, like a contour map.)
-    float Jitter = N.Hash(V * 791.0 + frac(Time * 7.3) * 13.0);
-    for (int Step = 0; Step < 18; Step++)
+    // Detail is 1 on a computer and 0 in the phone renderer (which the web uses too): there the walk takes a third of
+    // the steps over smoother noise, and its dither holds still, since nothing blends frames together.
+    int Count = Detail > 0.5 ? 18 : 6;
+    float Jitter = N.Hash(V * 791.0 + frac(Time * 7.3) * 13.0 * Detail);
+    for (int Step = 0; Step < Count; Step++)
     {
-        float T = (Step + Jitter) / 18.0;
+        float T = (Step + Jitter) / Count;
         float2 P = V.xy / V.z * (1.0 + T * 1.3);
-        float Field = N.Fbm(float3(P.x * 0.45, P.y * 0.15, Time * 0.012), 3) / 0.875;
+        float Field = Detail > 0.5 ? N.Fbm(float3(P.x * 0.45, P.y * 0.15, Time * 0.012), 3) / 0.875
+                                   : N.Fbm(float3(P.x * 0.45, P.y * 0.15, Time * 0.012), 2) / 0.75;
         float Sheet = pow(saturate(1.0 - abs(Field * 2.0 - 1.0)), 7.0);
         // Fine upright streaks: quick changes along the curtain, slow ones across it.
         float Rays = 0.35 + 0.65 * N.Noise(float3(P.y * 9.0, P.x * 2.0, Time * 0.05));
         float Profile = exp(-T * 2.6) * smoothstep(0.0, 0.1, T);
         Glow += lerp(AuroraLow, AuroraHigh, T) * Sheet * Rays * Profile / (1.0 + dot(P, P) * 0.015);
     }
-    Night += Glow * (AuroraStrength / 18.0) * smoothstep(0.02, 0.16, V.z);
+    Night += Glow * (AuroraStrength / Count) * smoothstep(0.02, 0.16, V.z);
 }
 return Night;
 """
@@ -533,9 +537,18 @@ def build_night_sky():
     aurora = scalar_param(material, "AuroraStrength", 0.0, -900, 1000)
     aurora_low = vector_param(material, "AuroraLow", (0.1, 1.0, 0.45, 1), -900, 1100)
     aurora_high = vector_param(material, "AuroraHigh", (0.55, 0.2, 1.0, 1), -900, 1250)
+    # 1 on a computer, 0 in the phone renderer: the aurora is walked in fewer steps there.
+    detail = node(material, unreal.MaterialExpressionFeatureLevelSwitch, -900, 1400)
+    one = node(material, unreal.MaterialExpressionConstant, -1100, 1380, r=1.0)
+    zero = node(material, unreal.MaterialExpressionConstant, -1100, 1460, r=0.0)
+    for source, pin in [(one, "Default"), (zero, "ES3_1")]:
+        if not MEL.connect_material_expressions(source, "", detail, pin):
+            unreal.log_error(f"GG: night sky: no '{pin}' pin on the feature level switch")
     sky = custom(material, NIGHT, ["CameraDir", "HorizonColor", "ZenithColor", "BandColor", "StarStrength", "Time",
-                                   "MoonDir", "MoonSize", "MoonColor", "AuroraStrength", "AuroraLow", "AuroraHigh"],
+                                   "MoonDir", "MoonSize", "MoonColor", "AuroraStrength", "AuroraLow", "AuroraHigh",
+                                   "Detail"],
                  -500, 100)
+    MEL.connect_material_expressions(detail, "", sky, "Detail")
     for source, pin in [(camera, "CameraDir"), (horizon, "HorizonColor"), (zenith, "ZenithColor"), (band, "BandColor"),
                         (stars, "StarStrength"), (time, "Time"), (moon_dir, "MoonDir"), (moon_size, "MoonSize"),
                         (moon_color, "MoonColor"), (aurora, "AuroraStrength"), (aurora_low, "AuroraLow"),
