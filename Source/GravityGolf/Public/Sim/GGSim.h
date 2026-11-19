@@ -63,11 +63,16 @@ struct FSafeZone
 	double Radius = 150.0;
 };
 
-/** A plate in the ground. Rolling over it presses it and opens its gates. */
+/**
+ * A plate in the ground that opens its gates.
+ *  - A light plate is pressed by the ball rolling over it.
+ *  - A weight plate ignores the ball: it is down only while a gravity machine stands on it (see HoldWeightPlates).
+ */
 struct FSwitch
 {
 	FVec3 Center;
 	double Radius = 60.0;
+	bool bWeight = false;
 };
 
 /** A barrier that stops the ball until its switch is pressed. */
@@ -158,6 +163,12 @@ struct FEvent
 	FVec3 Position;
 	int Index = -1;
 };
+
+/**
+ * Marks every weight plate that has a machine standing on it as held. Held is one flag per switch, the same list
+ * FSim::Begin takes; flags already set (presses banked on earlier legs) are left alone.
+ */
+void HoldWeightPlates(const FCourse& Course, const std::vector<FAttractor>& Machines, std::vector<bool>& Held);
 
 class FSim
 {

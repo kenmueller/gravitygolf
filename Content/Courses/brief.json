@@ -195,5 +195,6 @@
 			"yaw": 64,
 			"power": 0.35
 		}
-	]
+	],
+	"next": "Colonnade"
 }

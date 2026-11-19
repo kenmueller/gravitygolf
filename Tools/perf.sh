@@ -4,7 +4,7 @@
 # Editor numbers are a floor, not the shipping figure: the editor adds overhead and renders into a panel.
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 LOG="$HOME/Library/Logs/Unreal Engine/GravityGolfEditor/GravityGolf.log"
-LEVELS="${*:-Terraces SaltMirror Canyon Lantern Returning Brief}"
+LEVELS="${*:-Terraces SaltMirror Canyon Lantern Returning Brief Colonnade}"
 for LEVEL in $LEVELS; do
 	"$ROOT/Tools/play.sh" stop
 	python3 "$ROOT/Tools/mcp.py" call call_tool "{\"toolset_name\":\"EditorToolset.LevelToolset\",\"tool_name\":\"LoadLevel\",\"arguments\":{\"levelPath\":\"/Game/Levels/$LEVEL\",\"unsavedChangesPolicy\":\"Discard\"}}" >/dev/null 2>&1

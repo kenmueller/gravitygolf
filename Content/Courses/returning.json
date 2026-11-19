@@ -260,7 +260,8 @@
 				1000,
 				0
 			],
-			"radius": 150
+			"radius": 150,
+			"weight": false
 		}
 	],
 	"gates": [

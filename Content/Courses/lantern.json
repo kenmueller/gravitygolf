@@ -281,7 +281,8 @@
 				350,
 				0
 			],
-			"radius": 140
+			"radius": 140,
+			"weight": false
 		}
 	],
 	"gates": [

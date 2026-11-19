@@ -55,10 +55,13 @@ class Course:
             side = radius * 1.7
             self.box(f"SafePad{len(self.safe_zones)}", (x, y, z - 10), (side, side, 20), "sand", "pad")
 
-    def switch(self, x, y, z=0, radius=70):
-        """A plate in the ground. The ball presses it by rolling over it. Returns its index for gates."""
-        self.switches.append({"position": [x, y, z], "radius": radius})
-        self.no_machine.append({"position": [x, y, z], "radius": radius + 40, "kind": "switch"})
+    def switch(self, x, y, z=0, radius=70, weight=False):
+        """A plate in the ground. A light plate is pressed by the ball rolling over it, and machines can't stand on
+        it. A weight plate ignores the ball and is down only while a machine stands on it. Returns its index for
+        gates."""
+        self.switches.append({"position": [x, y, z], "radius": radius, "weight": weight})
+        if not weight:
+            self.no_machine.append({"position": [x, y, z], "radius": radius + 40, "kind": "switch"})
         return len(self.switches) - 1
 
     def gate(self, name, center, size, switch, open_seconds=0.0, surface="sand"):
@@ -121,7 +124,7 @@ class Course:
                                                    c[1] + s[1] / 2, c[2] + s[2] / 2, SURFACES[b["surface"]])) + "\n")
             f.write(f"{len(self.switches)}\n")
             for sw in self.switches:
-                f.write(f"{sw['position'][0]} {sw['position'][1]} {sw['position'][2]} {sw['radius']}\n")
+                f.write(f"{sw['position'][0]} {sw['position'][1]} {sw['position'][2]} {sw['radius']} {1 if sw.get('weight') else 0}\n")
             f.write(f"{len(self.gates)}\n")
             for g in self.gates:
                 c, s = g["center"], g["size"]

@@ -30,7 +30,10 @@ int main(int Argc, char** Argv)
 	}
 
 	FSim Sim;
-	Sim.Begin(S.Course, Machines, Leg.Start, {std::cos(Yaw) * Power * 3000.0, std::sin(Yaw) * Power * 3000.0, 0.0}, {}, &Leg.Held);
+	// Weight plates are down wherever a machine stands on one.
+	std::vector<bool> Held = Leg.Held;
+	GG::HoldWeightPlates(S.Course, Machines, Held);
+	Sim.Begin(S.Course, Machines, Leg.Start, {std::cos(Yaw) * Power * 3000.0, std::sin(Yaw) * Power * 3000.0, 0.0}, {}, &Held);
 	std::vector<FEvent> Events;
 	const char* Names[] = {"engaged", "released", "switch", "gate closed", "bounce", "land", "lip out", "SUNK", "rest", "lost", "timed out"};
 	double NextPrint = 0.0;

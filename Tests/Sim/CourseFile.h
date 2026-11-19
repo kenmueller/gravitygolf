@@ -77,7 +77,9 @@ inline bool LoadCourse(const char* Path, FSetup& S)
 	for (int I = 0; I < Count; ++I)
 	{
 		FSwitch Sw;
-		In >> Sw.Center.X >> Sw.Center.Y >> Sw.Center.Z >> Sw.Radius;
+		int Weight = 0;
+		In >> Sw.Center.X >> Sw.Center.Y >> Sw.Center.Z >> Sw.Radius >> Weight;
+		Sw.bWeight = Weight != 0;
 		C.Switches.push_back(Sw);
 	}
 	In >> Count;
@@ -140,7 +142,10 @@ inline FLeg MakeLeg(const FSetup& S, int Index)
 inline bool LegReached(const FSetup& S, const FLeg& Leg, const std::vector<GG::FAttractor>& Machines, GG::FVec3 Launch)
 {
 	GG::FSim Sim;
-	Sim.Begin(S.Course, Machines, Leg.Start, Launch, {}, &Leg.Held);
+	// Weight plates are down wherever a machine stands on one.
+	std::vector<bool> Held = Leg.Held;
+	GG::HoldWeightPlates(S.Course, Machines, Held);
+	Sim.Begin(S.Course, Machines, Leg.Start, Launch, {}, &Held);
 	const GG::EBallState End = Sim.Run();
 	if (Leg.Target < 0)
 	{

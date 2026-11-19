@@ -52,7 +52,7 @@ Never report something as good when it is merely working.
 ```
 GravityGolf.uproject          plugins: ModelContextProtocol + AllToolsets (MCP), Python, ProceduralMesh
 Source/GravityGolf/
-  */Sim/GGSim.*               deterministic 3D ball physics (boxes, surfaces, machines, cup, safe pads, plates, gates)
+  */Sim/GGSim.*               deterministic 3D ball physics (boxes, surfaces, machines, cup, safe pads, light and weight plates, gates)
   */Game/GGCourse.*           loads Content/Courses/<level>.json, steps the sim at 240 Hz, ball/attractors/flag
   */Game/GGGolfer.*           first-person character: walk, keys, gamepad and touch; carry machines, swing, menus
   */Game/GGGameMode.*         starts the course matching the level name; console commands (GGDemo, GGHole, GGPerf, GGView...)
@@ -135,6 +135,12 @@ console and read the pass list in the log before guessing.
 - Web builds: the 5.9 preview's Mac launcher build cannot target Wasm ("not supported from this engine
   distribution"; it lacks the Wasm third-party libraries, page template and tools). The editor will not even list
   the Wasm platform for cooking unless the Emscripten SDK is found (`WASM_EMSDK_ROOT=~/emsdk`, version 6.0.10).
+- Weight plates (`c.switch(..., weight=True)`) are down only while a machine stands on them and are never banked
+  by a pad. `GG::HoldWeightPlates` settles them before each swing; the game, the solver, the search and the probe
+  all call it. The search stands a machine on a plate a third of the time.
+- A dead ball inside an attractor's dome is reeled in and thrown out the far side; inside a repulsor's dome it is
+  pushed straight away. Many "answers" the search finds are a ball killed on a wall and then carried by the
+  machines. They pass the proof, but trace them (`Tests/Sim/probe.sh`) before recording one as the intended answer.
 - Adding a hole: its course and level scripts, an entry in `UGGSave::Holes()` (GGSave.cpp), the previous course's
   `next_level`, and the level lists in `Tools/smoke.sh`, `Tools/perf.sh`, `Tools/regen.sh` and `Tools/web.sh`.
 - Test a hole's stated idea, not only the hole: change what the idea depends on (move the cup, hold the gate open)

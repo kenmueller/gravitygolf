@@ -73,6 +73,28 @@ uint64_t Mix(uint64_t Hash, const void* Data, size_t Size)
 }
 } // namespace
 
+void HoldWeightPlates(const FCourse& Course, const std::vector<FAttractor>& Machines, std::vector<bool>& Held)
+{
+	Held.resize(Course.Switches.size(), false);
+	for (size_t I = 0; I < Course.Switches.size(); ++I)
+	{
+		const FSwitch& Switch = Course.Switches[I];
+		if (!Switch.bWeight)
+		{
+			continue;
+		}
+		for (const FAttractor& Machine : Machines)
+		{
+			const double Dx = Machine.Position.X - Switch.Center.X;
+			const double Dy = Machine.Position.Y - Switch.Center.Y;
+			if (Dx * Dx + Dy * Dy <= Switch.Radius * Switch.Radius)
+			{
+				Held[I] = true;
+			}
+		}
+	}
+}
+
 void FSim::Begin(const FCourse& InCourse, const std::vector<FAttractor>& InAttractors, FVec3 Start, FVec3 Launch,
 	const FPhysics& InPhysics, const std::vector<bool>* HeldSwitches)
 {
@@ -282,6 +304,11 @@ void FSim::SubStep(double H, std::vector<FEvent>* Events)
 	for (size_t I = 0; I < Course->Switches.size(); ++I)
 	{
 		const FSwitch& Switch = Course->Switches[I];
+		if (Switch.bWeight)
+		{
+			// Too heavy for a ball: only a machine standing on it holds it down, and that is settled before the swing.
+			continue;
+		}
 		const double Dx = B.Position.X - Switch.Center.X;
 		const double Dy = B.Position.Y - Switch.Center.Y;
 		const double Dz = B.Position.Z - Switch.Center.Z;

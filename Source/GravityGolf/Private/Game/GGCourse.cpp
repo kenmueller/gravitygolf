@@ -140,7 +140,9 @@ bool AGGCourse::Load(const FString& CourseId)
 	{
 		for (const TSharedPtr<FJsonValue>& Value : *Switches)
 		{
-			Course.Switches.push_back({ReadVec(Value->AsObject(), TEXT("position")), Value->AsObject()->GetNumberField(TEXT("radius"))});
+			bool bWeight = false;
+			Value->AsObject()->TryGetBoolField(TEXT("weight"), bWeight);
+			Course.Switches.push_back({ReadVec(Value->AsObject(), TEXT("position")), Value->AsObject()->GetNumberField(TEXT("radius")), bWeight});
 		}
 	}
 	const TArray<TSharedPtr<FJsonValue>>* Gates = nullptr;
@@ -266,12 +268,27 @@ void AGGCourse::BuildActors()
 			->SetCastShadow(false);
 	}
 
-	// Switch plates: discs set into the ground that light when the ball rolls over them.
+	// Switch plates. A light plate is a disc set into the ground that lights when the ball rolls over it. A weight
+	// plate is a heavy square slab with a lit rim, plainly something to stand a machine on.
+	UStaticMesh* Slab = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube"));
 	for (const GG::FSwitch& Switch : Course.Switches)
 	{
 		const double Scale = Switch.Radius / 50.0;
 		UMaterialInstanceDynamic* Material = Glow(FLinearColor(1.f, 0.6f, 0.15f), 1.5f);
 		SwitchMaterials.Add(Material);
+		if (Switch.bWeight)
+		{
+			UMaterialInstanceDynamic* Iron = UMaterialInstanceDynamic::Create(LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/M_GG_Surface.M_GG_Surface")), this);
+			Iron->SetVectorParameterValue(TEXT("BaseColor"), FLinearColor(0.05f, 0.05f, 0.055f));
+			Iron->SetScalarParameterValue(TEXT("Metallic"), 1.f);
+			Iron->SetScalarParameterValue(TEXT("Roughness"), 0.45f);
+			const double Side = Switch.Radius * 1.7 / 100.0;
+			AddMesh(Slab, Material, FTransform(FRotator::ZeroRotator, ToUnreal(Switch.Center) + FVector(0, 0, 0.6), FVector(Side + 0.14, Side + 0.14, 0.008)))
+				->SetCastShadow(false);
+			AddMesh(Slab, Iron, FTransform(FRotator::ZeroRotator, ToUnreal(Switch.Center) + FVector(0, 0, 1.0), FVector(Side, Side, 0.016)))
+				->SetCastShadow(false);
+			continue;
+		}
 		AddMesh(Cylinder, Material, FTransform(FRotator::ZeroRotator, ToUnreal(Switch.Center) + FVector(0, 0, 0.5), FVector(Scale, Scale, 0.006)))
 			->SetCastShadow(false);
 	}
@@ -526,7 +543,10 @@ void AGGCourse::Swing(const FVector& Direction, double Power)
 	const FVector Velocity = Direction.GetSafeNormal() * (FMath::Clamp(Power, 0.02, 1.0) * Physics.MaxLaunchSpeed);
 	++StrokeCount;
 	Status.Reset();
-	Sim.Begin(Course, Attractors, Lie, ToSim(Velocity), Physics, &HeldSwitches);
+	// Presses banked on earlier legs, plus every weight plate a machine is standing on.
+	std::vector<bool> Held = HeldSwitches;
+	GG::HoldWeightPlates(Course, Attractors, Held);
+	Sim.Begin(Course, Attractors, Lie, ToSim(Velocity), Physics, &Held);
 	PreviousPosition = Lie;
 	Accumulator = 0.0;
 	Trail.Reset();
@@ -541,7 +561,9 @@ void AGGCourse::PreviewSwing(const FVector& Direction, double Power, double Seco
 	OutPoints.Reset();
 	GG::FSim Preview;
 	const FVector Velocity = Direction.GetSafeNormal() * (FMath::Clamp(Power, 0.02, 1.0) * Physics.MaxLaunchSpeed);
-	Preview.Begin(Course, Attractors, Lie, ToSim(Velocity), Physics, &HeldSwitches);
+	std::vector<bool> Held = HeldSwitches;
+	GG::HoldWeightPlates(Course, Attractors, Held);
+	Preview.Begin(Course, Attractors, Lie, ToSim(Velocity), Physics, &Held);
 	const int32 Steps = FMath::RoundToInt32(Seconds / GG::FSim::Dt);
 	for (int32 Step = 0; Step < Steps && !Preview.Finished(); ++Step)
 	{
@@ -579,7 +601,8 @@ void AGGCourse::FinishStroke(GG::EBallState State)
 			for (size_t I = 0; I < HeldSwitches.size(); ++I)
 			{
 				// A plate pressed on the way to a pad stays pressed for the rest of the hole.
-				HeldSwitches[I] = HeldSwitches[I] || Sim.SwitchPressed(static_cast<int>(I));
+				// A weight plate is never banked: it is down only while a machine stands on it.
+				HeldSwitches[I] = HeldSwitches[I] || (!Course.Switches[I].bWeight && Sim.SwitchPressed(static_cast<int>(I)));
 			}
 			const GG::FSafeZone& Zone = Course.SafeZones[Sim.Ball().SafeZone];
 			Lie = Zone.Center + GG::FVec3{0.0, 0.0, Course.BallRadius};
@@ -804,16 +827,18 @@ void AGGCourse::UpdateFieldPreview(float DeltaSeconds)
 
 	// Plates glow green once pressed; gate bars sink while their gate is open.
 	const bool bLive = CurrentPhase == EGGPhase::Flying;
+	std::vector<bool> Down = HeldSwitches;
+	GG::HoldWeightPlates(Course, Attractors, Down);
 	for (int32 I = 0; I < SwitchMaterials.Num(); ++I)
 	{
-		const bool bPressed = HeldSwitches[I] || (bLive && Sim.SwitchPressed(I));
+		const bool bPressed = Down[I] || (bLive && Sim.SwitchPressed(I));
 		SwitchMaterials[I]->SetVectorParameterValue(TEXT("Color"), bPressed ? FLinearColor(0.25f, 1.f, 0.45f) : FLinearColor(1.f, 0.6f, 0.15f));
 		SwitchMaterials[I]->SetScalarParameterValue(TEXT("Strength"), bPressed ? 6.f : 1.5f);
 	}
 	for (int32 I = 0; I < GateBars.Num(); ++I)
 	{
 		const GG::FGate& Gate = Course.Gates[I];
-		const bool bOpen = bLive ? Sim.GateOpen(I) : (HeldSwitches[Gate.Switch] && Gate.OpenSeconds <= 0.0);
+		const bool bOpen = bLive ? Sim.GateOpen(I) : (Down[Gate.Switch] && Gate.OpenSeconds <= 0.0);
 		GateLevel[I] = FMath::FInterpTo(GateLevel[I], bOpen ? 0.f : 1.f, DeltaSeconds, 9.f);
 		GateBars[I]->SetRelativeScale3D(FVector(1.f, 1.f, FMath::Max(GateLevel[I], 0.001f)));
 		GateBars[I]->SetVisibility(GateLevel[I] > 0.02f, true);

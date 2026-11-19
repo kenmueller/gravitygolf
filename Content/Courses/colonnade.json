@@ -1,0 +1,290 @@
+{
+	"id": "colonnade",
+	"name": "Dead Weight",
+	"level": "Colonnade",
+	"par": 1,
+	"ballRadius": 6,
+	"gravity": [
+		0,
+		0,
+		-980
+	],
+	"killZ": -1400,
+	"tee": {
+		"position": [
+			500,
+			350,
+			6
+		],
+		"yaw": 0
+	},
+	"cup": {
+		"position": [
+			5400,
+			-250,
+			0
+		],
+		"radius": 42,
+		"captureSpeed": 650
+	},
+	"noMachine": [
+		{
+			"position": [
+				5400,
+				-250,
+				0
+			],
+			"radius": 380,
+			"kind": "court"
+		}
+	],
+	"safeZones": [],
+	"attractors": [
+		{
+			"position": [
+				800,
+				-350,
+				0
+			],
+			"strength": 420,
+			"range": 1900,
+			"coreHeight": 45,
+			"movable": true
+		},
+		{
+			"position": [
+				1050,
+				-350,
+				0
+			],
+			"strength": -420,
+			"range": 1500,
+			"coreHeight": 45,
+			"movable": true
+		}
+	],
+	"boxes": [
+		{
+			"name": "Floor",
+			"center": [
+				3000,
+				250,
+				-15
+			],
+			"size": [
+				6400,
+				2300,
+				30
+			],
+			"surface": "green",
+			"look": "floor",
+			"shape": "box"
+		},
+		{
+			"name": "Wall_South",
+			"center": [
+				3000.0,
+				-800.0,
+				55.0
+			],
+			"size": [
+				6400,
+				200,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Wall_West",
+			"center": [
+				-100.0,
+				0.0,
+				55.0
+			],
+			"size": [
+				200,
+				1400,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Wall_East",
+			"center": [
+				6100.0,
+				0.0,
+				55.0
+			],
+			"size": [
+				200,
+				1400,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Wall_North_W",
+			"center": [
+				1250.0,
+				800.0,
+				55.0
+			],
+			"size": [
+				2900,
+				200,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Wall_North_E",
+			"center": [
+				4750.0,
+				800.0,
+				55.0
+			],
+			"size": [
+				2900,
+				200,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Alcove_W",
+			"center": [
+				2600.0,
+				1275.0,
+				55.0
+			],
+			"size": [
+				200,
+				750,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Alcove_E",
+			"center": [
+				3400.0,
+				1275.0,
+				55.0
+			],
+			"size": [
+				200,
+				750,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Alcove_N",
+			"center": [
+				3000.0,
+				1750.0,
+				55.0
+			],
+			"size": [
+				1000,
+				200,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Baffle",
+			"center": [
+				2400.0,
+				-225.0,
+				55.0
+			],
+			"size": [
+				120,
+				950,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Cross",
+			"center": [
+				4200.0,
+				300.0,
+				55.0
+			],
+			"size": [
+				120,
+				800,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		}
+	],
+	"switches": [
+		{
+			"position": [
+				3000.0,
+				1350,
+				0
+			],
+			"radius": 130,
+			"weight": true
+		}
+	],
+	"gates": [
+		{
+			"name": "Gate",
+			"center": [
+				4200,
+				-400,
+				110
+			],
+			"size": [
+				60,
+				600,
+				220
+			],
+			"switch": 0,
+			"openSeconds": 0.0,
+			"surface": "sand"
+		}
+	],
+	"solutions": [
+		{
+			"leg": 0,
+			"machines": [
+				[
+					3250,
+					150
+				],
+				[
+					3000,
+					1350
+				]
+			],
+			"yaw": 14,
+			"power": 0.325
+		}
+	]
+}

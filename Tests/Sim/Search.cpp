@@ -59,6 +59,21 @@ int main(int Argc, char** Argv)
 						X = std::round((S.MinX + U(Rng) * (S.MaxX - S.MinX)) / 50.0) * 50.0;
 						Y = std::round((S.MinY + U(Rng) * (S.MaxY - S.MinY)) / 50.0) * 50.0;
 					} while (!MachineAllowed(S, X, Y));
+					// A third of the time, stand the machine on a weight plate (if the course has any).
+					std::vector<const FSwitch*> Plates;
+					for (const FSwitch& Switch : S.Course.Switches)
+					{
+						if (Switch.bWeight)
+						{
+							Plates.push_back(&Switch);
+						}
+					}
+					if (!Plates.empty() && U(Rng) < 0.34)
+					{
+						const FSwitch* Plate = Plates[static_cast<size_t>(U(Rng) * Plates.size()) % Plates.size()];
+						X = Plate->Center.X;
+						Y = Plate->Center.Y;
+					}
 					Machines.push_back({{X, Y, M.CoreHeight}, M.Strength, M.Range});
 					Spots.push_back({X, Y, 0});
 				}
