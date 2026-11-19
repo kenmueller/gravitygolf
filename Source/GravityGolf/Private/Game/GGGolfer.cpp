@@ -16,6 +16,7 @@
 #include "HAL/IConsoleManager.h"
 #include "InputCoreTypes.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Net/UnrealNetwork.h"
 #include "UObject/ConstructorHelpers.h"
 
 namespace
@@ -94,6 +95,31 @@ AGGGolfer::AGGGolfer()
 		Part->bVisibleInRayTracing = false;
 	}
 
+	// The first-person club is for its own player only.
+	for (UStaticMeshComponent* Part : {ClubShaft.Get(), ClubGrip.Get(), ClubHead.Get()})
+	{
+		Part->SetOnlyOwnerSee(true);
+	}
+
+	// The body other players see. It hangs from the capsule's center with its feet (the air under it) on the ground.
+	AvatarRoot = CreateDefaultSubobject<USceneComponent>(TEXT("AvatarRoot"));
+	AvatarRoot->SetupAttachment(GetCapsuleComponent());
+	AvatarRoot->SetRelativeLocation(FVector(0.f, 0.f, -88.f));
+	AvatarBody = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("AvatarBody"));
+	AvatarBody->SetupAttachment(AvatarRoot);
+	AvatarHead = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("AvatarHead"));
+	AvatarHead->SetupAttachment(AvatarRoot);
+	AvatarHead->SetRelativeLocation(FVector(0.f, 0.f, 152.f));
+	AvatarClub = CreateDefaultSubobject<USceneComponent>(TEXT("AvatarClub"));
+	AvatarClub->SetupAttachment(AvatarRoot);
+	// Held between the hands, pointing forward and down to the ground.
+	AvatarClub->SetRelativeLocationAndRotation(FVector(30.f, 0.f, 93.f), FRotator(-62.f, 0.f, 0.f));
+	for (UStaticMeshComponent* Part : {AvatarBody.Get(), AvatarHead.Get()})
+	{
+		Part->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		Part->SetOwnerNoSee(true);
+	}
+
 	bUseControllerRotationYaw = true;
 	UCharacterMovementComponent* Movement = GetCharacterMovement();
 	Movement->MaxWalkSpeed = WalkSpeed;
@@ -142,6 +168,97 @@ void AGGGolfer::BeginPlay()
 		Paint(ClubHead, 1, FLinearColor(0.92f, 0.92f, 0.9f), 0.f, 0.5f);
 		Paint(ClubHead, 2, FLinearColor(0.75f, 0.42f, 0.18f), 1.f, 0.26f);
 	}
+
+	// The avatar: ivory shell, bronze trim, and a light in the player's colour.
+	UStaticMesh* Body = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Meshes/SM_Avatar_Body.SM_Avatar_Body"));
+	UStaticMesh* Face = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Meshes/SM_Avatar_Head.SM_Avatar_Head"));
+	UMaterialInterface* GlowBase = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/M_GG_Glow.M_GG_Glow"));
+	if (Body && Face && GlowBase)
+	{
+		AvatarBody->SetStaticMesh(Body);
+		AvatarHead->SetStaticMesh(Face);
+		AvatarLight = UMaterialInstanceDynamic::Create(GlowBase, this);
+		AvatarLight->SetScalarParameterValue(TEXT("Strength"), 2.2f);
+		for (UStaticMeshComponent* Part : {AvatarBody.Get(), AvatarHead.Get()})
+		{
+			Paint(Part, 0, FLinearColor(0.72f, 0.69f, 0.62f), 0.f, 0.32f);
+			Paint(Part, 1, FLinearColor(0.42f, 0.24f, 0.09f), 1.f, 0.3f);
+			Part->SetMaterial(2, AvatarLight);
+		}
+		// Its putter: the same three meshes as the first-person club.
+		if (Grip && Shaft && Head)
+		{
+			for (UStaticMesh* Mesh : {Grip, Shaft, Head})
+			{
+				UStaticMeshComponent* Part = NewObject<UStaticMeshComponent>(this);
+				Part->SetStaticMesh(Mesh);
+				Part->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+				Part->SetOwnerNoSee(true);
+				Part->SetupAttachment(AvatarClub);
+				Part->RegisterComponent();
+				AvatarClubParts.Add(Part);
+			}
+			Paint(AvatarClubParts[0], 0, FLinearColor(0.012f, 0.012f, 0.014f), 0.f, 0.82f);
+			Paint(AvatarClubParts[1], 0, FLinearColor(0.62f, 0.63f, 0.65f), 1.f, 0.18f);
+			Paint(AvatarClubParts[2], 0, FLinearColor(0.46f, 0.47f, 0.49f), 1.f, 0.3f);
+			Paint(AvatarClubParts[2], 1, FLinearColor(0.92f, 0.92f, 0.9f), 0.f, 0.5f);
+			Paint(AvatarClubParts[2], 2, FLinearColor(0.75f, 0.42f, 0.18f), 1.f, 0.26f);
+		}
+		OnRep_Seat();
+	}
+}
+
+void AGGGolfer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AGGGolfer, Seat);
+}
+
+void AGGGolfer::SetSeat(int32 InSeat)
+{
+	Seat = InSeat;
+	OnRep_Seat();
+}
+
+void AGGGolfer::OnRep_Seat()
+{
+	// Blue, amber, green, rose: one each for the first four players.
+	static const FLinearColor Colours[] = {FLinearColor(0.2f, 0.6f, 1.f), FLinearColor(1.f, 0.55f, 0.12f), FLinearColor(0.35f, 1.f, 0.45f),
+		FLinearColor(1.f, 0.35f, 0.65f)};
+	if (AvatarLight)
+	{
+		AvatarLight->SetVectorParameterValue(TEXT("Color"), Colours[FMath::Abs(Seat) % UE_ARRAY_COUNT(Colours)]);
+	}
+}
+
+void AGGGolfer::UpdateAvatar(float DeltaSeconds)
+{
+	if (!AvatarBody->GetStaticMesh())
+	{
+		return;
+	}
+	const float Time = GetWorld()->GetTimeSeconds() + Seat * 1.7f;
+	const FVector Velocity = GetVelocity();
+	const float Speed = static_cast<float>(Velocity.Size2D());
+	// It hovers: a slow bob, and it leans into the way it is going.
+	const FVector Local = GetActorRotation().UnrotateVector(Velocity);
+	const float Lean = FMath::Clamp(static_cast<float>(Local.X) / 950.f, -1.f, 1.f) * 11.f;
+	const float Bank = FMath::Clamp(static_cast<float>(Local.Y) / 950.f, -1.f, 1.f) * 9.f;
+	AvatarRoot->SetRelativeLocation(FVector(0.f, 0.f, -88.f + 5.f * FMath::Sin(Time * 2.1f) + FMath::Min(Speed, 600.f) * 0.004f));
+	AvatarRoot->SetRelativeRotation(FMath::RInterpTo(AvatarRoot->GetRelativeRotation(), FRotator(-Lean, 0.f, Bank), DeltaSeconds, 6.f));
+	// The head looks where its player looks.
+	const float Pitch = FMath::Clamp(FRotator::NormalizeAxis(GetBaseAimRotation().Pitch), -50.f, 45.f);
+	AvatarHead->SetRelativeRotation(FMath::RInterpTo(AvatarHead->GetRelativeRotation(), FRotator(Pitch, 0.f, 0.f), DeltaSeconds, 10.f));
+
+	// The putter: put away while carrying a machine; drawn back and through when its player swings.
+	float Swing = 0.f;
+	if (AvatarSwing >= 0.f)
+	{
+		const float T = AvatarSwing / 0.8f;
+		Swing = T < 0.25f ? FMath::Lerp(-55.f, 40.f, T / 0.25f) : FMath::Lerp(40.f, 0.f, FMath::SmoothStep(0.f, 1.f, (T - 0.25f) / 0.75f));
+	}
+	AvatarClub->SetRelativeRotation(FRotator(-62.f + Swing * 0.5f, Swing * 0.35f, Swing));
+	AvatarClub->SetVisibility(!IsCarrying(), true);
 }
 
 void AGGGolfer::SetupPlayerInputComponent(UInputComponent* Input)
@@ -573,7 +690,166 @@ bool AGGGolfer::CanSwing() const
 
 FVector AGGGolfer::HoldPoint() const
 {
-	return Camera->GetComponentLocation() + GetControlRotation().Vector() * HoldDistance;
+	if (IsLocallyControlled())
+	{
+		return Camera->GetComponentLocation() + GetControlRotation().Vector() * HoldDistance;
+	}
+	// Someone else's golfer: where they stand and where their view points, as far as this machine knows.
+	return GetPawnViewLocation() + GetBaseAimRotation().Vector() * HoldDistance;
+}
+
+void AGGGolfer::GGNet(const FString& Command, const FString& Argument)
+{
+	AGGCourse* C = Course();
+	if (!C)
+	{
+		UE_LOG(LogTemp, Display, TEXT("Net[%s]: no course on this machine yet"), HasAuthority() ? TEXT("server") : TEXT("client"));
+		return;
+	}
+	TArray<FString> Parts;
+	Argument.ParseIntoArray(Parts, TEXT(","));
+	TArray<double> N;
+	for (const FString& Part : Parts)
+	{
+		N.Add(FCString::Atod(*Part));
+	}
+	if (Command == TEXT("carry") && N.Num() == 1)
+	{
+		if (HasAuthority())
+		{
+			C->CarryMachine(static_cast<int32>(N[0]), this);
+		}
+		else
+		{
+			ServerCarry(static_cast<int32>(N[0]));
+		}
+	}
+	else if (Command == TEXT("place") && N.Num() == 3)
+	{
+		PlaceCarried(FVector(N[0], N[1], N[2]));
+	}
+	else if (Command == TEXT("swing") && N.Num() == 2)
+	{
+		const FVector Direction = FRotator(0.0, N[0], 0.0).Vector();
+		if (HasAuthority())
+		{
+			C->Swing(Direction, N[1], this);
+		}
+		else
+		{
+			ServerSwing(Direction, static_cast<float>(N[1]));
+		}
+	}
+	else if (Command == TEXT("return"))
+	{
+		ReturnBall();
+	}
+	else if (Command == TEXT("reset"))
+	{
+		ResetHole();
+	}
+	else if (Command == TEXT("goto"))
+	{
+		GoToBall();
+	}
+	else if (Command == TEXT("tp") && N.Num() == 3)
+	{
+		const FVector Spot(N[0], N[1], N[2]);
+		SetActorLocation(Spot, false, nullptr, ETeleportType::TeleportPhysics);
+		if (!HasAuthority())
+		{
+			ServerTeleport(Spot);
+		}
+	}
+	const FVector At = GetActorLocation();
+	UE_LOG(LogTemp, Display, TEXT("Net[%s] %s: me (%.0f,%.0f) carrying %d | %s"), HasAuthority() ? TEXT("server") : TEXT("client"), *Command,
+		At.X, At.Y, Carried, *C->Describe());
+}
+
+void AGGGolfer::Tell(const FString& Message)
+{
+	if (IsLocallyControlled())
+	{
+		if (AGGCourse* C = Course())
+		{
+			C->Notify(Message);
+		}
+	}
+	else if (HasAuthority())
+	{
+		ClientTell(Message);
+	}
+}
+
+void AGGGolfer::ClientTell_Implementation(const FString& Message)
+{
+	if (AGGCourse* C = Course())
+	{
+		C->Notify(Message);
+	}
+}
+
+void AGGGolfer::ServerSwing_Implementation(FVector Direction, float Power)
+{
+	AGGCourse* C = Course();
+	// The server takes a swing only from someone standing at the ball with empty hands.
+	if (C && !IsCarrying() && DistanceToBall() < SwingReach * 1.6)
+	{
+		C->Swing(Direction, Power, this);
+	}
+}
+
+void AGGGolfer::ServerCarry_Implementation(int32 Index)
+{
+	AGGCourse* C = Course();
+	if (C && FVector::Dist(GetActorLocation(), C->MachineBase(Index)) < PickUpReach * 2.5)
+	{
+		C->CarryMachine(Index, this);
+	}
+}
+
+void AGGGolfer::ServerPlace_Implementation(FVector Ground)
+{
+	AGGCourse* C = Course();
+	if (C && IsCarrying() && FVector::Dist(GetActorLocation(), Ground) < PickUpReach * 2.5)
+	{
+		C->PlaceMachine(Carried, Ground, this);
+	}
+}
+
+void AGGGolfer::ServerReturnBall_Implementation()
+{
+	if (AGGCourse* C = Course())
+	{
+		C->ReturnBall();
+	}
+}
+
+void AGGGolfer::ServerResetHole_Implementation()
+{
+	if (AGGCourse* C = Course())
+	{
+		C->ResetHole();
+	}
+}
+
+void AGGGolfer::ServerAdvance_Implementation()
+{
+	AGGCourse* C = Course();
+	if (C && C->Phase() == EGGPhase::Sunk)
+	{
+		C->Advance();
+	}
+}
+
+void AGGGolfer::ServerTeleport_Implementation(FVector Location)
+{
+	SetActorLocation(Location, false, nullptr, ETeleportType::TeleportPhysics);
+}
+
+void AGGGolfer::ServerSetRunning_Implementation(bool bRun)
+{
+	GetCharacterMovement()->MaxWalkSpeed = bRun ? SprintSpeed : WalkSpeed;
 }
 
 bool AGGGolfer::CanPickUp() const
@@ -609,7 +885,14 @@ void AGGGolfer::SwingPressed()
 	AGGCourse* C = Course();
 	if (C && C->Phase() == EGGPhase::Sunk)
 	{
-		C->Advance();
+		if (HasAuthority())
+		{
+			C->Advance();
+		}
+		else
+		{
+			ServerAdvance();
+		}
 		return;
 	}
 	if (CanSwing())
@@ -661,14 +944,11 @@ bool AGGGolfer::PlaceCarried(const FVector& Ground)
 	{
 		return false;
 	}
-	if (!C->CanPlaceMachine(Ground))
+	if (HasAuthority())
 	{
-		C->Notify(TEXT("The machine won't stand on the court."));
-		return false;
+		return C->PlaceMachine(Carried, Ground, this);
 	}
-	C->MoveMachine(Carried, Ground, false);
-	GGAudio::MachinePlace(this, Ground);
-	Carried = INDEX_NONE;
+	ServerPlace(Ground);
 	return true;
 }
 
@@ -690,10 +970,17 @@ void AGGGolfer::Interact()
 	}
 	else
 	{
-		Carried = C->FindMachine(HoldPoint(), PickUpReach);
-		if (IsCarrying())
+		const int32 Index = C->FindMachine(HoldPoint(), PickUpReach);
+		if (Index != INDEX_NONE && !C->CarrierOf(Index))
 		{
-			GGAudio::MachinePickUp(this, C->MachineBase(Carried));
+			if (HasAuthority())
+			{
+				C->CarryMachine(Index, this);
+			}
+			else
+			{
+				ServerCarry(Index);
+			}
 		}
 	}
 }
@@ -705,7 +992,14 @@ void AGGGolfer::ReturnBall()
 		bCharging = false;
 		SwingTime = -1.f;
 		C->ShowGuide({});
-		C->ReturnBall();
+		if (HasAuthority())
+		{
+			C->ReturnBall();
+		}
+		else
+		{
+			ServerReturnBall();
+		}
 	}
 }
 
@@ -713,12 +1007,20 @@ void AGGGolfer::ResetHole()
 {
 	if (AGGCourse* C = Course())
 	{
-		Carried = INDEX_NONE;
 		bCharging = false;
 		SwingTime = -1.f;
 		C->ShowGuide({});
-		C->ResetHole();
-		GoToBall();
+		if (HasAuthority())
+		{
+			C->ResetHole();
+			GoToBall();
+		}
+		else
+		{
+			// The reset happens on the server; walk to the ball once it has come back to this machine.
+			ServerResetHole();
+			GoToBallIn = 0.4f;
+		}
 	}
 }
 
@@ -734,8 +1036,13 @@ void AGGGolfer::GoToBall()
 	ToCup.Z = 0.0;
 	const FVector Forward = ToCup.GetSafeNormal();
 	const FVector Right = FVector::CrossProduct(FVector::UpVector, Forward);
-	SetActorLocation(C->BallLocation() - Forward * 160.0 - Right * 45.0 + FVector(0, 0, 100.0), false, nullptr,
-		ETeleportType::TeleportPhysics);
+	const FVector Spot = C->BallLocation() - Forward * 160.0 - Right * 45.0 + FVector(0, 0, 100.0);
+	SetActorLocation(Spot, false, nullptr, ETeleportType::TeleportPhysics);
+	if (!HasAuthority())
+	{
+		// The server owns where everyone stands; without telling it, it would pull this player back.
+		ServerTeleport(Spot);
+	}
 	if (AController* PC = GetController())
 	{
 		PC->SetControlRotation(FRotator(-8.f, Forward.Rotation().Yaw, 0.f));
@@ -751,15 +1058,23 @@ bool AGGGolfer::TestCarryTo(const FVector& Ground)
 	}
 	if (!IsCarrying())
 	{
-		Carried = C->FindMachine(GetActorLocation(), 1.0e9);
+		C->CarryMachine(C->FindMachine(GetActorLocation(), 1.0e9), this);
 	}
 	return PlaceCarried(Ground);
 }
 
 bool AGGGolfer::TestPlaceMachine(int32 Index, const FVector& Ground)
 {
-	Carried = Index;
-	return PlaceCarried(Ground);
+	AGGCourse* C = Course();
+	if (!C)
+	{
+		return false;
+	}
+	if (Carried != Index)
+	{
+		C->CarryMachine(Index, this);
+	}
+	return Carried == Index && PlaceCarried(Ground);
 }
 
 void AGGGolfer::ShowSolution()
@@ -825,7 +1140,14 @@ void AGGGolfer::UpdateClub(float DeltaSeconds)
 			bStruck = true;
 			if (AGGCourse* C = Course())
 			{
-				C->Swing(SwingAim, SwingPower);
+				if (HasAuthority())
+				{
+					C->Swing(SwingAim, SwingPower, this);
+				}
+				else
+				{
+					ServerSwing(SwingAim, SwingPower);
+				}
 			}
 		}
 	}
@@ -874,6 +1196,34 @@ void AGGGolfer::Tick(float DeltaSeconds)
 		return;
 	}
 
+	// Every machine draws every golfer's carried machine at that golfer's hip, a little ahead.
+	if (IsCarrying())
+	{
+		C->MoveMachine(Carried, HoldPoint() - FVector(0, 0, 95.0), true);
+	}
+	if (AvatarSwing >= 0.f)
+	{
+		AvatarSwing += DeltaSeconds;
+		if (AvatarSwing > 0.8f)
+		{
+			AvatarSwing = -1.f;
+		}
+	}
+	UpdateAvatar(DeltaSeconds);
+	if (!IsLocallyControlled())
+	{
+		return;
+	}
+	// From here on: only the player at this machine.
+	if (GoToBallIn > 0.f)
+	{
+		GoToBallIn -= DeltaSeconds;
+		if (GoToBallIn <= 0.f)
+		{
+			GoToBall();
+		}
+	}
+
 	// The touch stick: how far the thumb is from where it went down, out to a thumb's reach.
 	FVector2D Stick = FVector2D::ZeroVector;
 	if (MoveFinger != INDEX_NONE && !MenuOpen())
@@ -893,6 +1243,15 @@ void AGGGolfer::Tick(float DeltaSeconds)
 	const bool bRunKey = Player && (Player->IsInputKeyDown(EKeys::LeftShift) || Player->IsInputKeyDown(EKeys::Gamepad_LeftThumbstick));
 	const bool bSprint = (bRunKey || Stick.SizeSquared() > 0.9) && !bCharging;
 	GetCharacterMovement()->MaxWalkSpeed = bSprint ? SprintSpeed : WalkSpeed;
+	if (bSprint != bRunning)
+	{
+		// The server moves this golfer too, and has to use the same speed.
+		bRunning = bSprint;
+		if (!HasAuthority())
+		{
+			ServerSetRunning(bSprint);
+		}
+	}
 
 	// Fell off the world: back to the ball.
 	if (GetActorLocation().Z < C->KillHeight())
@@ -903,12 +1262,6 @@ void AGGGolfer::Tick(float DeltaSeconds)
 
 	UpdateClub(DeltaSeconds);
 	UpdateFootsteps();
-
-	if (IsCarrying())
-	{
-		// Carried at the hip, a little ahead.
-		C->MoveMachine(Carried, HoldPoint() - FVector(0, 0, 95.0), true);
-	}
 
 	// The field shows strongly while it matters: carrying a machine, standing over the ball, or watching a shot.
 	const AGGHUD* Screen = Hud();

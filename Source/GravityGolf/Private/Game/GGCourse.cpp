@@ -7,7 +7,15 @@
 #include "DrawDebugHelpers.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
+#include "Animation/SkeletalMeshActor.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Engine/SkeletalMesh.h"
+#include "Engine/StaticMeshActor.h"
 #include "Game/GGAudio.h"
+#include "Kismet/GameplayStatics.h"
+#include "RHIGlobals.h"
+#include "Game/GGGolfer.h"
+#include "Net/UnrealNetwork.h"
 #include "Game/GGSave.h"
 #include "HAL/IConsoleManager.h"
 #include "Kismet/GameplayStatics.h"
@@ -82,9 +90,95 @@ GG::ESurface ParseSurface(const FString& Surface)
 
 } // namespace
 
+namespace
+{
+TAutoConsoleVariable<int32> CVarPlantStandIns(TEXT("gg.Plants.StandIns"), 0,
+	TEXT("1 spawns the simple stand-in plants even where the scanned ones could be drawn (to preview the web look)"));
+}
+
+void AGGCourse::SpawnPlants(const FString& LevelName)
+{
+	FString Text;
+	TSharedPtr<FJsonObject> Json;
+	const FString Path = FPaths::ProjectContentDir() / TEXT("Courses") / (LevelName.ToLower() + TEXT(".plants.json"));
+	if (!FFileHelper::LoadFileToString(Text, *Path) || !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), Json) || !Json.IsValid())
+	{
+		return;
+	}
+	// The scans are Nanite foliage on swaying skeletons: desktop renderers only.
+	const bool bScans = GMaxRHIFeatureLevel >= ERHIFeatureLevel::SM5 && CVarPlantStandIns.GetValueOnGameThread() == 0;
+	UStaticMesh* Pine = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Meshes/SM_Web_Pine.SM_Web_Pine"));
+	UStaticMesh* Shrub = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Meshes/SM_Web_Shrub.SM_Web_Shrub"));
+	UMaterialInterface* Surface = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/M_GG_Surface.M_GG_Surface"));
+	auto Paint = [&](const FLinearColor& Color) -> UMaterialInstanceDynamic* {
+		UMaterialInstanceDynamic* Material = Surface ? UMaterialInstanceDynamic::Create(Surface, this) : nullptr;
+		if (Material)
+		{
+			Material->SetVectorParameterValue(TEXT("BaseColor"), Color);
+			Material->SetScalarParameterValue(TEXT("Roughness"), 0.9f);
+			Material->SetScalarParameterValue(TEXT("Metallic"), 0.f);
+		}
+		return Material;
+	};
+	UMaterialInstanceDynamic* Bark = Paint(FLinearColor(0.07f, 0.05f, 0.035f));
+	UMaterialInstanceDynamic* Needles = Paint(FLinearColor(0.035f, 0.085f, 0.03f));
+	UMaterialInstanceDynamic* Heather = Paint(FLinearColor(0.2f, 0.1f, 0.17f));
+	UMaterialInstanceDynamic* Rose = Paint(FLinearColor(0.05f, 0.11f, 0.04f));
+
+	int32 Scans = 0;
+	int32 StandIns = 0;
+	const TArray<TSharedPtr<FJsonValue>>* Plants = nullptr;
+	if (!Json->TryGetArrayField(TEXT("plants"), Plants))
+	{
+		return;
+	}
+	for (const TSharedPtr<FJsonValue>& Value : *Plants)
+	{
+		const TSharedPtr<FJsonObject> Plant = Value->AsObject();
+		const TArray<TSharedPtr<FJsonValue>>& At = Plant->GetArrayField(TEXT("position"));
+		const TArray<TSharedPtr<FJsonValue>>& Extent = Plant->GetArrayField(TEXT("extent"));
+		const FVector Location(At[0]->AsNumber(), At[1]->AsNumber(), At[2]->AsNumber());
+		const FRotator Rotation(0.0, Plant->GetNumberField(TEXT("yaw")), 0.0);
+		const double Scale = Plant->GetNumberField(TEXT("scale"));
+		const FString Kind = Plant->GetStringField(TEXT("kind"));
+		const bool bShadow = Plant->GetBoolField(TEXT("shadow"));
+
+		USkeletalMesh* Scan = bScans ? LoadObject<USkeletalMesh>(nullptr, *Plant->GetStringField(TEXT("asset"))) : nullptr;
+		if (Scan)
+		{
+			ASkeletalMeshActor* Actor = GetWorld()->SpawnActor<ASkeletalMeshActor>(Location, Rotation);
+			Actor->GetSkeletalMeshComponent()->SetSkeletalMeshAsset(Scan);
+			Actor->GetSkeletalMeshComponent()->SetCastShadow(bShadow);
+			Actor->SetActorScale3D(FVector(Scale));
+			++Scans;
+			continue;
+		}
+		UStaticMesh* Mesh = Kind == TEXT("pine") ? Pine : Shrub;
+		if (!Mesh)
+		{
+			continue;
+		}
+		// The stand-in is built 200 across and 200 tall; stretch it to this plant's real size.
+		AStaticMeshActor* Actor = GetWorld()->SpawnActor<AStaticMeshActor>(Location, Rotation);
+		UStaticMeshComponent* Component = Actor->GetStaticMeshComponent();
+		Component->SetMobility(EComponentMobility::Movable);
+		Component->SetStaticMesh(Mesh);
+		Component->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		Component->SetCastShadow(bShadow);
+		Component->SetMaterial(0, Bark);
+		Component->SetMaterial(1, Kind == TEXT("pine") ? Needles : Kind == TEXT("heather") ? Heather : Rose);
+		Actor->SetActorScale3D(FVector(Extent[0]->AsNumber(), Extent[1]->AsNumber(), Extent[2]->AsNumber()) * (Scale / 100.0));
+		++StandIns;
+	}
+	UE_LOG(LogGGCourse, Display, TEXT("Plants: %d scanned, %d stand-ins"), Scans, StandIns);
+}
+
 AGGCourse::AGGCourse()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	// Every player's machine has its own copy of the hole, kept in step by the server's commands.
+	bReplicates = true;
+	bAlwaysRelevant = true;
 	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	RootComponent = Root;
 }
@@ -107,6 +201,10 @@ bool AGGCourse::Load(const FString& CourseId)
 
 	Course = GG::FCourse();
 	Id = CourseId.ToLower();
+	if (HasAuthority())
+	{
+		NetCourseId = Id;
+	}
 	Name = Json->GetStringField(TEXT("name"));
 	NextLevel.Reset();
 	Json->TryGetStringField(TEXT("next"), NextLevel);
@@ -203,11 +301,14 @@ bool AGGCourse::Load(const FString& CourseId)
 		MachineBases.Add(ToUnreal(Base));
 	}
 	InitialBases = MachineBases;
+	Carriers.Init(nullptr, MachineBases.Num());
 
 	BuildActors();
-	ResetHole();
+	// Set this machine's copy to the start of the hole. (Not a request to the server: every machine loads its own.)
+	NetResetHole_Implementation();
 	UE_LOG(LogGGCourse, Log, TEXT("Loaded course %s: %d boxes, %d attractors"), *Name,
 		static_cast<int32>(Course.Boxes.size()), static_cast<int32>(Attractors.size()));
+	SpawnPlants(UGameplayStatics::GetCurrentLevelName(this, true));
 	return true;
 }
 
@@ -443,9 +544,102 @@ void AGGCourse::Notify(const FString& Message)
 	NoticeTime = 2.5;
 }
 
+void AGGCourse::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AGGCourse, NetCourseId);
+}
+
+void AGGCourse::OnRep_CourseId()
+{
+	// A joining player's copy of the hole: load the same course the server did.
+	if (Id.IsEmpty() && !NetCourseId.IsEmpty())
+	{
+		Load(NetCourseId);
+	}
+}
+
+void AGGCourse::Flush()
+{
+	if (CurrentPhase == EGGPhase::Flying)
+	{
+		// The server's ball has already stopped; let ours catch up at once.
+		FinishStroke(Sim.Run());
+	}
+	if (CurrentPhase == EGGPhase::Penalty)
+	{
+		Status.Reset();
+		Lie = LastSafe;
+		CurrentPhase = EGGPhase::Ready;
+		Trail.Reset();
+	}
+}
+
+std::vector<GG::FAttractor> AGGCourse::ActiveMachines() const
+{
+	std::vector<GG::FAttractor> Active = Attractors;
+	for (int32 I = 0; I < Carriers.Num() && I < static_cast<int32>(Active.size()); ++I)
+	{
+		if (Carriers[I].IsValid())
+		{
+			// In someone's hands: off, and not standing on anything.
+			Active[I].Strength = 0.0;
+			Active[I].Position = GG::FVec3{1.0e9, 1.0e9, 1.0e9};
+		}
+	}
+	return Active;
+}
+
+FString AGGCourse::Describe() const
+{
+	FString Where;
+	for (int32 I = 0; I < MachineBases.Num(); ++I)
+	{
+		Where += Carriers[I].IsValid() ? FString(TEXT(" carried")) : FString::Printf(TEXT(" (%.0f,%.0f)"), MachineBases[I].X, MachineBases[I].Y);
+	}
+	FString Held;
+	for (const bool bHeld : HeldSwitches)
+	{
+		Held += bHeld ? TEXT("1") : TEXT("0");
+	}
+	const FVector Ball = BallLocation();
+	return FString::Printf(TEXT("phase %d swings %d leg %d ball (%.1f,%.1f) machines%s held [%s]"), static_cast<int32>(CurrentPhase),
+		StrokeCount, CurrentLeg, Ball.X, Ball.Y, *Where, *Held);
+}
+
+AGGGolfer* AGGCourse::CarrierOf(int32 Index) const
+{
+	return Carriers.IsValidIndex(Index) ? Carriers[Index].Get() : nullptr;
+}
+
+void AGGCourse::MarkAssisted()
+{
+	if (HasAuthority())
+	{
+		NetAssisted();
+	}
+}
+
+void AGGCourse::NetAssisted_Implementation()
+{
+	bAssisted = true;
+}
+
 void AGGCourse::ReturnBall()
 {
 	// Call the ball back to the last safe spot, even mid-roll. Machines stay where they are.
+	if (HasAuthority() && CurrentPhase != EGGPhase::Sunk)
+	{
+		NetReturnBall(CurrentPhase == EGGPhase::Flying);
+	}
+}
+
+void AGGCourse::NetReturnBall_Implementation(bool bAbort)
+{
+	if (!bAbort)
+	{
+		Flush();
+	}
 	if (CurrentPhase == EGGPhase::Sunk)
 	{
 		return;
@@ -457,6 +651,14 @@ void AGGCourse::ReturnBall()
 }
 
 void AGGCourse::ResetHole()
+{
+	if (HasAuthority())
+	{
+		NetResetHole();
+	}
+}
+
+void AGGCourse::NetResetHole_Implementation()
 {
 	bAssisted = false;
 	Lie = Course.Tee;
@@ -470,8 +672,70 @@ void AGGCourse::ResetHole()
 	CurrentPhase = EGGPhase::Ready;
 	for (int32 I = 0; I < Machines.Num(); ++I)
 	{
+		if (AGGGolfer* Carrier = CarrierOf(I))
+		{
+			Carrier->SetCarried(INDEX_NONE);
+		}
+		Carriers[I] = nullptr;
 		MoveMachine(I, InitialBases[I], false);
 	}
+}
+
+void AGGCourse::CarryMachine(int32 Index, AGGGolfer* Carrier)
+{
+	if (HasAuthority() && Machines.IsValidIndex(Index) && Movable[Index] && Carrier && !CarrierOf(Index) && !Carrier->IsCarrying()
+		&& CurrentPhase != EGGPhase::Flying)
+	{
+		NetCarry(Index, Carrier);
+	}
+}
+
+void AGGCourse::NetCarry_Implementation(int32 Index, AGGGolfer* Carrier)
+{
+	if (!Machines.IsValidIndex(Index))
+	{
+		return;
+	}
+	Carriers[Index] = Carrier;
+	if (Carrier)
+	{
+		Carrier->SetCarried(Index);
+	}
+	GGAudio::MachinePickUp(this, MachineBases[Index]);
+}
+
+bool AGGCourse::PlaceMachine(int32 Index, const FVector& Base, AGGGolfer* Carrier)
+{
+	if (!HasAuthority() || !Machines.IsValidIndex(Index) || (Carrier && CarrierOf(Index) != Carrier))
+	{
+		return false;
+	}
+	if (!CanPlaceMachine(Base))
+	{
+		if (Carrier)
+		{
+			Carrier->Tell(TEXT("The machine won't stand on the court."));
+		}
+		return false;
+	}
+	// Whole centimeters keep the simulation's inputs identical on every machine.
+	NetPlace(Index, FVector(FMath::RoundToDouble(Base.X), FMath::RoundToDouble(Base.Y), FMath::RoundToDouble(Base.Z)));
+	return true;
+}
+
+void AGGCourse::NetPlace_Implementation(int32 Index, FVector Base)
+{
+	if (!Machines.IsValidIndex(Index))
+	{
+		return;
+	}
+	if (AGGGolfer* Carrier = CarrierOf(Index))
+	{
+		Carrier->SetCarried(INDEX_NONE);
+	}
+	Carriers[Index] = nullptr;
+	MoveMachine(Index, Base, false);
+	GGAudio::MachinePlace(this, Base);
 }
 
 int32 AGGCourse::FindMachine(const FVector& Near, double Reach) const
@@ -534,25 +798,40 @@ void AGGCourse::ShowGuide(const TArray<FVector>& Points)
 	}
 }
 
-void AGGCourse::Swing(const FVector& Direction, double Power)
+void AGGCourse::Swing(const FVector& Direction, double Power, AGGGolfer* Swinger)
 {
+	if (!HasAuthority() || CurrentPhase != EGGPhase::Ready)
+	{
+		return;
+	}
+	// The server works out the launch once, and everyone simulates from exactly that.
+	NetSwing(Direction.GetSafeNormal() * (FMath::Clamp(Power, 0.02, 1.0) * Physics.MaxLaunchSpeed), Swinger);
+}
+
+void AGGCourse::NetSwing_Implementation(FVector Velocity, AGGGolfer* Swinger)
+{
+	Flush();
 	if (CurrentPhase != EGGPhase::Ready)
 	{
 		return;
 	}
-	const FVector Velocity = Direction.GetSafeNormal() * (FMath::Clamp(Power, 0.02, 1.0) * Physics.MaxLaunchSpeed);
 	++StrokeCount;
 	Status.Reset();
 	// Presses banked on earlier legs, plus every weight plate a machine is standing on.
+	const std::vector<GG::FAttractor> Active = ActiveMachines();
 	std::vector<bool> Held = HeldSwitches;
-	GG::HoldWeightPlates(Course, Attractors, Held);
-	Sim.Begin(Course, Attractors, Lie, ToSim(Velocity), Physics, &Held);
+	GG::HoldWeightPlates(Course, Active, Held);
+	Sim.Begin(Course, Active, Lie, ToSim(Velocity), Physics, &Held);
 	PreviousPosition = Lie;
 	Accumulator = 0.0;
 	Trail.Reset();
 	CurrentPhase = EGGPhase::Flying;
 	PhaseTime = 0.0;
-	GGAudio::Strike(this, ToUnreal(Lie), static_cast<float>(Power));
+	GGAudio::Strike(this, ToUnreal(Lie), static_cast<float>(Velocity.Size() / Physics.MaxLaunchSpeed));
+	if (Swinger)
+	{
+		Swinger->ShowSwing();
+	}
 	UE_LOG(LogGGCourse, Log, TEXT("Stroke %d: launch %s"), StrokeCount, *Velocity.ToCompactString());
 }
 
@@ -561,9 +840,10 @@ void AGGCourse::PreviewSwing(const FVector& Direction, double Power, double Seco
 	OutPoints.Reset();
 	GG::FSim Preview;
 	const FVector Velocity = Direction.GetSafeNormal() * (FMath::Clamp(Power, 0.02, 1.0) * Physics.MaxLaunchSpeed);
+	const std::vector<GG::FAttractor> Active = ActiveMachines();
 	std::vector<bool> Held = HeldSwitches;
-	GG::HoldWeightPlates(Course, Attractors, Held);
-	Preview.Begin(Course, Attractors, Lie, ToSim(Velocity), Physics, &Held);
+	GG::HoldWeightPlates(Course, Active, Held);
+	Preview.Begin(Course, Active, Lie, ToSim(Velocity), Physics, &Held);
 	const int32 Steps = FMath::RoundToInt32(Seconds / GG::FSim::Dt);
 	for (int32 Step = 0; Step < Steps && !Preview.Finished(); ++Step)
 	{
@@ -828,7 +1108,7 @@ void AGGCourse::UpdateFieldPreview(float DeltaSeconds)
 	// Plates glow green once pressed; gate bars sink while their gate is open.
 	const bool bLive = CurrentPhase == EGGPhase::Flying;
 	std::vector<bool> Down = HeldSwitches;
-	GG::HoldWeightPlates(Course, Attractors, Down);
+	GG::HoldWeightPlates(Course, ActiveMachines(), Down);
 	for (int32 I = 0; I < SwitchMaterials.Num(); ++I)
 	{
 		const bool bPressed = Down[I] || (bLive && Sim.SwitchPressed(I));
@@ -868,7 +1148,15 @@ void AGGCourse::Advance()
 	const FString Package = TEXT("/Game/Levels/") + NextLevel;
 	if (!NextLevel.IsEmpty() && FPackageName::DoesPackageExist(Package))
 	{
-		UGameplayStatics::OpenLevel(this, FName(*Package));
+		if (GetNetMode() == NM_Standalone)
+		{
+			UGameplayStatics::OpenLevel(this, FName(*Package));
+		}
+		else if (HasAuthority())
+		{
+			// Playing together: the server takes everyone to the next hole.
+			GetWorld()->ServerTravel(Package);
+		}
 		return;
 	}
 	ResetHole();

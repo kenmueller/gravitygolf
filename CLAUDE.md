@@ -77,7 +77,10 @@ Tools/smoke.sh [Level ...]    in the editor: play each hole's recorded solution 
 Tools/perf.sh [Level ...]     in the editor: frame rate per hole from the tee (GGPerf)
 Tools/shot.sh <Level> <png> ["x,y,z,pitch,yaw"]   save a picture of the running game
 Tools/py.sh <file.py>         run Python in the open editor; the value of the last expression is returned
-Tools/web.sh [config] [host]  package for the web (Wasm + WebGPU); blocked on this Mac's engine build, see docs/WEB.md
+Tools/web.sh [config] [host]  package for the web (Wasm + WebGPU) with the source engine at ~/UE59; see docs/WEB.md
+Tools/webtest.sh [play|phone|tour]   run the web build in Chrome with screenshots (tour: every hole's solution)
+Tools/nettest.sh              two players in the editor; compares both copies of the hole after every step
+Tools/net.sh <player|all> "<cmd>"    run a console command on one player's machine (GGNet where|carry|place|swing...)
 ```
 
 ## Commands
@@ -132,6 +135,14 @@ console and read the pass list in the log before guessing.
   could not start on port 8000", kill it and run `Tools/editor.sh` again.
 - The editor's content-folder monitoring is turned off in config. With it on, a new `Content/Courses/*.json`
   triggers a DataTable import dialog that blocks every MCP call ("slow task") until someone clicks it.
+- Playing together: the course is kept in step by commands, not replicated state. Anything that changes the hole
+  must go through a `Net*` multicast on `AGGCourse` issued by the server (clients ask through `Server*` calls on
+  their golfer), must give the same result on every machine, and must call `Flush()` first if it depends on the
+  ball having stopped. Run `Tools/nettest.sh` after touching it.
+- Stop play with `Tools/play.sh stop`, never the MCP `StopPIE` tool: it crashes the editor when a second player's
+  window is open. After any editor crash, close the crash-report window (`Tools/editor.sh` does): it holds the MCP
+  port and the next editor starts deaf.
+- `Tools/rebuild.sh` leaves the editor closed when the build fails. Fix the error and run it again.
 - Web builds: the 5.9 preview's Mac launcher build cannot target Wasm ("not supported from this engine
   distribution"; it lacks the Wasm third-party libraries, page template and tools). The editor will not even list
   the Wasm platform for cooking unless the Emscripten SDK is found (`WASM_EMSDK_ROOT=~/emsdk`, version 6.0.10).

@@ -78,8 +78,6 @@ public:
 
 private:
 	void PlacePlayer();
-	/** Plants are spawned from the level's list: the scans where the renderer can draw them, stand-ins elsewhere. */
-	void SpawnPlants(const FString& LevelName);
 	void TickDemo(float DeltaSeconds);
 
 	TArray<float> PerfFrames;
@@ -97,7 +95,8 @@ private:
 	TObjectPtr<AGGCourse> Course;
 
 	double Elapsed = 0.0;
-	bool bPlayerPlaced = false;
+	/** Pawns already stood at the tee. */
+	TSet<TWeakObjectPtr<APawn>> PlacedPawns;
 	FString CapturePath;
 	double CaptureDelay = 6.0;
 	bool bCaptured = false;

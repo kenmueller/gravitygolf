@@ -15,6 +15,9 @@ ready() {
 attempt=1
 while [ $attempt -le 4 ]; do
 	if ! running; then
+		# A crashed editor leaves its crash-report window open, and that window keeps the editor's MCP port. Close
+		# any such window first, or the new editor starts without MCP.
+		pkill -f CrashReportClient 2>/dev/null && sleep 2
 		(nohup "$EDITOR" "$ROOT/GravityGolf.uproject" >/dev/null 2>&1 &)
 		sleep 8
 	fi

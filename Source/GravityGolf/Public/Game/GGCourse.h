@@ -6,6 +6,7 @@
 
 #include "GGCourse.generated.h"
 
+class AGGGolfer;
 class UMaterialInstanceDynamic;
 class UMaterialInterface;
 class UInstancedStaticMeshComponent;
@@ -48,13 +49,46 @@ public:
 	bool Load(const FString& CourseId);
 
 	virtual void Tick(float DeltaSeconds) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	/** Launch along a unit direction with power in [0, 1]. */
-	void Swing(const FVector& Direction, double Power);
+	// Playing together. The simulation is deterministic, so players are kept in step by commands, not by copying
+	// state: the server decides what happens (a swing, a machine picked up or set down, the ball called back) and
+	// tells every machine, and each applies it to its own copy of the hole. The functions below are those requests.
+	// They act on the server (or when playing alone); a client asks through its own golfer.
+
+	/** Launch along a unit direction with power in [0, 1]. Swinger is whose swing it was, if anyone's. */
+	void Swing(const FVector& Direction, double Power, AGGGolfer* Swinger = nullptr);
 	/** Put everything back: ball, machines and the attempt count. */
 	void ResetHole();
 	/** Bring just the ball back to the last safe spot. */
 	void ReturnBall();
+	/** A player picks a machine up. While carried it is switched off: its field does nothing to a swing. */
+	void CarryMachine(int32 Index, AGGGolfer* Carrier);
+	/** A player sets a carried machine down. False (with a message) where machines can't stand. */
+	bool PlaceMachine(int32 Index, const FVector& Base, AGGGolfer* Carrier);
+	AGGGolfer* CarrierOf(int32 Index) const;
+	/** This machine's copy of the hole in one line, for checking that every player's copy agrees. */
+	FString Describe() const;
+
+	UFUNCTION(NetMulticast, Reliable)
+	void NetSwing(FVector Velocity, AGGGolfer* Swinger);
+	UFUNCTION(NetMulticast, Reliable)
+	void NetResetHole();
+	/** bAbort: the server called the ball back in mid-roll, so the stroke under way is thrown away. */
+	UFUNCTION(NetMulticast, Reliable)
+	void NetReturnBall(bool bAbort);
+	UFUNCTION(NetMulticast, Reliable)
+	void NetCarry(int32 Index, AGGGolfer* Carrier);
+	UFUNCTION(NetMulticast, Reliable)
+	void NetPlace(int32 Index, FVector Base);
+	UFUNCTION(NetMulticast, Reliable)
+	void NetAssisted();
+
+	/** Which course this is, so a joining player's copy loads the same one. */
+	UPROPERTY(ReplicatedUsing = OnRep_CourseId)
+	FString NetCourseId;
+	UFUNCTION()
+	void OnRep_CourseId();
 
 	/** Samples of the path a swing would take, for the aiming guide. */
 	void PreviewSwing(const FVector& Direction, double Power, double Seconds, TArray<FVector>& OutPoints) const;
@@ -98,7 +132,7 @@ public:
 	/** The course file's name, which is also the key its best score is saved under. */
 	const FString& CourseId() const { return Id; }
 	/** Watching the solution doesn't count as solving: a hole solved after its solution was shown isn't recorded. */
-	void MarkAssisted() { bAssisted = true; }
+	void MarkAssisted();
 	bool Assisted() const { return bAssisted; }
 	/** Swings in a perfect solve: one per leg. */
 	int32 PerfectSwings() const { return static_cast<int32>(Course.SafeZones.size()) + 1; }
@@ -109,6 +143,12 @@ public:
 
 private:
 	void BuildActors();
+	/** Plants are spawned from the level's list: the scans where the renderer can draw them, stand-ins elsewhere. */
+	void SpawnPlants(const FString& LevelName);
+	/** Bring this machine's copy up to date before a command: finish a stroke still rolling, end a penalty pause. */
+	void Flush();
+	/** The machines as a swing sees them: a carried machine is switched off and nowhere. */
+	std::vector<GG::FAttractor> ActiveMachines() const;
 	void FinishStroke(GG::EBallState State);
 	void BuildMachine(int32 Index);
 	void UpdateFieldPreview(float DeltaSeconds);
@@ -123,6 +163,8 @@ private:
 	TArray<FVector> MachineBases;
 	TArray<FVector> InitialBases;
 	TArray<bool> Movable;
+	/** Per machine: who is carrying it, if anyone. */
+	TArray<TWeakObjectPtr<AGGGolfer>> Carriers;
 
 	FString Name;
 	FString Status;

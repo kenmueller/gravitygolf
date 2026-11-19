@@ -195,4 +195,63 @@ def web_plants():
     return report
 
 
-"\n".join(putter() + machine() + web_plants() + NOTES)
+def lathe(target, profile, material, steps=40):
+    """Turn a profile of (radius, height) points round the vertical axis and add it to target."""
+    piece = unreal.DynamicMesh()
+    P.append_revolve_polygon(piece, options(), unreal.Transform(), [unreal.Vector2D(r, z) for r, z in profile],
+                             unreal.GeometryScriptRevolveOptions(), 0.0, steps)
+    _, volume = unreal.GeometryScript_MeshQueries.get_mesh_volume_area(piece)
+    if volume < 0:
+        unreal.GeometryScript_Normals.flip_normals(piece)
+    if material:
+        unreal.GeometryScript_Materials.remap_material_i_ds(piece, 0, material)
+    unreal.GeometryScript_MeshEdits.append_mesh(target, piece, unreal.Transform())
+
+
+def avatar():
+    """What other players look like: a caddie that hovers. A turned ivory body that tapers to a ring of light instead
+    of legs, bronze shoulders and collar, and a separate head with a visor of light, so it can look where its player
+    looks. Built with its feet (the air under it) at the origin, facing +X. Slot 0 shell, slot 1 bronze, slot 2 light
+    (the player's colour)."""
+    SHELL, BRONZE, LIGHT = 0, 1, 2
+    report = []
+
+    body = unreal.DynamicMesh()
+    # The hull: narrow at the hover ring, swelling to the chest, closing at the neck.
+    # A flared hem, a pinched waist and a broad chest, so it reads as a figure and not a skittle.
+    lathe(body, [(0.0, 38), (15, 38), (18.5, 41), (17, 47), (13, 62), (11.5, 82), (13.5, 96), (20, 114), (23.5, 126), (23, 136),
+                 (18, 145), (9, 150), (0.0, 150)], SHELL)
+    # A pack on its back with a strip of light, so players can be told apart from behind.
+    beveled_box(body, (-27.0, -9.0, 104.0), (-17.0, 9.0, 138.0), 2.0, material=BRONZE)
+    beveled_box(body, (-27.6, -2.2, 109.0), (-26.6, 2.2, 133.0), 0.0, material=LIGHT)
+    # Collar and belt in bronze.
+    lathe(body, [(7.5, 148), (11, 148), (11.5, 154), (8, 156), (7.5, 156)], BRONZE)
+    lathe(body, [(11.0, 80), (12.6, 80), (13.2, 85), (12.2, 88), (11.0, 88)], BRONZE)
+    # The hover ring under it, and a faint second one.
+    P.append_torus(body, options(LIGHT), at(0, 0, 30), unreal.GeometryScriptRevolveOptions(), 12.0, 1.6, 40, 10, CENTER)
+    P.append_torus(body, options(LIGHT), at(0, 0, 20), unreal.GeometryScriptRevolveOptions(), 7.0, 0.9, 32, 8, CENTER)
+    # Shoulders, and arms that reach forward and down to where a putter is held.
+    for side in (-1, 1):
+        shoulder = (0, side * 26, 130)
+        elbow = (12, side * 28, 106)
+        hand = (30, side * 12, 92)
+        P.append_sphere_lat_long(body, options(BRONZE), at(*shoulder), 6.5, 10, 16, CENTER)
+        bar(body, shoulder, elbow, 4.2, 3.4, sides=12, material=SHELL)
+        P.append_sphere_lat_long(body, options(BRONZE), at(*elbow), 3.9, 8, 12, CENTER)
+        bar(body, elbow, hand, 3.4, 2.6, sides=12, material=SHELL)
+        P.append_sphere_lat_long(body, options(BRONZE), at(*hand), 3.4, 8, 12, CENTER)
+    report.append(bake(body, "SM_Avatar_Body", 3))
+
+    # The head, built round its own pivot at the neck so it can nod: a smooth ivory shape with a band of light.
+    head = unreal.DynamicMesh()
+    transform = unreal.Transform(location=unreal.Vector(2, 0, 15), rotation=unreal.Rotator(0, 0, 0), scale=unreal.Vector(0.30, 0.26, 0.31))
+    P.append_sphere_lat_long(head, options(SHELL), transform, 50.0, 16, 24, CENTER)
+    lathe(head, [(4.5, 0), (6.5, 0), (6.5, 3), (4.5, 3)], BRONZE, steps=24)
+    # The visor: a slab of light across the front of the face.
+    beveled_box(head, (10.5, -10.5, 12.5), (17.4, 10.5, 20.0), 1.2, material=LIGHT)
+    beveled_box(head, (-9.0, -1.4, 27.5), (9.0, 1.4, 31.5), 0.6, material=BRONZE)
+    report.append(bake(head, "SM_Avatar_Head", 3))
+    return report
+
+
+"\n".join(putter() + machine() + web_plants() + avatar() + NOTES)

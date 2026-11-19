@@ -31,6 +31,7 @@ public:
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual void Tick(float DeltaSeconds) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	AGGCourse* Course() const;
 	bool CanSwing() const;
@@ -50,6 +51,39 @@ public:
 	/** One touch event in viewport pixels. Phase 0 is down, 1 is moved, 2 is up. Also the entry point for tests. */
 	void HandleTouch(int32 Finger, int32 Phase, const FVector2D& At);
 	FVector2D ViewportSize() const;
+
+	// Playing together. A client can't change the hole itself: it asks the server through these, and the server
+	// tells everyone (see AGGCourse).
+	void SetCarried(int32 Index) { Carried = Index; }
+	/** A short message on this player's own screen, whichever machine they are on. */
+	void Tell(const FString& Message);
+	/** Everyone sees this golfer swing. */
+	void ShowSwing() { AvatarSwing = 0.f; }
+
+	UFUNCTION(Server, Reliable)
+	void ServerSwing(FVector Direction, float Power);
+	UFUNCTION(Server, Reliable)
+	void ServerCarry(int32 Index);
+	UFUNCTION(Server, Reliable)
+	void ServerPlace(FVector Ground);
+	UFUNCTION(Server, Reliable)
+	void ServerReturnBall();
+	UFUNCTION(Server, Reliable)
+	void ServerResetHole();
+	UFUNCTION(Server, Reliable)
+	void ServerAdvance();
+	UFUNCTION(Server, Reliable)
+	void ServerTeleport(FVector Location);
+	UFUNCTION(Server, Unreliable)
+	void ServerSetRunning(bool bRun);
+	UFUNCTION(Client, Reliable)
+	void ClientTell(const FString& Message);
+
+	/** Console, for testing play together from any player's machine. One of:
+	 *  "where" (log this machine's copy of the hole), "carry N", "place x,y,z", "swing yaw,power", "return", "reset",
+	 *  "goto" (to the ball), "tp x,y,z" (stand somewhere). */
+	UFUNCTION(Exec)
+	void GGNet(const FString& Command, const FString& Argument);
 
 	// Things the menus and the touch buttons also do.
 	void ResetHole();
@@ -82,6 +116,27 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> ClubHead;
+
+	// What other players see: a caddie that hovers (Tools/build_meshes.py), holding a putter. The player whose golfer
+	// this is never sees it; they see the first-person club above instead.
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USceneComponent> AvatarRoot;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UStaticMeshComponent> AvatarBody;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UStaticMeshComponent> AvatarHead;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USceneComponent> AvatarClub;
+
+	/** Which player this is, in order of arrival: decides the colour of their light. Set by the server. */
+	UPROPERTY(ReplicatedUsing = OnRep_Seat)
+	int32 Seat = 0;
+	UFUNCTION()
+	void OnRep_Seat();
+	void SetSeat(int32 InSeat);
 
 private:
 	void MoveForward(float Value);
@@ -127,6 +182,12 @@ private:
 	bool PlaceCarried(const FVector& Ground);
 	void StartSwing();
 	void UpdateClub(float DeltaSeconds);
+	void UpdateAvatar(float DeltaSeconds);
+
+	UPROPERTY()
+	TObjectPtr<class UMaterialInstanceDynamic> AvatarLight;
+	UPROPERTY()
+	TArray<TObjectPtr<UStaticMeshComponent>> AvatarClubParts;
 	void UpdateFootsteps();
 
 	bool bCharging = false;
@@ -152,6 +213,11 @@ private:
 	TMap<int32, FVector2D> LastTouch;
 
 	bool bWatching = false;
+	bool bRunning = false;
+	/** Seconds since this golfer's swing was shown to everyone, or negative. */
+	float AvatarSwing = -1.f;
+	/** After asking the server to reset the hole: go to the ball once that has happened. */
+	float GoToBallIn = -1.f;
 	double StepDistance = 0.0;
 	FVector LastFeet = FVector::ZeroVector;
 };

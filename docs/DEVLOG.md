@@ -7,7 +7,7 @@ Newest first. Each entry says what changed, what was verified, and an honest cri
 **To play.** Open the project (or run `Tools/editor.sh`), press Play. Keys: WASD and mouse, Shift to run, hold
 left click to swing (aim is where you look, longer hold is harder), E picks up and sets down a machine, R returns
 the ball, Backspace resets the hole, B jumps you to the ball, right click watches the ball. **F1 plays the
-solution for the leg you are on (a hole solved that way is not recorded). Tab opens the menu. Keys 1 to 6 jump
+solution for the leg you are on (a hole solved that way is not recorded). Tab opens the menu. Keys 1 to 7 jump
 between holes.**
 
 **Start with hole 5** (press 5). It is the first one meant to be hard: the cup is behind you, behind a gate.
@@ -30,6 +30,45 @@ Try it without F1 and tell me how long it took and whether the answer felt earne
 - What to build next. My recommendation: more hard holes first, which needs new tools (relays, splitters, timed
   gates) because two machines and a plate only stretch so far. Then avatars and co-op. Menus, a level editor and
   bots come after there is a game worth sharing.
+
+## 2026-11-19, session 1 (autonomous): it runs in a browser; hole 7; playing together
+
+**Changed**
+- **The web build works locally.** Built from the source engine, packaged, and run in Chrome with the engine's own
+  harness: title screen, menus, walking, carrying, the swing, and every hole's recorded solution sinking the ball.
+  Phone emulation: the touch stick and buttons take a stroke. Ready in 4 to 6 seconds; about 100 MB first download.
+  `docs/WEB.md` has the numbers and the commands. Nothing is published.
+- **What the web needed:** a sky dome (the mobile renderer draws no sky without one, and no sky means no light);
+  the scanned plants replaced by generated stand-ins, by taking plants out of the levels and spawning them from a
+  list; textures capped at 1K (content went from 593 MB to 54 MB).
+- **Hole 7, Dead Weight**, in a new world: a roofless hall of about 500 columns at dawn. New tool: a weight plate,
+  down only while a machine stands on it. One of your two machines has to be spent holding the gate open.
+- **Playing together.** A listen server and clients. The server turns each action into a command and every machine
+  applies it to its own copy of the deterministic hole, so a shot is identical for everyone. Players see each
+  other as hovering caddies with a visor in their own colour. Anyone can carry a machine or swing; a machine in
+  someone's hands is switched off.
+- Tools: `Tools/web.sh`, `Tools/webtest.sh` (browser runs with screenshots), `Tools/nettest.sh` (two players in the
+  editor, both copies compared after every step), `Tools/net.sh`.
+
+**Verified**
+- Browser: all seven holes boot and their solutions play through (`Tools/webtest.sh tour`).
+- Two players: the client carries and places both machines on hole 3, the server swings, and both copies end with
+  the ball in the cup. 13 of 13 steps agree.
+- `Tools/smoke.sh`: all seven holes, after the networking refactor.
+
+**Critique**
+- The web version is clean, not beautiful: no clouds, no bounced light (shadowed canyon walls go nearly black),
+  cartoon stand-in trees next to scanned stone. It needs an ambient fill and a look of its own.
+- Hole 7's stated idea was "it still works from there". The layout that passed with comfortable margins leaves the
+  plate so far from the action that the machine on it does nothing but weigh. The honest idea is smaller: choose
+  which machine to spend. The stronger hole (the weight's field is the first bend) is still to be designed.
+- Its best answers reel a nearly dead ball along slowly: 14 seconds from swing to cup. Legal, and dull to watch.
+- Co-op is plumbing so far. No hole needs two people, there is no way to join a friend (no lobby, no invite), and
+  the web build has no networking at all. Late joiners get the hole's starting state, not its current one.
+- The avatar has no walk, no hands on the club, and the same pose for everyone. It hovers, which hides a lot.
+- Process: three editor hang-ups this session came from my own tooling. A failed build still launched the editor
+  (it sat on a dialog); the MCP stop-play tool crashes the editor with a second player's window open; a crash
+  leaves a report window holding the MCP port. All three are now handled in the scripts and written in CLAUDE.md.
 
 ## 2026-11-19, session 1 (autonomous): touch, menus, saved progress, hole 6, the web build
 
