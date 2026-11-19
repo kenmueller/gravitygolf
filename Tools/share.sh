@@ -57,10 +57,16 @@ command -v qrencode >/dev/null 2>&1 && qrencode -t ANSIUTF8 "$URL"
 echo "Send that link. It works until you press Ctrl-C here. (Cloudflare's terms for quick tunnels: see $LOG)"
 
 # Try it from outside, as the friend's browser will: the page, and the two headers the game cannot start without.
+# A name this new is unknown to the network's own name server for a minute or two, and an early "no such name" gets
+# remembered: the first version of this check gave up and warned about a link that worked. So the address is asked
+# of a public name server and handed to curl directly.
+HOST="${URL#https://}"
 OK=""
 i=0
-while [ $i -lt 12 ]; do
-	HEAD="$(curl -s -m 10 -D - -o /dev/null "$URL/index.html")"
+while [ $i -lt 30 ]; do
+	IP="$(dig +short @1.1.1.1 "$HOST" 2>/dev/null | grep -E '^[0-9.]+$' | head -1)"
+	[ -n "$IP" ] || { sleep 3; i=$((i + 1)); continue; }
+	HEAD="$(curl -s -m 10 --resolve "$HOST:443:$IP" -D - -o /dev/null "$URL/index.html")"
 	if echo "$HEAD" | grep -qi "^HTTP/[0-9.]* 200"; then
 		OK=1
 		break
@@ -69,7 +75,7 @@ while [ $i -lt 12 ]; do
 	i=$((i + 1))
 done
 if [ -z "$OK" ]; then
-	echo "WARNING: the link did not answer when tried from here. It may need a minute; if a friend sees an error, say so."
+	echo "WARNING: the link did not answer when tried from here in a minute and a half. Try it in a browser before sending it."
 elif echo "$HEAD" | grep -qi "cross-origin-opener-policy: same-origin" && echo "$HEAD" | grep -qi "cross-origin-embedder-policy"; then
 	echo "Checked: the link answers and carries the headers the game needs."
 else

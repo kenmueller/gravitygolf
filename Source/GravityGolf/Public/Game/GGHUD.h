@@ -22,6 +22,8 @@ enum class EGGMenu : uint8
 	/** The Workshop's own pause screen, and its list of kept holes. */
 	Workshop,
 	Designs,
+	/** Who and what the game is made with: the engine's notice and those of the software it carries. */
+	Credits,
 };
 
 /**

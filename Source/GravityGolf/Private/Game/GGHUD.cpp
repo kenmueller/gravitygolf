@@ -298,7 +298,7 @@ void AGGHUD::OpenMenu(EGGMenu Which)
 	{
 		Which = EGGMenu::Workshop;
 	}
-	if (Which == EGGMenu::Holes || Which == EGGMenu::Settings || Which == EGGMenu::Together || Which == EGGMenu::Designs)
+	if (Which == EGGMenu::Holes || Which == EGGMenu::Settings || Which == EGGMenu::Together || Which == EGGMenu::Designs || Which == EGGMenu::Credits)
 	{
 		Parent = Menu == EGGMenu::Title ? EGGMenu::Title : bWorkshop ? EGGMenu::Workshop : EGGMenu::Pause;
 	}
@@ -363,6 +363,7 @@ void AGGHUD::BuildMenu()
 		}
 #endif
 		Add(TEXT("Settings"), TEXT("Settings"));
+		Add(TEXT("Credits"), TEXT("Credits"));
 #if !PLATFORM_WASM
 		Add(TEXT("Quit"), TEXT("Quit"));
 #endif
@@ -451,6 +452,9 @@ void AGGHUD::BuildMenu()
 		Add(TEXT("Back"), TEXT("Back"));
 		break;
 	}
+	case EGGMenu::Credits:
+		Add(TEXT("Back"), TEXT("Back"));
+		break;
 	case EGGMenu::Settings:
 	{
 		static const TCHAR* Qualities[] = {TEXT("Low"), TEXT("Medium"), TEXT("High"), TEXT("Highest")};
@@ -625,7 +629,7 @@ bool AGGHUD::MenuType(const FKey& Key)
 
 void AGGHUD::MenuBack()
 {
-	if (Menu == EGGMenu::Holes || Menu == EGGMenu::Settings || Menu == EGGMenu::Together || Menu == EGGMenu::Designs)
+	if (Menu == EGGMenu::Holes || Menu == EGGMenu::Settings || Menu == EGGMenu::Together || Menu == EGGMenu::Designs || Menu == EGGMenu::Credits)
 	{
 		Menu = Parent;
 		Selected = 0;
@@ -713,6 +717,10 @@ void AGGHUD::RunAction(const FItem& Item, int32 Direction)
 	else if (Action == TEXT("Holes"))
 	{
 		OpenMenu(EGGMenu::Holes);
+	}
+	else if (Action == TEXT("Credits"))
+	{
+		OpenMenu(EGGMenu::Credits);
 	}
 	else if (Action == TEXT("Settings"))
 	{
@@ -884,9 +892,40 @@ void AGGHUD::DrawMenu()
 	{
 		const TCHAR* Heading = Menu == EGGMenu::Pause ? TEXT("PAUSED") : Menu == EGGMenu::Holes ? TEXT("HOLES")
 			: Menu == EGGMenu::Together ? TEXT("PLAY TOGETHER") : Menu == EGGMenu::Workshop ? TEXT("WORKSHOP")
-			: Menu == EGGMenu::Designs ? TEXT("MY HOLES") : TEXT("SETTINGS");
-		Label(Heading, CX, Canvas->ClipY * 0.13f, 54.f * S, Ink, true, true);
+			: Menu == EGGMenu::Designs ? TEXT("MY HOLES") : Menu == EGGMenu::Credits ? TEXT("CREDITS") : TEXT("SETTINGS");
+		Label(Heading, CX, Canvas->ClipY * (Menu == EGGMenu::Credits ? 0.07f : 0.13f), 54.f * S, Ink, true, true);
 		Top = Canvas->ClipY * 0.27f;
+	}
+	if (Menu == EGGMenu::Credits)
+	{
+		// The notices the game owes: the engine's own (in the words its licence asks for) and those of the open
+		// software inside it. Plain lines, small, with Back beneath. An empty line is a gap.
+		static const TCHAR* Lines[] = {
+			TEXT("Gravity Golf uses Unreal\u00AE Engine. Unreal\u00AE is a trademark or registered trademark of Epic Games, Inc."),
+			TEXT("in the United States of America and elsewhere."),
+			TEXT("Unreal\u00AE Engine, Copyright 1998 \u2013 2026, Epic Games, Inc. All rights reserved."),
+			TEXT(""),
+			TEXT("Scanned stone, sand and plants: Quixel Megascans, from Fab."),
+			TEXT(""),
+			TEXT("This game includes software from these projects, each under its own licence:"),
+			TEXT("FreeType (portions of this software are copyright \u00A9 The FreeType Project, www.freetype.org; all rights reserved)"),
+			TEXT("libpng  \u00B7  zlib  \u00B7  Opus  \u00B7  BLAKE3  \u00B7  Oodle and Bink Audio (Epic Games Tools)"),
+			TEXT("In the browser version also: Emscripten and its system libraries (musl, LLVM libc++ and compiler-rt),"),
+			TEXT("and Dawn's WebGPU bindings (The Dawn & Tint Authors)."),
+			TEXT(""),
+			TEXT("Every sound and every note of music is made by the game as it runs."),
+		};
+		float Y = Canvas->ClipY * 0.2f;
+		const float Size = FMath::Min(22.f * S, Canvas->ClipX / 62.f);
+		for (const TCHAR* Line : Lines)
+		{
+			if (*Line)
+			{
+				Label(Line, CX, Y, Size, Dim, true);
+			}
+			Y += Size * (*Line ? 1.75f : 0.9f);
+		}
+		Top = FMath::Max(Y + Size, Canvas->ClipY * 0.72f);
 	}
 
 	// A long list (thirteen holes, a shelf of Workshop designs) goes in two columns, with Back centred under both,

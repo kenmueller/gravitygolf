@@ -332,7 +332,7 @@ void AGGGameMode::GGMenu(const FString& Screen)
 		Hud->OpenMenu(Screen == TEXT("title") ? EGGMenu::Title : Screen == TEXT("pause") ? EGGMenu::Pause
 			: Screen == TEXT("holes") ? EGGMenu::Holes : Screen == TEXT("settings") ? EGGMenu::Settings
 			: Screen == TEXT("together") ? EGGMenu::Together : Screen == TEXT("workshop") ? EGGMenu::Workshop
-			: Screen == TEXT("designs") ? EGGMenu::Designs : EGGMenu::None);
+			: Screen == TEXT("designs") ? EGGMenu::Designs : Screen == TEXT("credits") ? EGGMenu::Credits : EGGMenu::None);
 	}
 }
 
