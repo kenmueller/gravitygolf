@@ -84,7 +84,8 @@ def hedge_row(box, shrubs, m):
         yaw = rng.uniform(0, 360)
         asset = rng.choice(shrubs)
         size = rng.uniform(0.9, 1.5)
-        c.plant(asset, (x, y, cz - sz / 2), yaw, size, "heather")
+        # (No shadows from the heather on the hedges: 134 small shadows redrawn for nothing anyone notices.)
+        c.plant(asset, (x, y, cz - sz / 2), yaw, size, "heather", cast_shadow=False)
 
 
 def great_wall(box, m):
@@ -177,7 +178,9 @@ def pines():
         yaw = rng.uniform(0, 360)
         asset = rng.choice(trees)
         size = rng.uniform(0.8, 1.25)
-        c.plant(asset, spot, yaw, size, "pine")
+        # The sun shines toward +Y, so only the pines on the -Y side throw shadows onto the lawn. The others' shadows
+        # fall off the terrace where nobody sees them, and a swaying tree redraws its shadow every frame (2 ms for all).
+        c.plant(asset, spot, yaw, size, "pine", cast_shadow=spot[1] < 0)
 
 
 def halo(m, course):

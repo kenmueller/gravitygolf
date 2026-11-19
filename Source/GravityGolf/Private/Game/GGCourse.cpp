@@ -168,6 +168,19 @@ void AGGCourse::SpawnPlants(const FString& LevelName)
 			ASkeletalMeshActor* Actor = GetWorld()->SpawnActor<ASkeletalMeshActor>(Location, Rotation);
 			Actor->GetSkeletalMeshComponent()->SetSkeletalMeshAsset(Scan);
 			Actor->GetSkeletalMeshComponent()->SetCastShadow(bShadow);
+			if (Kind != TEXT("pine"))
+			{
+				// Shrubs sway, and anything that sways is skinned again for the ray-traced scene every frame. On hole 1
+				// that was 164 shrubs and 2 ms; nothing reflects or bounces off a heather bush that anyone would miss.
+				Actor->GetSkeletalMeshComponent()->SetVisibleInRayTracing(false);
+			}
+			if (Kind == TEXT("heather"))
+			{
+				// Heather is ankle-high and there are over a hundred on hole 1. Standing still, they cost a frame
+				// per second less, and nobody was watching them sway.
+				Actor->GetSkeletalMeshComponent()->SetComponentTickEnabled(false);
+				Actor->GetSkeletalMeshComponent()->bNoSkeletonUpdate = true;
+			}
 			Actor->SetActorScale3D(FVector(Scale));
 			++Scans;
 			continue;

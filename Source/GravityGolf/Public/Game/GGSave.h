@@ -41,6 +41,10 @@ public:
 	UPROPERTY()
 	int32 Quality = 3;
 
+	/** Has the player set the quality themselves? Until then the platform's defaults are left alone. */
+	UPROPERTY()
+	bool bQualityChosen = false;
+
 	/** The last host this player joined, to offer again. */
 	UPROPERTY()
 	FString LastHost;

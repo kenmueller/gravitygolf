@@ -78,8 +78,12 @@ between holes.** (Keys 1 to 8 now.)
   All eight holes boot and their recorded answers sink the ball there, with the same swing counts as on the desktop.
 - `Tools/hosttest.sh`: two standalone copies of the game; the joiner connects by address and loads the host's hole.
 - `Tools/smoke.sh` (seven holes), `Tools/nettest.sh` (13 of 13), sim tests: all pass after the changes.
-- Frame rate from the tee: Workshop 80 fps, Colonnade 63 fps (it read 44 last time only because a web build was
-  running).
+- Frame rate from the tee, all eight holes, after a performance pass: 58, 83, 84, 75, 79, 85, 73 and 78 fps
+  (they were 48, 75, 73, 67, 68, about 70, 63 and 68). Workshop 80 fps. What did it: bounced light one notch below
+  the engine's maximum (a split-screen comparison showed no visible seam; about 2 ms everywhere); shrubs taken out of
+  the ray-traced scene; on hole 1, no shadows from the pines whose shadows fall off the terrace, and heather that
+  stands still. Hole 1 is still a hair under the 60 fps budget.
+- The saved picture quality is now applied when the game starts. It was only ever applied when you changed it.
 
 **Critique**
 - **The in-game proof is still weaker than the solver's, though less so.** It proves "impossible without the
@@ -103,6 +107,8 @@ between holes.** (Keys 1 to 8 now.)
   but it is not Mario Maker.
 - Gates did not show which plate opens them while playing. Fixed at the end of the session: a plate and its gates
   now glow the same colour (a hole with one plate looks as before). Not yet judged in a hole with several.
+- **Hole 1's lawn** was a flat olive plane, and it is the first thing a player sees. It now has bold mowing stripes
+  and a cooler green. The hedges beside it are still dark boxes with sparse heather: the next worst thing there.
 - **The look.** The Workshop is the cleanest screen in the game, and the plainest: flat white and one glow colour.
   Fine for a tool. The test view's daytime sky fights the glowing table; dusk would suit it better.
 - The rival can race a Workshop hole once you have solved it (it follows your recorded answer). Checked once: at

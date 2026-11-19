@@ -828,6 +828,7 @@ void AGGHUD::RunAction(const FItem& Item, int32 Direction)
 		else if (Action == TEXT("Quality"))
 		{
 			Save.Quality = (Save.Quality + Step + 4) % 4;
+			Save.bQualityChosen = true;
 			Save.ApplyQuality();
 		}
 		else if (Action == TEXT("Rival"))

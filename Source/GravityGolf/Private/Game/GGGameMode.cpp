@@ -74,6 +74,8 @@ void AGGGameMode::BeginPlay()
 	{
 		UGGSave::UseScratch(this);
 	}
+	// The picture quality the player chose last time (it was only ever applied when they changed it).
+	UGGSave::Get().ApplyQuality();
 
 	const FString CourseId = UGameplayStatics::GetCurrentLevelName(this, true).ToLower();
 	if (CourseId == TEXT("workshop"))

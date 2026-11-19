@@ -207,6 +207,12 @@ console and read the pass list in the log before guessing.
 - zsh does not split an unquoted variable into words: `tool $ARGS` passes one argument. It cost two wrong scans.
 - Geometry Script: the lathe (`append_revolve_polygon`) ignores the material in its options; remap it afterwards.
 - Megaplants need `r.Nanite.Foliage` and `r.Nanite.AllowAssemblies`, or the trees render bare.
+- Hole 1 costs about 14 ms that does not change with resolution (27 ms at full size, 20 ms at two thirds). No one
+  thing owns it: clouds 2.7 ms, the 19 pines 4.3 (half of it their shadows), 164 shrubs 2.2 (their ray-tracing
+  skinning), bounced light 2.9. Metal's ProfileGPU reports most passes as 0 ms, so measure by switching things off
+  from Python in play (`set_cast_shadow`, `set_visible_in_ray_tracing`, `set_actor_hidden_in_game`) and `GGPerf`.
+- `r.ScreenPercentage` set from the console stays set for the editor session. Play defaults to about two thirds on
+  this display; setting 100 "to restore it" made every later measurement 30% worse until the editor restarted.
 - Megaplants are skeletal meshes that sway. Anything that sways redraws its shadow every frame: 26 pines cost 12 ms
   in Lantern Court. Turn shadows off on background plants (`skeletal_mesh_component.set_cast_shadow(False)`).
 - Anything rebuilt or moved every frame (instanced markers, the club) must stay out of Lumen and ray tracing

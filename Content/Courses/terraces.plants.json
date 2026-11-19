@@ -23,7 +23,7 @@
     46,
     30
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
@@ -40,7 +40,7 @@
     46,
     30
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
@@ -57,7 +57,7 @@
     50,
     27
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
@@ -74,7 +74,7 @@
     46,
     30
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
@@ -91,7 +91,7 @@
     46,
     30
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
@@ -108,7 +108,7 @@
     36,
     26
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
@@ -125,7 +125,7 @@
     46,
     30
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
@@ -142,7 +142,7 @@
     25,
     21
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
@@ -159,7 +159,7 @@
     27,
     20
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
@@ -176,7 +176,7 @@
     25,
     21
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_C.Shrub_Heather_01_C",
@@ -193,7 +193,7 @@
     37,
     25
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
@@ -210,7 +210,7 @@
     36,
     26
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
@@ -227,7 +227,7 @@
     36,
     26
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_C.Shrub_Heather_01_C",
@@ -244,7 +244,7 @@
     37,
     25
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
@@ -261,7 +261,7 @@
     27,
     20
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
@@ -278,7 +278,7 @@
     27,
     20
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
@@ -295,7 +295,7 @@
     25,
     21
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
@@ -312,7 +312,7 @@
     25,
     21
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_C.Shrub_Heather_01_C",
@@ -329,7 +329,7 @@
     37,
     25
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
@@ -346,7 +346,7 @@
     25,
     21
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
@@ -363,7 +363,7 @@
     46,
     30
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
@@ -380,7 +380,7 @@
     46,
     30
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
@@ -397,7 +397,7 @@
     50,
     27
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
@@ -414,7 +414,7 @@
     46,
     30
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
@@ -431,7 +431,7 @@
     36,
     26
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
@@ -448,7 +448,7 @@
     46,
     30
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
@@ -465,7 +465,7 @@
     36,
     26
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
@@ -482,7 +482,7 @@
     36,
     26
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
@@ -499,7 +499,7 @@
     25,
     21
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
@@ -516,7 +516,7 @@
     25,
     21
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
@@ -533,7 +533,7 @@
     27,
     20
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
@@ -550,7 +550,7 @@
     36,
     26
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
@@ -567,7 +567,7 @@
     46,
     30
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
@@ -584,7 +584,7 @@
     36,
     26
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
@@ -601,7 +601,7 @@
     50,
     27
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
@@ -618,7 +618,7 @@
     36,
     26
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
@@ -635,7 +635,7 @@
     25,
     21
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
@@ -652,7 +652,7 @@
     27,
     20
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
@@ -669,7 +669,7 @@
     50,
     27
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
@@ -686,7 +686,7 @@
     36,
     26
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
@@ -703,7 +703,7 @@
     46,
     30
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
@@ -720,7 +720,7 @@
     50,
     27
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
@@ -737,7 +737,7 @@
     27,
     20
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
@@ -754,7 +754,7 @@
     50,
     27
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
@@ -771,7 +771,7 @@
     36,
     26
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
@@ -788,7 +788,7 @@
     36,
     26
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
@@ -805,7 +805,7 @@
     27,
     20
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
@@ -822,7 +822,7 @@
     50,
     27
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
@@ -839,7 +839,7 @@
     36,
     26
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
@@ -856,7 +856,7 @@
     36,
     26
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
@@ -873,7 +873,7 @@
     50,
     27
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
@@ -890,7 +890,7 @@
     50,
     27
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
@@ -907,7 +907,7 @@
     36,
     26
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
@@ -924,7 +924,7 @@
     36,
     26
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
@@ -941,7 +941,7 @@
     50,
     27
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
@@ -958,7 +958,7 @@
     46,
     30
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
@@ -975,7 +975,7 @@
     27,
     20
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
@@ -992,7 +992,7 @@
     50,
     27
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
@@ -1009,7 +1009,7 @@
     36,
     26
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_C.Shrub_Heather_01_C",
@@ -1026,7 +1026,7 @@
     37,
     25
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
@@ -1043,7 +1043,7 @@
     50,
     27
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
@@ -1060,7 +1060,7 @@
     50,
     27
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
@@ -1077,7 +1077,7 @@
     27,
     20
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
@@ -1094,7 +1094,7 @@
     50,
     27
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
@@ -1111,7 +1111,7 @@
     27,
     20
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
@@ -1128,7 +1128,7 @@
     46,
     30
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
@@ -1145,7 +1145,7 @@
     46,
     30
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
@@ -1162,7 +1162,7 @@
     25,
     21
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
@@ -1179,7 +1179,7 @@
     36,
     26
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
@@ -1196,7 +1196,7 @@
     46,
     30
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
@@ -1213,7 +1213,7 @@
     46,
     30
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
@@ -1230,7 +1230,7 @@
     25,
     21
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
@@ -1247,7 +1247,7 @@
     36,
     26
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
@@ -1264,7 +1264,7 @@
     50,
     27
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
@@ -1281,7 +1281,7 @@
     50,
     27
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
@@ -1298,7 +1298,7 @@
     46,
     30
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_D.Tree_Aleppo_Pine_01_D",
@@ -1451,7 +1451,7 @@
     385,
     687
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_D.Tree_Aleppo_Pine_01_D",
@@ -1468,7 +1468,7 @@
     234,
     390
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_B.Tree_Aleppo_Pine_01_B",
@@ -1485,7 +1485,7 @@
     385,
     687
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_A.Tree_Aleppo_Pine_01_A",
@@ -1502,7 +1502,7 @@
     831,
     724
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_C.Tree_Aleppo_Pine_01_C",
@@ -1519,7 +1519,7 @@
     393,
     498
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_B.Tree_Aleppo_Pine_01_B",
@@ -1536,7 +1536,7 @@
     385,
     687
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_D.Tree_Aleppo_Pine_01_D",
@@ -1553,7 +1553,7 @@
     234,
     390
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_C.Tree_Aleppo_Pine_01_C",
@@ -1570,7 +1570,7 @@
     393,
     498
    ],
-   "shadow": true
+   "shadow": false
   },
   {
    "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_D.Shrub_Beach_Rose_01_D",

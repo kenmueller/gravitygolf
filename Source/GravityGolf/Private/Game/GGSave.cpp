@@ -135,7 +135,14 @@ void UGGSave::ApplyQuality() const
 {
 	if (UGameUserSettings* Settings = GEngine ? GEngine->GetGameUserSettings() : nullptr)
 	{
-		Settings->SetOverallScalabilityLevel(FMath::Clamp(Quality, 0, 3));
+		// Until the player picks a quality, the platform's own defaults stand (a phone's are not a desktop's).
+		if (bQualityChosen)
+		{
+			Settings->SetOverallScalabilityLevel(FMath::Clamp(Quality, 0, 3));
+		}
+		// Bounced light never goes above the engine's "High". Its top setting cost 2 ms on hole 1 and a split-screen
+		// comparison showed no difference anyone could point at.
+		Settings->SetGlobalIlluminationQuality(FMath::Min(Settings->GetGlobalIlluminationQuality(), 2));
 		Settings->ApplyNonResolutionSettings();
 	}
 }
