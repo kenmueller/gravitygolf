@@ -22,12 +22,12 @@ wait_for() { # file, text, seconds
 	-abslog="$OUT/host.log" >/dev/null 2>&1 &
 HOST=$!
 STATUS=0
-if wait_for "$OUT/host.log" "LogGGCourse: Loaded course" 120; then
+if wait_for "$OUT/host.log" "Loaded course " 120; then
 	"$UE" "$ROOT/GravityGolf.uproject" 127.0.0.1 -game -windowed -ResX=640 -ResY=360 -GGNoTitle -GGTestSave -nosplash -unattended \
 		-abslog="$OUT/client.log" >/dev/null 2>&1 &
 	CLIENT=$!
 	wait_for "$OUT/host.log" "Join succeeded" 120 && echo "ok    the host accepted the join" || { echo "FAIL  the host never accepted a join"; STATUS=1; }
-	wait_for "$OUT/client.log" "LogGGCourse: Loaded course" 30 && echo "ok    the joiner loaded $(grep 'LogGGCourse: Loaded course' "$OUT/client.log" | tail -1 | sed 's/.*Loaded course //')" \
+	wait_for "$OUT/client.log" "Loaded course " 30 && echo "ok    the joiner loaded $(grep 'Loaded course ' "$OUT/client.log" | tail -1 | sed 's/.*Loaded course //')" \
 		|| { echo "FAIL  the joiner never loaded the hole"; STATUS=1; }
 	kill "$CLIENT" 2>/dev/null
 else

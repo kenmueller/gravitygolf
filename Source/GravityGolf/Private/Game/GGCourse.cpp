@@ -441,7 +441,7 @@ bool AGGCourse::LoadText(const FString& Text, const FString& CourseId)
 	BuildActors();
 	// Set this machine's copy to the start of the hole. (Not a request to the server: every machine loads its own.)
 	NetResetHole_Implementation();
-	UE_LOG(LogGGCourse, Log, TEXT("Loaded course %s: %d boxes, %d attractors"), *Name,
+	UE_LOG(LogGGCourse, Display, TEXT("Loaded course %s: %d boxes, %d attractors"), *Name,
 		static_cast<int32>(Course.Boxes.size()), static_cast<int32>(Attractors.size()));
 	if (!bPlantsSpawned)
 	{
@@ -1515,7 +1515,8 @@ void AGGCourse::FinishStroke(GG::EBallState State)
 		CurrentPhase = EGGPhase::Penalty;
 		break;
 	}
-	UE_LOG(LogGGCourse, Log, TEXT("Stroke %d finished: state %d %s at %s"), StrokeCount, static_cast<int32>(State),
+	// (Display, so that a browser's console shows it too: the web join test compares this line between machines.)
+	UE_LOG(LogGGCourse, Display, TEXT("Stroke %d finished: state %d %s at %s"), StrokeCount, static_cast<int32>(State),
 		*Status, *ToUnreal(Sim.Ball().Position).ToCompactString());
 }
 

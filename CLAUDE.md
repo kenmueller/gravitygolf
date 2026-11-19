@@ -100,6 +100,8 @@ Tools/phone.sh [check]        serve the web build to a real phone on the LAN ove
 Tools/nettest.sh              two players in the editor; compares both copies of the hole after every step
 Tools/sounds.sh               writes every sound the game makes to WAV and measures it (length, level, pitch, brightness)
 Tools/hosttest.sh [Level]     two standalone copies of the game: one hosts, one joins by address
+Tools/webjointest.sh          the web build in Chrome joins a standalone desktop host through Epic's relay; both must
+                              log the same swings (needs a Development web build; GG_WEB_OUT names its folder)
 Tools/nettest_workshop.sh     two players in the Workshop: the host builds, tests and solves; both copies compared
 Tools/rivaltest.sh [Level ...]   the rival bot plays a hole at each skill, time sped up; reports time and swings
 Tools/grilletest.sh           in the editor, on hole 11: a shut grille stops a carried machine, an open one does not
@@ -259,6 +261,12 @@ console and read the pass list in the log before guessing.
   Two such waits sat in the background for four hours and held up the session's own bookkeeping.
 - A brand-new host name (a quick tunnel's) is unknown to the local name server for a minute or two and the "no such
   name" answer is remembered: test such a link through a public name server (`dig @1.1.1.1`, `curl --resolve`).
+- A browser can join a desktop host (proved on this Mac by `Tools/webjointest.sh`): the host listens as usual, Epic's
+  `ws_relay.py` runs beside it, and the page is opened with the host's address as its first argument. Two things
+  made it work. The engine's network version differs between the installed engine and the source-built one, so the
+  game sets its own (`GGNetVersion` in `GravityGolf.cpp`: raise it when the simulation, a course or anything sent
+  between players changes). And a browser's console shows only Display lines, so the lines tests compare between
+  machines ("Stroke N finished", "Loaded course") are logged at Display.
 - Multiplayer as it stands: a listen server on one player's desktop game, joined by address (UDP 7777). No hosted
   server, nothing over the internet without an opened port, and the web build has no Play together. Epic's notes
   (`Engine/Platforms/Wasm/Docs/Networking.md`): a browser can join through `ws_relay.py` (UDP carried in

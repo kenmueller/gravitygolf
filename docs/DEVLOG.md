@@ -212,6 +212,11 @@ mirror.
   bucket behind a Worker, which is what I recommended when Ken asked how to host it properly (docs/WEB.md).
   Nothing has been uploaded.
 
+- **A browser can join a desktop host.** The web build in Chrome, a desktop copy hosting hole 3, and Epic's relay
+  between them (a browser has no UDP), all on this Mac. The browser's player carried both machines to the answer
+  and swung. The game now carries its own network version, because the installed engine and the source-built one
+  disagree about theirs and the host refused the browser as "an incompatible version".
+
 **Verified**
 - In Chrome at phone size, from a fresh web build: the hole list in two columns, the settings, the pause menu; and on
   hole 12 by touch: GRAB, PLACE, TURN, GRAB again (the game's own state after each press), and a carried mirror
@@ -223,6 +228,10 @@ mirror.
 - **The last full run:** `Tools/testall.sh` ALL PASSED with fourteen holes and the new finale (sim tests, fourteen
   proofs, every hole in the engine, grilles, the Workshop, two players in step, in the Workshop and through the
   grilles, host and join). The rival finishes Wait Here and the new Crossed Wires at all three skills.
+- `Tools/webjointest.sh`: the host accepts the browser, the browser is a client in the host's hole, and both
+  machines log the same two swings to a hundredth of a centimetre: the answer (sunk) and a plain swing that comes
+  to rest at (1294.00, 261.76). One is a native build for this Mac's processor and the other WebAssembly: this is
+  the first evidence that "the same shot is the same everywhere" holds between different kinds of machine.
 - Ken's share link, tried from here: the page, the three isolation headers, and a byte range answered as a range.
 - Not yet in any web build when this was written: hole 13 in the Development build Ken is sharing (it has 13 holes
   and the old finale).
@@ -243,7 +252,9 @@ mirror.
 - *Multiplayer is the thinnest part of the game.* Asked how the server would be hosted, the honest answer was that
   there is none: one player's desktop game is the server, it has never been tried across the internet, and the
   browser version cannot play together at all. I proposed Epic's relay for desktop players and Epic's WebSocket
-  relay for browser players, and have built neither.
+  relay for browser players. The second now works in a test on one machine, started by a script with the address
+  typed for it: there is no menu for it in the browser version, nothing has crossed a real network, and the browser
+  player's avatar and movement were not looked at, only the hole.
 - *The phone goal is still unmet where it counts.* Everything about touch that can be checked without a phone is
   now checked, and it is all emulation. One real phone on one real network would be worth more than all of it.
 - *Three waits of mine sat in the background for hours*, two of them unable ever to finish (a `pgrep -f` that
