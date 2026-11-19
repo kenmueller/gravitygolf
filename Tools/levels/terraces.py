@@ -53,7 +53,9 @@ def materials():
     glow = "/Game/Materials/M_GG_Glow.M_GG_Glow"
     return {
         "grass": scan("MI_Terraces_Grass", LAWN, 260, (0.8, 0.95, 0.7, 1)),
-        "green": scan("MI_Terraces_Green", LAWN, 170, (0.7, 1.0, 0.62, 1), stripes=(240.0, 0.34)),
+        # The lawn is most of what the player sees on the first hole. Mown in bold stripes and tinted cool, so the low
+        # warm sun reads as light on green grass. (At 0.34 and a yellower tint it was one flat olive plane.)
+        "green": scan("MI_Terraces_Green", LAWN, 170, (0.42, 0.95, 0.5, 1), stripes=(300.0, 0.6)),
         "stone": scan("MI_Terraces_Limestone", LIMESTONE, 320, (1.0, 0.95, 0.86, 1)),
         "hedge": scan("MI_Terraces_Hedge", c.scan_prefix("Creeping_Fig_Wall"), 220, (0.75, 0.9, 0.6, 1)),
         "rock": scan("MI_Terraces_Rock", CLIFF, 900, (1.35, 1.3, 1.2, 1)),
