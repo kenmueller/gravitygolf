@@ -213,6 +213,8 @@ private:
 	bool bCharging = false;
 	float ChargeAmount = 0.f;
 	int32 Carried = INDEX_NONE;
+	/** Where this golfer last stood without a carried machine being inside a shut grille. */
+	FVector LastCarryStand = FVector::ZeroVector;
 
 	/** Seconds since the club was released, or negative when no swing is in progress. */
 	float SwingTime = -1.f;

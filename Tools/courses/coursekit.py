@@ -76,10 +76,12 @@ class Course:
             self.no_machine.append({"position": [x, y, z], "radius": radius + 40, "kind": "switch"})
         return len(self.switches) - 1
 
-    def gate(self, name, center, size, switch, open_seconds=0.0, surface="sand"):
-        """A barrier that stops the ball until its switch is pressed. With open_seconds it closes again."""
+    def gate(self, name, center, size, switch, open_seconds=0.0, surface="sand", grille=False):
+        """A barrier that stops the ball until its switch is pressed. With open_seconds it closes again.
+        A grille also stops a carried machine while it is shut (the player alone walks through, as through any gate).
+        A hole with grilles needs plinths and walls all round: the proof plans the carries (Sim/GGLogistics.h)."""
         self.gates.append({"name": name, "center": list(center), "size": list(size), "switch": switch,
-                           "openSeconds": open_seconds, "surface": surface})
+                           "openSeconds": open_seconds, "surface": surface, "grille": grille})
 
     def machine(self, x, y, z=0, strength=420, reach=1900, core_height=45, movable=True):
         """A gravity machine at its starting spot. Positive strength attracts, negative repels."""
@@ -165,7 +167,7 @@ def write_flat(data, placement, path):
             c, s = g["center"], g["size"]
             f.write(" ".join(str(v) for v in (c[0] - s[0] / 2, c[1] - s[1] / 2, c[2] - s[2] / 2, c[0] + s[0] / 2,
                                                c[1] + s[1] / 2, c[2] + s[2] / 2, SURFACES[g["surface"]], g["switch"],
-                                               g["openSeconds"])) + "\n")
+                                               g["openSeconds"], 1 if g.get("grille") else 0)) + "\n")
         f.write(f"{len(data['solutions'])}\n")
         for sol in data["solutions"]:
             spots = " ".join(f"{m[0]} {m[1]}" for m in sol["machines"])

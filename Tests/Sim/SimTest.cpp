@@ -1,5 +1,6 @@
 // Standalone tests for the deterministic 3D simulation. No Unreal needed:  Tests/Sim/run.sh
 #include "Sim/GGSim.h"
+#include "Sim/GGLogistics.h"
 
 #include <cmath>
 #include <cstdio>
@@ -266,6 +267,72 @@ static void TestDeterminism()
 	std::printf("determinism hash %016llx\n", static_cast<unsigned long long>(One.Hash()));
 }
 
+static void TestCarrying()
+{
+	// A walled yard cut in two by a wall with two grilles in it. Grille 1 opens while a machine stands on the plate
+	// on the near side, grille 2 while one stands on the plate on the far side. Getting both machines across is a
+	// leapfrog: one holds the near plate, the other goes through and holds the far plate, the first follows.
+	FSetup S;
+	S.Course.Tee = {200, 0, 6};
+	S.Course.BallRadius = 6;
+	S.MinX = 0, S.MinY = -600, S.MaxX = 2000, S.MaxY = 600;
+	S.Course.Boxes.push_back({{-200, -800, -30}, {2200, 800, 0}, ESurface::Green});
+	S.Course.Boxes.push_back({{-200, -800, 0}, {2200, -600, 300}, ESurface::Sand});
+	S.Course.Boxes.push_back({{-200, 600, 0}, {2200, 800, 300}, ESurface::Sand});
+	S.Course.Boxes.push_back({{-200, -600, 0}, {0, 600, 300}, ESurface::Sand});
+	S.Course.Boxes.push_back({{2000, -600, 0}, {2200, 600, 300}, ESurface::Sand});
+	// The dividing wall at x = 1000, with gaps at y = -400..-200 (grille 1) and y = 200..400 (grille 2).
+	S.Course.Boxes.push_back({{970, -600, 0}, {1030, -400, 300}, ESurface::Sand});
+	S.Course.Boxes.push_back({{970, -200, 0}, {1030, 200, 300}, ESurface::Sand});
+	S.Course.Boxes.push_back({{970, 400, 0}, {1030, 600, 300}, ESurface::Sand});
+	S.Course.Switches.push_back({{600, 0, 0}, 70, true});
+	S.Course.Switches.push_back({{1400, 0, 0}, 70, true});
+	FGate One, Two;
+	One.Box = {{970, -400, 0}, {1030, -200, 220}, ESurface::Sand};
+	One.Switch = 0;
+	One.bGrille = true;
+	Two.Box = {{970, 200, 0}, {1030, 400, 220}, ESurface::Sand};
+	Two.Switch = 1;
+	Two.bGrille = true;
+	S.Course.Gates = {One, Two};
+	// Plinths: two starts, the near plate, the far plate, a free one on the far side.
+	S.Plinths = {{200, -300, 65}, {200, 300, 65}, {600, 0, 65}, {1400, 0, 65}, {1700, 300, 65}};
+	S.Machines = {{420, 1800, 45, 200, -300, false}, {420, 1800, 45, 200, 300, false}};
+	const FCarryMap Map = MakeCarryMap(S);
+	const std::vector<bool> None(2, false);
+
+	// With no plate held nothing is carried across.
+	const std::vector<bool> Alone = CarryReach(S, Map, 0, HeldWhileCarrying(S, {0, 1}, 0, None));
+	CHECK(Alone[1] && Alone[2] && !Alone[3] && !Alone[4]);
+	// With the other machine on the near plate, the far side opens.
+	const std::vector<bool> Helped = CarryReach(S, Map, 0, HeldWhileCarrying(S, {0, 2}, 0, None));
+	CHECK(Helped[3] && Helped[4]);
+
+	// Both across takes three carries, and the planner finds them in order.
+	const FCarryPlans Plans = PlanCarries(S, Map, {0, 1}, None);
+	CHECK(Plans.Can({4, 3}));
+	const std::vector<FCarry> Moves = Plans.To({4, 3});
+	CHECK(Moves.size() == 3);
+	if (Moves.size() == 3)
+	{
+		CHECK(Moves[0].Machine == 0 && Moves[0].To == 2);
+		CHECK(Moves[1].Machine == 1 && Moves[1].To == 3);
+		CHECK(Moves[2].Machine == 0 && Moves[2].From == 2 && Moves[2].To == 4);
+	}
+
+	// A mirror is too light to hold a plate. Make the first machine a mirror: it can be let through, but then nothing
+	// it stands on opens the way for the other, so the two can never both be on the far side.
+	S.Machines[0].bMirror = true;
+	const FCarryPlans Light = PlanCarries(S, Map, {0, 1}, None);
+	CHECK(Light.Can({4, 2}));
+	CHECK(!Light.Can({4, 3}) && !Light.Can({3, 4}));
+	S.Machines[0].bMirror = false;
+
+	// A grille the ball has banked open (a light plate pressed on an earlier leg) is open to everyone.
+	const FCarryPlans Banked = PlanCarries(S, Map, {0, 1}, {true, false});
+	CHECK(Banked.To({4, 1}).size() == 1);
+}
+
 int main()
 {
 	TestRestsOnGround();
@@ -278,6 +345,7 @@ int main()
 	TestAttractorReleases();
 	TestGateAndSwitch();
 	TestMirrorTurnsTheBall();
+	TestCarrying();
 	TestDeterminism();
 	std::printf(Failures ? "%d FAILED\n" : "all passed\n", Failures);
 	return Failures ? 1 : 0;

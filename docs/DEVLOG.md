@@ -46,6 +46,16 @@ between holes, 0 is hole 10 and the minus key is hole 11.** F turns a mirror.
 **Decisions waiting on you**
 - The name. "Gravity Golf" is used by other games (see VISION, Competition).
 - Publishing the web build. It runs locally; nothing is public, and I will not publish without your word.
+- **How the game gets hard.** You asked for puzzles people look up walkthroughs for. Eleven holes in, none is.
+  Each new hole so far has been a new tool or a new reading of one; with plinths and mirrors the holes became pure
+  deduction, which is fair but quick. What makes The Talos Principle hard is logistics: the thing that opens the
+  door is the thing you need on the other side of it. This game has no logistics, because the player and the
+  machines walk through every gate; gates only stop the ball. **My proposal: gates of light stop a carried machine
+  too.** Then a weight on a plate is what lets the other machine through, and getting both machines and the ball to
+  the far end becomes a problem of order, with the swing as the last step. It needs: the carry rule (and its
+  co-op and touch cases), a reachability check in the proof (a spot only counts if the machine can be walked
+  there), the rival taught to plan a route, and the Workshop's check extended the same way. About as much work as
+  the mirrors were. I have not started it: it changes what every existing gate means, so it is yours to approve.
 - More holes or more polish next. There are eleven holes, and the eleventh is written as the last. I did not wait
   for the answer: I kept doing both (a new hole, then the worst-looking hole made better). Say if you want one or
   the other.

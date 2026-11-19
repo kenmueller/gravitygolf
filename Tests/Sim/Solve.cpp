@@ -2,6 +2,7 @@
 //   1. NECESSARY: the leg can't be done with no machine, nor (when a hole has several) with any single machine.
 //   2. SOLVABLE:  with the machines placed well, a comfortable range of swings does it, and most placements don't.
 // Usage: Tests/Sim/solve.sh <course id>      (reads Saved/SimTest/<id>.course, written by Tools/courses/<id>.py)
+#include "Sim/GGLogistics.h"
 #include "CourseFile.h"
 #include "Sim/GGSim.h"
 
@@ -18,6 +19,8 @@ using namespace GG;
 
 /** Set by a second argument "all": list every machine spot that works, not only the best five (a design aid). */
 static bool GListAll = false;
+// On a hole with grilles: every way the machines can be carried to stand, from where the last leg left them.
+static const FCarryPlans* GPlans = nullptr;
 
 static FVec3 Launch(double YawDegrees, double Power)
 {
@@ -247,8 +250,22 @@ static bool SolveLeg(const FSetup& S, const FLeg& Leg, int LegIndex, const char*
 		std::sort(Pairs.begin(), Pairs.end(), [](const FPair& A, const FPair& B) { return A.Swings > B.Swings; });
 		int Working = 0;
 		int Intended = 0;
+		int Barred = 0;
 		for (const FPair& Pair : Pairs)
 		{
+			// Behind grilles, a way of standing only counts if the machines can be carried there.
+			const bool bCarried = !GPlans || GPlans->Can({static_cast<int>(Pair.A), static_cast<int>(Pair.B)});
+			if (!bCarried)
+			{
+				Barred += Pair.Swings > 0;
+				if (Pair.Swings > 0 && GListAll)
+				{
+					std::printf("    machines at (%5.0f, %5.0f)%s and (%5.0f, %5.0f)%s would work (%d swings) but cannot be carried there\n", S.Plinths[Pair.A].X,
+						S.Plinths[Pair.A].Y, TurnName(S.Machines[0], Pair.TurnA), S.Plinths[Pair.B].X, S.Plinths[Pair.B].Y,
+						TurnName(S.Machines[1], Pair.TurnB), Pair.Swings);
+				}
+				continue;
+			}
 			Working += Pair.Swings > 0;
 			const bool bIntended = std::fabs(S.Plinths[Pair.A].X - Hint->Spots[0].X) < 1 && std::fabs(S.Plinths[Pair.A].Y - Hint->Spots[0].Y) < 1
 				&& std::fabs(S.Plinths[Pair.B].X - Hint->Spots[1].X) < 1 && std::fabs(S.Plinths[Pair.B].Y - Hint->Spots[1].Y) < 1
@@ -271,6 +288,10 @@ static bool SolveLeg(const FSetup& S, const FLeg& Leg, int LegIndex, const char*
 			Machines.push_back(Stand(S.Machines[M], Hint->Spots[M].X, Hint->Spots[M].Y, Hint->Turns[M]));
 		}
 		const bool bExact = Reaches(S, Leg, Machines, Hint->Yaw, Hint->Power);
+		if (GPlans)
+		{
+			std::printf("  CARRYING: %d more ways would sink the ball but the machines cannot be carried there\n", Barred);
+		}
 		std::printf("  SOLVABLE: %d of %zu ways to stand the machines work (%.0f%%, need under 35%%); the intended way has %d swings (need 12+); its recorded swing %s\n",
 			Working, Pairs.size(), Share * 100.0, Intended, bExact ? "works" : "DOES NOT WORK");
 		return bPass && Intended >= 12 && Share < 0.35 && bExact;
@@ -319,8 +340,62 @@ int main(int Argc, char** Argv)
 	// Legs run tee -> safe zone 0 -> safe zone 1 -> ... -> cup. Each must obey the puzzle law on its own.
 	bool bPass = true;
 	const int Zones = static_cast<int>(S.Course.SafeZones.size());
+	// Grilles: the machines have to be carried to where each leg's answer stands them, in some order of carries that
+	// the grilles allow, starting from where the leg before left them.
+	bool bGrilles = false;
+	for (const FGate& Gate : S.Course.Gates)
+	{
+		bGrilles = bGrilles || Gate.bGrille;
+	}
+	FCarryMap Map;
+	std::vector<int> On;
+	if (bGrilles)
+	{
+		Map = MakeCarryMap(S);
+		for (const FMachineDef& M : S.Machines)
+		{
+			On.push_back(PlinthAt(S, M.StartX, M.StartY));
+			if (On.back() < 0)
+			{
+				std::printf("FAIL: a hole with grilles needs every machine to start on a plinth\n");
+				return 1;
+			}
+		}
+	}
 	for (int Leg = 0; Leg <= Zones; ++Leg)
 	{
+		FCarryPlans Plans;
+		if (bGrilles)
+		{
+			Plans = PlanCarries(S, Map, On, MakeLeg(S, Leg).Held);
+			GPlans = &Plans;
+			const FHint* Hint = nullptr;
+			for (const FHint& H : S.Hints)
+			{
+				Hint = H.Leg == Leg ? &H : Hint;
+			}
+			std::vector<int> Goal;
+			for (size_t M = 0; Hint && M < Hint->Spots.size(); ++M)
+			{
+				Goal.push_back(PlinthAt(S, Hint->Spots[M].X, Hint->Spots[M].Y));
+			}
+			if (!Hint || !Plans.Can(Goal))
+			{
+				std::printf("LEG %d\n  CARRYING: FAIL (the machines cannot be carried to where the answer stands them)\n", Leg + 1);
+				bPass = false;
+			}
+			else
+			{
+				const std::vector<FCarry> Moves = Plans.To(Goal);
+				std::printf("CARRYING for leg %d: %zu carries; %zu ways of standing can be reached\n", Leg + 1, Moves.size(), Plans.Reached.size());
+				for (const FCarry& Move : Moves)
+				{
+					std::printf("    machine %d from (%.0f, %.0f) to (%.0f, %.0f)\n", Move.Machine + 1, S.Plinths[Move.From].X, S.Plinths[Move.From].Y,
+						S.Plinths[Move.To].X, S.Plinths[Move.To].Y);
+				}
+				On = Goal;
+			}
+		}
 		char Name[96];
 		if (Leg < Zones)
 		{

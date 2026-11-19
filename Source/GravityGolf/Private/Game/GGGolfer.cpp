@@ -1122,7 +1122,12 @@ void AGGGolfer::Interact()
 	else
 	{
 		const int32 Index = C->FindMachine(HoldPoint(), PickUpReach);
-		if (Index != INDEX_NONE && !C->CarrierOf(Index))
+		if (Index != INDEX_NONE && !C->CarrierOf(Index) && C->CarryBlocked(GetActorLocation(), C->MachineBase(Index)))
+		{
+			// No reaching through the bars for it either.
+			Tell(TEXT("A machine won't pass a shut grille."));
+		}
+		else if (Index != INDEX_NONE && !C->CarrierOf(Index))
 		{
 			if (HasAuthority())
 			{
@@ -1363,6 +1368,21 @@ void AGGGolfer::Tick(float DeltaSeconds)
 		return;
 	}
 
+	// A shut grille stops whoever carries a machine: they are put back where they stood before the step that crossed
+	// it. Each machine does this for its own player and the server for everyone, so they agree.
+	if (IsCarrying() && (IsLocallyControlled() || HasAuthority()) && C->CarryBlocked(LastCarryStand, GetActorLocation()))
+	{
+		SetActorLocation(LastCarryStand, false, nullptr, ETeleportType::TeleportPhysics);
+		GetCharacterMovement()->Velocity = FVector::ZeroVector;
+		if (IsLocallyControlled())
+		{
+			Tell(TEXT("A machine won't pass a shut grille."));
+		}
+	}
+	else
+	{
+		LastCarryStand = GetActorLocation();
+	}
 	// Every machine draws every golfer's carried machine at that golfer's hip, a little ahead.
 	if (IsCarrying())
 	{

@@ -193,7 +193,11 @@
 				]
 			],
 			"yaw": 64,
-			"power": 0.35
+			"power": 0.35,
+			"turns": [
+				0,
+				0
+			]
 		}
 	],
 	"next": "Colonnade",

@@ -261,6 +261,7 @@ void AGGCourse::Unload()
 	SwitchMaterials.Reset();
 	GateBars.Reset();
 	GateLevel.Reset();
+	GateOpenNow.Reset();
 	Solutions.Reset();
 	DrawnBoxes.Reset();
 	Played.Reset();
@@ -358,6 +359,7 @@ bool AGGCourse::LoadText(const FString& Text, const FString& CourseId)
 			Gate.Box = {Center - Half, Center + Half, ParseSurface(G->GetStringField(TEXT("surface")))};
 			Gate.Switch = G->GetIntegerField(TEXT("switch"));
 			Gate.OpenSeconds = G->GetNumberField(TEXT("openSeconds"));
+			G->TryGetBoolField(TEXT("grille"), Gate.bGrille);
 			Course.Gates.push_back(Gate);
 		}
 	}
@@ -773,6 +775,17 @@ void AGGCourse::BuildActors()
 			const FVector At = bAlongY ? FVector(0, Along, Height * 0.5) : FVector(Along, 0, Height * 0.5);
 			AddMesh(Cylinder, Light, FTransform(FRotator::ZeroRotator, At, FVector(0.035, 0.035, Height / 100.0)), Bars)->SetCastShadow(false);
 		}
+		if (Gate.bGrille)
+		{
+			// A grille has rails across its bars: plainly a thing that stops what is carried, where bars alone stop
+			// only the ball. The rails sink with the bars when it opens.
+			for (const double Up : {0.3, 0.62, 0.94})
+			{
+				const FVector At = FVector(0, 0, Height * Up);
+				const FRotator Lying(90.0, bAlongY ? 90.0 : 0.0, 0.0);
+				AddMesh(Cylinder, Light, FTransform(Lying, At, FVector(0.03, 0.03, Length / 100.0)), Bars)->SetCastShadow(false);
+			}
+		}
 		if (bMarks)
 		{
 			// The studs: as many as the dots on this gate's plate, in a row above the gate. They stay when the bars drop,
@@ -787,6 +800,7 @@ void AGGCourse::BuildActors()
 		}
 		GateBars.Add(Bars);
 		GateLevel.Add(1.f);
+		GateOpenNow.Add(false);
 	}
 
 	for (int32 I = 0; I < MachineBases.Num(); ++I)
@@ -1006,6 +1020,65 @@ bool AGGCourse::CanPlaceMachine(const FVector& Base) const
 	return true;
 }
 
+bool AGGCourse::CarryBlocked(const FVector& From, const FVector& To) const
+{
+	// A shut grille stops a machine in someone's arms. The walker is a disc 35 cm across the middle (as the proof's
+	// map has it, Sim/GGLogistics.h); what is tested is the straight line of this step, or of a reach.
+	constexpr double Body = 35.0;
+	for (int32 I = 0; I < static_cast<int32>(Course.Gates.size()); ++I)
+	{
+		const GG::FGate& Gate = Course.Gates[I];
+		if (!Gate.bGrille || (GateOpenNow.IsValidIndex(I) && GateOpenNow[I]))
+		{
+			continue;
+		}
+		const FBox2D Box(FVector2D(Gate.Box.Min.X - Body, Gate.Box.Min.Y - Body), FVector2D(Gate.Box.Max.X + Body, Gate.Box.Max.Y + Body));
+		const FVector2D A(From), B(To);
+		if (Box.IsInside(A))
+		{
+			// Already in it (it shut around them): they may walk out either way.
+			continue;
+		}
+		// Does the segment A..B enter the box? (Slab test.)
+		double T0 = 0.0, T1 = 1.0;
+		bool bHit = true;
+		for (int32 Axis = 0; Axis < 2 && bHit; ++Axis)
+		{
+			const double D = B[Axis] - A[Axis];
+			if (FMath::Abs(D) < 1e-9)
+			{
+				bHit = A[Axis] >= Box.Min[Axis] && A[Axis] <= Box.Max[Axis];
+				continue;
+			}
+			double Near = (Box.Min[Axis] - A[Axis]) / D, Far = (Box.Max[Axis] - A[Axis]) / D;
+			if (Near > Far)
+			{
+				Swap(Near, Far);
+			}
+			T0 = FMath::Max(T0, Near);
+			T1 = FMath::Min(T1, Far);
+			bHit = T0 <= T1;
+		}
+		if (bHit)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool AGGCourse::HasGrilles() const
+{
+	for (const GG::FGate& Gate : Course.Gates)
+	{
+		if (Gate.bGrille)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 void AGGCourse::Notify(const FString& Message)
 {
 	Status = Message;
@@ -1204,6 +1277,11 @@ bool AGGCourse::PlaceMachine(int32 Index, const FVector& Base, AGGGolfer* Carrie
 		{
 			Carrier->Tell(Plinths.Num() > 0 ? TEXT("Here a machine stands only on a plinth.") : TEXT("The machine won't stand on the court."));
 		}
+		return false;
+	}
+	if (Carrier && CarryBlocked(Carrier->GetActorLocation(), MachineSpot(Base)))
+	{
+		Carrier->Tell(TEXT("A machine won't pass a shut grille."));
 		return false;
 	}
 	// Whole centimeters keep the simulation's inputs identical on every machine.
@@ -1652,6 +1730,10 @@ void AGGCourse::UpdateFieldPreview(float DeltaSeconds)
 	{
 		const GG::FGate& Gate = Course.Gates[I];
 		const bool bOpen = bLive ? Sim.GateOpen(I) : (Down[Gate.Switch] && Gate.OpenSeconds <= 0.0);
+		if (GateOpenNow.IsValidIndex(I))
+		{
+			GateOpenNow[I] = bOpen;
+		}
 		GateLevel[I] = FMath::FInterpTo(GateLevel[I], bOpen ? 0.f : 1.f, DeltaSeconds, 9.f);
 		GateBars[I]->SetRelativeScale3D(FVector(1.f, 1.f, FMath::Max(GateLevel[I], 0.001f)));
 		GateBars[I]->SetVisibility(GateLevel[I] > 0.02f, true);

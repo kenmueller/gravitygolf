@@ -142,6 +142,9 @@ public:
 	FVector MachineBase(int32 Index) const;
 	/** Some ground refuses machines (the paved court around a cup, for instance). */
 	bool CanPlaceMachine(const FVector& Base) const;
+	/** Would a carried machine have to cross a shut grille to go in a straight line from From to To? */
+	bool CarryBlocked(const FVector& From, const FVector& To) const;
+	bool HasGrilles() const;
 	/** Where a machine set down near Base comes to stand: the middle of the plinth it is on, if the hole has plinths. */
 	FVector MachineSpot(const FVector& Base) const;
 	bool HasPlinths() const { return Plinths.Num() > 0; }
@@ -240,6 +243,8 @@ private:
 	int32 CurrentLeg = 0;
 	TArray<FGGSolution> Solutions;
 	TArray<float> GateLevel;
+	/** Whether each gate stands open this frame (what the bars show, and what a carried machine meets). */
+	TArray<bool> GateOpenNow;
 	TArray<FVector> NoMachineZones; // x, y, radius
 	/** Plinths (x, y, radius). A hole that has any lets machines stand only on them. */
 	TArray<FVector> Plinths;

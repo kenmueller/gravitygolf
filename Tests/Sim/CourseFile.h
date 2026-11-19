@@ -75,9 +75,10 @@ inline bool LoadCourse(const char* Path, FSetup& S)
 	for (int I = 0; I < Count; ++I)
 	{
 		FGate G;
-		int Surface = 0;
-		In >> G.Box.Min.X >> G.Box.Min.Y >> G.Box.Min.Z >> G.Box.Max.X >> G.Box.Max.Y >> G.Box.Max.Z >> Surface >> G.Switch >> G.OpenSeconds;
+		int Surface = 0, Grille = 0;
+		In >> G.Box.Min.X >> G.Box.Min.Y >> G.Box.Min.Z >> G.Box.Max.X >> G.Box.Max.Y >> G.Box.Max.Z >> Surface >> G.Switch >> G.OpenSeconds >> Grille;
 		G.Box.Surface = static_cast<ESurface>(Surface);
+		G.bGrille = Grille != 0;
 		C.Gates.push_back(G);
 	}
 	In >> Count;

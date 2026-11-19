@@ -90,6 +90,8 @@ struct FGate
 	int Switch = 0;
 	/** Seconds the gate stays open after the switch is pressed. Zero means it stays open for the rest of the swing. */
 	double OpenSeconds = 0.0;
+	/** A grille: while shut it also stops a machine being carried (see Sim/GGLogistics.h). The ball cannot tell. */
+	bool bGrille = false;
 };
 
 struct FCourse
