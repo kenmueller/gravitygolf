@@ -163,6 +163,8 @@ private:
 	void MenuRight();
 	/** Enter and the gamepad's bottom button: choose in a menu, jump in the world. */
 	void AcceptOrJump();
+	/** Space: jump, unless the ball is rolling (then it is held to run the ball fast). */
+	void JumpKey();
 	void Hole1() { JumpToHole(1); }
 	void Hole2() { JumpToHole(2); }
 	void Hole3() { JumpToHole(3); }

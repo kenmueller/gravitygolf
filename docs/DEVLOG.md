@@ -6,7 +6,8 @@ Newest first. Each entry says what changed, what was verified, and an honest cri
 
 **To play.** Open the project (or run `Tools/editor.sh`), press Play. Keys: WASD and mouse, Shift to run, hold
 left click to swing (aim is where you look, longer hold is harder), E picks up and sets down a machine, R returns
-the ball, Backspace resets the hole, B jumps you to the ball, right click watches the ball. **F1 plays the
+the ball, Backspace resets the hole, B jumps you to the ball, right click watches the ball, hold Space while the
+ball rolls to run it fast. **F1 plays the
 solution for the leg you are on (a hole solved that way is not recorded). Tab opens the menu. Keys 1 to 7 jump
 between holes.** (Keys 1 to 9 now.)
 
@@ -72,6 +73,8 @@ between holes.** (Keys 1 to 9 now.)
   on the pad), and the Workshop's Sand tool was decoration. The Workshop now gives sand its own ground, and courses
   have `soft_patch` for ground that really stops a ball (hole 8's pad has a strip of wet salt behind it).
 - A plate and the gates it opens now glow the same colour.
+- **Hold Space to run a rolling ball at four times its speed** (the gamepad's bottom button, or FAST on a touch
+  screen). Hole 7's answer takes 16 seconds to play out; held, it takes 4.5, with the same result.
 
 **Verified**
 - Hole 9: `Tests/Sim/solve.sh wires` passes (one working plate of seven plinths on each swing; 375 and 115
@@ -175,6 +178,7 @@ between holes.** (Keys 1 to 9 now.)
   plate so far from the action that the machine on it does nothing but weigh. The honest idea is smaller: choose
   which machine to spend. The stronger hole (the weight's field is the first bend) is still to be designed.
 - Its best answers reel a nearly dead ball along slowly: 14 seconds from swing to cup. Legal, and dull to watch.
+  (Session 2 added a fast-forward for this: hold Space.)
 - Co-op is plumbing so far. No hole needs two people, there is no way to join a friend (no lobby, no invite), and
   the web build has no networking at all. Late joiners get the hole's starting state, not its current one.
 - The avatar has no walk, no hands on the club, and the same pose for everyone. It hovers, which hides a lot.

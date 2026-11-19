@@ -235,6 +235,10 @@ void AGGHUD::DrawPlay(const AGGGolfer* Golfer, const AGGCourse* Course)
 	{
 		Prompt = TEXT("Hold click to swing        Right click to watch the ball");
 	}
+	else if (Course->Phase() == EGGPhase::Flying)
+	{
+		Prompt = TEXT("Hold Space to run it fast        Right click to watch the ball");
+	}
 	else if (Course->Phase() == EGGPhase::Ready)
 	{
 		Prompt = FString::Printf(TEXT("Ball %d m        B  go to it        R  return ball        Tab  menu"),

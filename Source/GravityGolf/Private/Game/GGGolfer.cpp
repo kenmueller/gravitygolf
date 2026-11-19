@@ -268,7 +268,7 @@ void AGGGolfer::SetupPlayerInputComponent(UInputComponent* Input)
 
 	Input->BindAxisKey(EKeys::MouseX, this, &AGGGolfer::Turn);
 	Input->BindAxisKey(EKeys::MouseY, this, &AGGGolfer::LookUp);
-	Input->BindKey(EKeys::SpaceBar, IE_Pressed, this, &ACharacter::Jump);
+	Input->BindKey(EKeys::SpaceBar, IE_Pressed, this, &AGGGolfer::JumpKey);
 	Input->BindKey(EKeys::LeftMouseButton, IE_Pressed, this, &AGGGolfer::SwingPressed);
 	Input->BindKey(EKeys::LeftMouseButton, IE_Released, this, &AGGGolfer::SwingReleased);
 	Input->BindKey(EKeys::E, IE_Pressed, this, &AGGGolfer::Interact);
@@ -448,7 +448,17 @@ void AGGGolfer::AcceptOrJump()
 	{
 		Hud()->MenuActivate();
 	}
-	else if (!Building())
+	else
+	{
+		JumpKey();
+	}
+}
+
+void AGGGolfer::JumpKey()
+{
+	// While the ball is rolling the same key runs it fast instead (see Tick).
+	const AGGCourse* C = Course();
+	if (!Busy() && !(C && C->Phase() == EGGPhase::Flying))
 	{
 		Jump();
 	}
@@ -540,6 +550,7 @@ void AGGGolfer::TouchButtons(const FVector2D& View, TArray<FGGTouchButton>& Out)
 	else if (Phase == EGGPhase::Flying)
 	{
 		Add(TEXT("Watch"), 17.f, 19.f, 9.f, TEXT("WATCH"));
+		Add(TEXT("Fast"), 39.f, 12.f, 7.5f, TEXT("FAST"));
 	}
 	else if (CanSwing() || bCharging)
 	{
@@ -1345,6 +1356,20 @@ void AGGGolfer::Tick(float DeltaSeconds)
 			ServerSetRunning(bSprint);
 		}
 	}
+
+	// Hold Space (the gamepad's bottom button, or FAST on a touch screen) to run a rolling ball at four times its
+	// speed: some answers draw a nearly dead ball along for ten seconds, and nobody should have to sit through that
+	// twice. Only this machine's picture of the swing runs fast; where the ball ends up is the same for everyone.
+	bool bFast = false;
+	if (C->Phase() == EGGPhase::Flying && Player && !MenuOpen())
+	{
+		bFast = Player->IsInputKeyDown(EKeys::SpaceBar) || Player->IsInputKeyDown(EKeys::Gamepad_FaceButton_Bottom);
+		for (const TPair<int32, FName>& Held : HeldButtons)
+		{
+			bFast |= Held.Value == TEXT("Fast");
+		}
+	}
+	C->TimeScale = bFast ? 4.f : 1.f;
 
 	// Fell off the world: back to the ball.
 	if (GetActorLocation().Z < C->KillHeight())

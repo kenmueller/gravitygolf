@@ -19,7 +19,7 @@ What the browser runs showed (Chrome 156, M4 Max, the engine's harness):
 | First download | about 68 MB before the game is ready; about 100 MB in all (42 MB of code, 54 MB of content) |
 | Memory | 512 MB heap at peak |
 | Renderer | the mobile deferred tier, no WebGPU errors |
-| Works | title screen, menus, walking, carrying machines, the swing, the physics (all eight holes' recorded solutions sink the ball, in the same number of swings as on the desktop), touch stick and buttons under phone emulation (852x393), the Workshop (building with mouse clicks and with touch, its check, a test play) |
+| Works | title screen, menus, walking, carrying machines, the swing, the physics (all nine holes' recorded solutions sink the ball, in the same number of swings as on the desktop), touch stick and buttons under phone emulation (852x393), the Workshop (building with mouse clicks and with touch, its check, a test play) |
 
 What is different from the desktop game on the web:
 - No bounced light, no ray tracing, shadows from cascaded shadow maps. Clear sky (a dome), no volumetric clouds.
