@@ -10,10 +10,14 @@
 #include <cmath>
 #include <cstdio>
 #include <fstream>
+#include <string>
 #include <thread>
 #include <vector>
 
 using namespace GG;
+
+/** Set by a second argument "all": list every machine spot that works, not only the best five (a design aid). */
+static bool GListAll = false;
 
 static FVec3 Launch(double YawDegrees, double Power)
 {
@@ -70,6 +74,18 @@ static std::vector<FSpot> SweepSpots(const FSetup& S, const FLeg& Leg, const FMa
 			}
 		}
 	}
+	// Where a hole has plinths, those are the only spots.
+	if (!S.Plinths.empty())
+	{
+		Spots.clear();
+		for (const FVec3& Plinth : S.Plinths)
+		{
+			if (MachineAllowed(S, Plinth.X, Plinth.Y))
+			{
+				Spots.push_back({Plinth.X, Plinth.Y, 0, 0, 0});
+			}
+		}
+	}
 	// A machine can also stand on a weight plate, which the grid may step over.
 	for (const FSwitch& Switch : S.Course.Switches)
 	{
@@ -118,7 +134,7 @@ static bool SolveLeg(const FSetup& S, const FLeg& Leg, int LegIndex, const char*
 			Working += Spot.Solutions > 0;
 		}
 		std::printf("  SOLVABLE: %d of %zu machine spots work\n", Working, Spots.size());
-		for (size_t I = 0; I < Spots.size() && I < 5 && Spots[I].Solutions > 0; ++I)
+		for (size_t I = 0; I < Spots.size() && I < (GListAll ? Spots.size() : 5) && Spots[I].Solutions > 0; ++I)
 		{
 			std::printf("    machine at (%5.0f, %5.0f): %3d swings work, e.g. yaw %6.1f power %.3f\n", Spots[I].X, Spots[I].Y,
 				Spots[I].Solutions, Spots[I].Yaw, Spots[I].Power);
@@ -203,6 +219,7 @@ int main(int Argc, char** Argv)
 		return 2;
 	}
 
+	GListAll = Argc > 2 && std::string(Argv[2]) == "all";
 	// Legs run tee -> safe zone 0 -> safe zone 1 -> ... -> cup. Each must obey the puzzle law on its own.
 	bool bPass = true;
 	const int Zones = static_cast<int>(S.Course.SafeZones.size());

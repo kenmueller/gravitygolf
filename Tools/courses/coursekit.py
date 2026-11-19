@@ -31,6 +31,7 @@ class Course:
         self.solutions = []
         self.switches = []
         self.gates = []
+        self.plinths = []
 
     def box(self, name, center, size, surface="stone", look="stone", shape="box"):
         """An axis-aligned collision box. `look` tells the level script how to dress it."""
@@ -48,12 +49,23 @@ class Course:
 
     def safe_zone(self, x, y, z=0, radius=240, pad=True, needs_switch=-1):
         """A checkpoint: a ball that rests here stays, and any switch it pressed on the way stays pressed. With a
-        pad, a soft surface catches the ball. `needs_switch` tells the solver which switch the leg is for."""
+        pad, the level draws a patch there. `needs_switch` tells the solver which switch the leg is for."""
         self.safe_zones.append({"position": [x, y, z], "radius": radius, "needsSwitch": needs_switch})
         self.no_machine.append({"position": [x, y, z], "radius": radius + 60, "kind": "pad"})
         if pad:
+            # The pad's own box is for the level's look only. It lies in the floor, and where two boxes share the
+            # ground under the ball the simulation seats the ball on the first one listed and the second never
+            # touches it: the floor comes first, so a pad does not slow the ball. (It must not: the next swing starts
+            # from the middle of the pad, and sand would hold the ball there.) To stop a ball at a pad, put a
+            # soft_patch just beyond it as a backstop.
             side = radius * 1.7
             self.box(f"SafePad{len(self.safe_zones)}", (x, y, z - 10), (side, side, 20), "sand", "pad")
+
+    def soft_patch(self, name, center, size, look="sand"):
+        """Soft ground lying in the floor: a ball that rolls onto it stops within a pace. It is listed before every
+        other box so that it, not the floor under it, is what the ball touches."""
+        self.boxes.insert(0, {"name": name, "center": list(center), "size": list(size), "surface": "sand", "look": look,
+                              "shape": "box"})
 
     def switch(self, x, y, z=0, radius=70, weight=False):
         """A plate in the ground. A light plate is pressed by the ball rolling over it, and machines can't stand on
@@ -74,6 +86,10 @@ class Course:
         self.machines.append({"position": [x, y, z], "strength": strength, "range": reach, "coreHeight": core_height,
                               "movable": movable})
 
+    def plinth(self, x, y, z=0, radius=85):
+        """A plinth. A hole that has any lets machines stand only on them (the game snaps a machine to the middle)."""
+        self.plinths.append({"position": [x, y, z], "radius": radius})
+
     def solution(self, leg, machines, yaw, power):
         """The intended answer for a leg: where each machine stands, and one swing that works. The solver verifies
         it and measures how forgiving it is. Required for holes with two or more machines."""
@@ -91,6 +107,8 @@ class Course:
             "attractors": self.machines, "boxes": self.boxes,
             "switches": self.switches, "gates": self.gates, "solutions": self.solutions,
         }
+        if self.plinths:
+            data["plinths"] = self.plinths
         if self.next:
             data["next"] = self.next
         data.update(self.extra)
@@ -142,3 +160,7 @@ def write_flat(data, placement, path):
         for sol in data["solutions"]:
             spots = " ".join(f"{m[0]} {m[1]}" for m in sol["machines"])
             f.write(f"{sol['leg']} {sol['yaw']} {sol['power']} {spots}\n")
+        plinths = data.get("plinths", [])
+        f.write(f"{len(plinths)}\n")
+        for p in plinths:
+            f.write(f"{p['position'][0]} {p['position'][1]} {p['radius']}\n")

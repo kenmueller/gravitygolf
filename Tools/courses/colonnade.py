@@ -14,7 +14,7 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 from coursekit import Course  # noqa: E402
 
-c = Course("colonnade", "Dead Weight", "Colonnade")
+c = Course("colonnade", "Dead Weight", "Colonnade", next_level="Stones")
 WALL_H = 110  # low enough to see the water and the columns over
 
 # The hall runs east. An alcove opens off its north side; a cross wall with a gate closes off the east chamber.

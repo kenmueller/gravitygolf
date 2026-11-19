@@ -185,7 +185,8 @@ void AGGRival::PlanAttempt()
 		// rival always gets that one right.
 		for (int32 I = 0; I < Targets.Num() && I < Answer->Machines.Num(); ++I)
 		{
-			bool bOnPlate = false;
+			// (The same goes for a hole with plinths: the rival's mistakes are in its swing, not in which plinth.)
+			bool bOnPlate = Course->HasPlinths();
 			for (const GG::FSwitch& Switch : Course->Rules().Switches)
 			{
 				bOnPlate |= Switch.bWeight && FVector::Dist2D(Answer->Machines[I], ToUnreal(Switch.Center)) <= Switch.Radius;

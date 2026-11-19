@@ -30,6 +30,8 @@ struct FSetup
 	double MinX = 0, MinY = 0, MaxX = 0, MaxY = 0;
 	std::vector<FMachineDef> Machines;
 	std::vector<FVec3> NoMachine; // x, y, radius
+	/** Plinths (x, y, radius). When a hole has any, a machine may stand only on one, at its center. */
+	std::vector<FVec3> Plinths;
 	std::vector<FHint> Hints;
 	/** Per safe zone: a switch that must be pressed on the leg that reaches it, or -1. */
 	std::vector<int> ZoneNeeds;
@@ -90,9 +92,22 @@ inline bool LegReached(const FSetup& S, const FLeg& Leg, const std::vector<FAttr
 	return End == EBallState::AtRest && Sim.Ball().SafeZone == Leg.Target && (Needs < 0 || Sim.SwitchPressed(Needs));
 }
 
-/** May a machine stand here? Not inside walls or closed gates, not on courts or pads. */
+/** May a machine stand here? Not inside walls or closed gates, not on courts or pads; only on a plinth where a
+ *  hole has plinths. */
 inline bool MachineAllowed(const FSetup& S, double X, double Y)
 {
+	if (!S.Plinths.empty())
+	{
+		bool bOnOne = false;
+		for (const FVec3& Plinth : S.Plinths)
+		{
+			bOnOne = bOnOne || ((X - Plinth.X) * (X - Plinth.X) + (Y - Plinth.Y) * (Y - Plinth.Y) <= Plinth.Z * Plinth.Z);
+		}
+		if (!bOnOne)
+		{
+			return false;
+		}
+	}
 	auto Blocks = [&](const FBox& B) {
 		return B.Max.Z > 20.0 && X > B.Min.X - 40 && X < B.Max.X + 40 && Y > B.Min.Y - 40 && Y < B.Max.Y + 40;
 	};

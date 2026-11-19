@@ -82,6 +82,7 @@ Built, proven by the solver and played end to end in the engine (`Tools/smoke.sh
 | 5 | The Long Way Round | The canyon again, in the evening | Plan the whole trip: the cup is behind you, behind a gate | 1 attractor, 1 repulsor, 1 plate, 1 gate, 1 pad |
 | 6 | Second Wind | The lantern court, later that night | A pull is also a push: a ball slow enough to turn the corner needs a second machine to carry it the distance | 2 attractors |
 | 7 | Dead Weight | A roofless hall of columns at dawn, drums of broken columns hanging in the air | A machine can be a weight: a heavy plate holds the gate open only while a machine stands on it, so you choose which one to spend | 1 attractor, 1 repulsor, 1 weight plate, 1 gate |
+| 8 | Stepping Stones | The salt again, at noon: white crust, black glass, violet light | Machines stand only on seven plinths: read the line from the ball through each one, and pick the one that lands | 1 attractor, 7 plinths, 1 pad |
 
 Holes 1 to 4 are the tutorial. Hole 5 is the first exam: everything so far, on both swings. None is walkthrough-hard yet. Ideas for the worlds after them (not built):
 

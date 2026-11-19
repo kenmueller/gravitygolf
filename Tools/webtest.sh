@@ -10,7 +10,7 @@ STATUS=0
 NAMES="${*:-play phone}"
 if [ "$NAMES" = "tour" ]; then
 	# Every hole: open it, picture from the tee, play its solution. A web smoke test.
-	NAMES="hole-Terraces hole-SaltMirror hole-Canyon hole-Lantern hole-Returning hole-Brief hole-Colonnade"
+	NAMES="hole-Terraces hole-SaltMirror hole-Canyon hole-Lantern hole-Returning hole-Brief hole-Colonnade hole-Stones"
 fi
 for NAME in $NAMES; do
 	OUT="$WEB/Saved/WebTest/$NAME"

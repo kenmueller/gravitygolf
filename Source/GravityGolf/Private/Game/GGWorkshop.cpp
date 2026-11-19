@@ -123,7 +123,9 @@ TArray<FIntRect> FGGDesign::Rects(EGGCell Kind) const
 	TSet<FIntPoint> Left;
 	for (const TPair<FIntPoint, EGGCell>& Pair : Cells)
 	{
-		if (Kind == EGGCell::Floor ? Pair.Value != EGGCell::None : Pair.Value == Kind)
+		// The floor is every square with ground except the sand, which is ground of its own kind: two boxes sharing
+		// the ground under the ball would leave only the first one touching it.
+		if (Kind == EGGCell::Floor ? (Pair.Value != EGGCell::None && Pair.Value != EGGCell::Sand) : Pair.Value == Kind)
 		{
 			Left.Add(Pair.Key);
 		}
@@ -252,7 +254,7 @@ FString FGGDesign::ToJson() const
 		}
 	};
 	Layer(EGGCell::Floor, TEXT("Floor"), -15, 30, TEXT("green"), TEXT("floor"));
-	Layer(EGGCell::Sand, TEXT("Sand"), -10, 20, TEXT("sand"), TEXT("sand"));
+	Layer(EGGCell::Sand, TEXT("Sand"), -15, 30, TEXT("sand"), TEXT("sand"));
 
 	TArray<TSharedPtr<FJsonValue>> Zones;
 	for (int32 I = 0; I < Pads.Num(); ++I)
@@ -263,7 +265,6 @@ FString FGGDesign::ToJson() const
 		Zone->SetNumberField(TEXT("needsSwitch"), -1);
 		Zones.Add(MakeShared<FJsonValueObject>(Zone));
 		Keep(Pads[I], PadRadius + 60, TEXT("pad"));
-		Box(FString::Printf(TEXT("SafePad%d"), I + 1), Pads[I].X, Pads[I].Y, -10, PadRadius * 1.7, PadRadius * 1.7, 20, TEXT("sand"), TEXT("pad"));
 	}
 	Root->SetArrayField(TEXT("safeZones"), Zones);
 	Layer(EGGCell::Wall, TEXT("Wall"), WallHeight * 0.5, WallHeight, TEXT("stone"), TEXT("wall"));

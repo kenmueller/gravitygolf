@@ -126,6 +126,9 @@ public:
 	FVector MachineBase(int32 Index) const;
 	/** Some ground refuses machines (the paved court around a cup, for instance). */
 	bool CanPlaceMachine(const FVector& Base) const;
+	/** Where a machine set down near Base comes to stand: the middle of the plinth it is on, if the hole has plinths. */
+	FVector MachineSpot(const FVector& Base) const;
+	bool HasPlinths() const { return Plinths.Num() > 0; }
 	/** Show a short message on the HUD. */
 	void Notify(const FString& Message);
 
@@ -218,6 +221,8 @@ private:
 	TArray<FGGSolution> Solutions;
 	TArray<float> GateLevel;
 	TArray<FVector> NoMachineZones; // x, y, radius
+	/** Plinths (x, y, radius). A hole that has any lets machines stand only on them. */
+	TArray<FVector> Plinths;
 	/** A course made in the Workshop has no level dressed around it, so it draws its own floor and walls. */
 	struct FDrawnBox
 	{

@@ -18,25 +18,35 @@ import common as c  # noqa: E402
 
 importlib.reload(c)
 
-LEVEL = "/Game/Levels/SaltMirror"
-COURSE = "/Users/ken/Code/gravitygolf/Content/Courses/saltmirror.json"
+# Other holes on the salt run this script with their own settings (see Tools/levels/stones.py).
+VARIANT = globals().get("GG_VARIANT", {})
+LEVEL = VARIANT.get("level", "/Game/Levels/SaltMirror")
+COURSE = "/Users/ken/Code/gravitygolf/Content/Courses/%s.json" % VARIANT.get("course", "saltmirror")
+# Material instances are named per hole, so one hole's colours never change another's.
+PREFIX = VARIANT.get("prefix", "Salt")
+GLYPH = VARIANT.get("glyph", (1.0, 0.55, 0.25))
+# The sun sits just above the horizon ahead and a little left, so every monolith throws a long shadow toward you.
+SUN = VARIANT.get("sun", dict(sun_pitch=-6.5, sun_yaw=196.0, fog_density=0.006, sun_kelvin=4300.0, sky_intensity=1.6,
+                              exposure_bias=0.4))
 SURFACE = "/Game/Materials/M_GG_Surface.M_GG_Surface"
-rng = random.Random(11)
+rng = random.Random(VARIANT.get("seed", 11))
 
 
 def materials():
     return {
-        "crust": c.material_instance("/Game/Materials/M_GG_Salt.M_GG_Salt", "MI_Salt_Crust", {"CellSize": 135.0},
+        "crust": c.material_instance("/Game/Materials/M_GG_Salt.M_GG_Salt", f"MI_{PREFIX}_Crust", {"CellSize": 135.0},
                                      {"Tint": (0.82, 0.8, 0.76, 1)}),
-        "pad": c.material_instance("/Game/Materials/M_GG_Salt.M_GG_Salt", "MI_Salt_Pad", {"CellSize": 38.0, "RimWidth": 0.09},
+        "pad": c.material_instance("/Game/Materials/M_GG_Salt.M_GG_Salt", f"MI_{PREFIX}_Pad", {"CellSize": 38.0, "RimWidth": 0.09},
                                    {"Tint": (0.42, 0.37, 0.3, 1)}),
         "mirror": unreal.load_asset("/Game/Materials/M_GG_Mirror.M_GG_Mirror"),
-        "obsidian": c.material_instance(SURFACE, "MI_Salt_Obsidian", {"Roughness": 0.07, "Metallic": 0.0},
+        "obsidian": c.material_instance(SURFACE, f"MI_{PREFIX}_Obsidian", {"Roughness": 0.07, "Metallic": 0.0},
                                         {"BaseColor": (0.008, 0.008, 0.01, 1)}),
-        "glyph": c.material_instance("/Game/Materials/M_GG_Glow.M_GG_Glow", "MI_Salt_Glyph", {"Strength": 22.0},
-                                     {"Color": (1.0, 0.55, 0.25, 1)}),
-        "farGlyph": c.material_instance("/Game/Materials/M_GG_Glow.M_GG_Glow", "MI_Salt_FarGlyph", {"Strength": 3.0},
-                                        {"Color": (1.0, 0.55, 0.25, 1)}),
+        "glyph": c.material_instance("/Game/Materials/M_GG_Glow.M_GG_Glow", f"MI_{PREFIX}_Glyph", {"Strength": 22.0},
+                                     {"Color": (*GLYPH, 1)}),
+        "farGlyph": c.material_instance("/Game/Materials/M_GG_Glow.M_GG_Glow", f"MI_{PREFIX}_FarGlyph", {"Strength": 3.0},
+                                        {"Color": (*GLYPH, 1)}),
+        "ring": c.material_instance("/Game/Materials/M_GG_Glow.M_GG_Glow", f"MI_{PREFIX}_Ring", {"Strength": 4.0},
+                                    {"Color": (*GLYPH, 1)}),
         "black": c.material_instance(SURFACE, "MI_Cup", {"Roughness": 1.0}, {"BaseColor": (0.004, 0.004, 0.004, 1)}),
     }
 
@@ -45,11 +55,16 @@ def monolith(box, m):
     """A course monolith: far taller than it needs to be, with one line of light down each face."""
     cx, cy, cz = box["center"]
     sx, sy, sz = box["size"]
-    height = 1500
+    height = VARIANT.get("monolith_height", 1500)
     c.box((cx, cy, height / 2), (sx, sy, height), m["obsidian"], box["name"])
+    # The line of light runs down the two broad faces, whichever way the monolith lies.
     for side in (-1, 1):
-        c.box((cx + side * (sx / 2 + 1), cy, height * 0.5), (3, 6, height * 0.9), m["glyph"], f"{box['name']}_Glyph{side}",
-              folder="Course/Glyphs")
+        if sy >= sx:
+            c.box((cx + side * (sx / 2 + 1), cy, height * 0.5), (3, 6, height * 0.9), m["glyph"], f"{box['name']}_Glyph{side}",
+                  folder="Course/Glyphs")
+        else:
+            c.box((cx, cy + side * (sy / 2 + 1), height * 0.5), (6, 3, height * 0.9), m["glyph"], f"{box['name']}_Glyph{side}",
+                  folder="Course/Glyphs")
 
 
 def course_geometry(m):
@@ -59,8 +74,12 @@ def course_geometry(m):
         look = b["look"]
         if look == "monolith":
             monolith(b, m)
-        elif look == "brine":
+        elif look == "brine" and b["name"].startswith("Brine"):
             c.box(b["center"], b["size"], m["mirror"], b["name"], folder="Landscape/Brine")
+        elif look == "brine":
+            # Wet salt lying in the crust (a backstop behind a pad): a dark damp slab, a hair proud of the crust.
+            c.box((b["center"][0], b["center"][1], 0.3), (b["size"][0], b["size"][1], 0.6), m["pad"], b["name"],
+                  folder="Course/Markers", solid=False)
         elif look == "pad":
             # The soft pad shows as a round patch of dark damp salt, a hair above the crust.
             side = max(b["size"][0], b["size"][1])
@@ -91,9 +110,15 @@ def markers(course, m):
     c.mesh(c.CYLINDER, (x, y, z + 1.0), (cup["radius"] * 2 - 10, cup["radius"] * 2 - 10, 1), material=m["black"], label="CupHole",
            folder="Course/Markers", cast_shadow=False)
     c.mesh(c.CYLINDER, (x, y, z + 130), (2.5, 2.5, 260), material=m["obsidian"], label="FlagPole", folder="Course/Markers")
-    for machine in course["attractors"]:
-        mx, my, _ = machine["position"]
-        c.dais((mx, my), 240, m["obsidian"], m["glyph"])
+    plinths = course.get("plinths", [])
+    for plinth in plinths:
+        # A plinth: a disc of black glass in the crust with a ring of light, the only place a machine will stand.
+        px, py, _ = plinth["position"]
+        c.dais((px, py), plinth["radius"] * 2 + 30, m["obsidian"], m["ring"], label="Plinth")
+    if not plinths:
+        for machine in course["attractors"]:
+            mx, my, _ = machine["position"]
+            c.dais((mx, my), 240, m["obsidian"], m["glyph"])
 
 
 def mirror_and_horizon(m):
@@ -135,12 +160,11 @@ def armada(m):
 
 c.fresh_level(LEVEL)
 mats = materials()
-# The sun sits just above the horizon ahead and a little left, so every monolith throws a long shadow toward you.
-c.sky_and_sun(sun_pitch=-6.5, sun_yaw=196.0, fog_density=0.006, sun_kelvin=4300.0, sky_intensity=1.6, exposure_bias=0.4)
+c.sky_and_sun(**SUN)
 course_data = course_geometry(mats)
 markers(course_data, mats)
 c.player_start(course_data)
 mirror_and_horizon(mats)
 armada(mats)
-c.write_plants(LEVEL, web_ambient=2.0, web_tint=(1.0, 0.9, 0.8))
+c.write_plants(LEVEL, web_ambient=VARIANT.get("web_ambient", 2.0), web_tint=VARIANT.get("web_tint", (1.0, 0.9, 0.8)))
 c.LES.save_current_level()

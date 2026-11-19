@@ -90,5 +90,16 @@ inline bool LoadCourse(const char* Path, FSetup& S)
 		}
 		S.Hints.push_back(H);
 	}
-	return static_cast<bool>(In);
+	const bool bRead = static_cast<bool>(In);
+	// Plinths come last, and older files have none.
+	if (In >> Count)
+	{
+		for (int I = 0; I < Count; ++I)
+		{
+			FVec3 Plinth;
+			In >> Plinth.X >> Plinth.Y >> Plinth.Z;
+			S.Plinths.push_back(Plinth);
+		}
+	}
+	return bRead;
 }

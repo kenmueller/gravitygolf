@@ -80,7 +80,7 @@ struct FGGDesign
 	EGGCell At(const FIntPoint& Square) const { return Cells.FindRef(Square); }
 	EGGCell AtPoint(const FIntPoint& Point) const;
 	void Paint(const FIntRect& Squares, EGGCell Kind);
-	/** Squares of one kind (or, for Floor, every square that has ground) merged into rectangles, in centimetres. */
+	/** Squares of one kind (for Floor: every square with ground that is not sand) merged into rectangles, in centimetres. */
 	TArray<FIntRect> Rects(EGGCell Kind) const;
 	bool Bounds(FIntRect& Out) const;
 	int32 Legs() const { return Pads.Num() + 1; }

@@ -1,0 +1,304 @@
+{
+	"id": "stones",
+	"name": "Stepping Stones",
+	"level": "Stones",
+	"par": 2,
+	"ballRadius": 6,
+	"gravity": [
+		0,
+		0,
+		-980
+	],
+	"killZ": -1400,
+	"tee": {
+		"position": [
+			500,
+			-260,
+			6
+		],
+		"yaw": 0
+	},
+	"cup": {
+		"position": [
+			1200,
+			760,
+			0
+		],
+		"radius": 42,
+		"captureSpeed": 650
+	},
+	"noMachine": [
+		{
+			"position": [
+				4560,
+				520,
+				0
+			],
+			"radius": 250,
+			"kind": "pad"
+		},
+		{
+			"position": [
+				1200,
+				760,
+				0
+			],
+			"radius": 300,
+			"kind": "court"
+		}
+	],
+	"safeZones": [
+		{
+			"position": [
+				4560,
+				520,
+				0
+			],
+			"radius": 190,
+			"needsSwitch": -1
+		}
+	],
+	"attractors": [
+		{
+			"position": [
+				800,
+				-550,
+				0
+			],
+			"strength": 420,
+			"range": 1900,
+			"coreHeight": 45,
+			"movable": true
+		}
+	],
+	"boxes": [
+		{
+			"name": "Backstop",
+			"center": [
+				4760,
+				560,
+				-15
+			],
+			"size": [
+				220,
+				620,
+				30
+			],
+			"surface": "sand",
+			"look": "brine",
+			"shape": "box"
+		},
+		{
+			"name": "Crust",
+			"center": [
+				2600.0,
+				0,
+				-15
+			],
+			"size": [
+				5200,
+				2200,
+				30
+			],
+			"surface": "green",
+			"look": "crust",
+			"shape": "box"
+		},
+		{
+			"name": "BrineL",
+			"center": [
+				2600.0,
+				-2600.0,
+				-15
+			],
+			"size": [
+				11200,
+				3000,
+				30
+			],
+			"surface": "sand",
+			"look": "brine",
+			"shape": "box"
+		},
+		{
+			"name": "BrineR",
+			"center": [
+				2600.0,
+				2600.0,
+				-15
+			],
+			"size": [
+				11200,
+				3000,
+				30
+			],
+			"surface": "sand",
+			"look": "brine",
+			"shape": "box"
+		},
+		{
+			"name": "BrineStart",
+			"center": [
+				-1500.0,
+				0,
+				-15
+			],
+			"size": [
+				3000,
+				2200,
+				30
+			],
+			"surface": "sand",
+			"look": "brine",
+			"shape": "box"
+		},
+		{
+			"name": "BrineEnd",
+			"center": [
+				6700.0,
+				0,
+				-15
+			],
+			"size": [
+				3000,
+				2200,
+				30
+			],
+			"surface": "sand",
+			"look": "brine",
+			"shape": "box"
+		},
+		{
+			"name": "LongWall",
+			"center": [
+				1250.0,
+				0,
+				300
+			],
+			"size": [
+				3700,
+				140,
+				600
+			],
+			"surface": "sand",
+			"look": "monolith",
+			"shape": "box"
+		},
+		{
+			"name": "Screen",
+			"center": [
+				2300,
+				1060.0,
+				300
+			],
+			"size": [
+				140,
+				1280,
+				600
+			],
+			"surface": "sand",
+			"look": "monolith",
+			"shape": "box"
+		},
+		{
+			"name": "SafePad1",
+			"center": [
+				4560,
+				520,
+				-10
+			],
+			"size": [
+				323.0,
+				323.0,
+				20
+			],
+			"surface": "sand",
+			"look": "pad",
+			"shape": "box"
+		}
+	],
+	"switches": [],
+	"gates": [],
+	"solutions": [
+		{
+			"leg": 0,
+			"machines": [
+				[
+					3700,
+					150
+				]
+			],
+			"yaw": -1,
+			"power": 0.225
+		},
+		{
+			"leg": 1,
+			"machines": [
+				[
+					1800,
+					500
+				]
+			],
+			"yaw": -165,
+			"power": 0.35
+		}
+	],
+	"plinths": [
+		{
+			"position": [
+				800,
+				-550,
+				0
+			],
+			"radius": 85
+		},
+		{
+			"position": [
+				3700,
+				150,
+				0
+			],
+			"radius": 85
+		},
+		{
+			"position": [
+				1800,
+				500,
+				0
+			],
+			"radius": 85
+		},
+		{
+			"position": [
+				2950,
+				-700,
+				0
+			],
+			"radius": 85
+		},
+		{
+			"position": [
+				4300,
+				-500,
+				0
+			],
+			"radius": 85
+		},
+		{
+			"position": [
+				4900,
+				-200,
+				0
+			],
+			"radius": 85
+		},
+		{
+			"position": [
+				600,
+				600,
+				0
+			],
+			"radius": 85
+		}
+	]
+}

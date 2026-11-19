@@ -58,7 +58,14 @@ int main(int Argc, char** Argv)
 					{
 						X = std::round((S.MinX + U(Rng) * (S.MaxX - S.MinX)) / 50.0) * 50.0;
 						Y = std::round((S.MinY + U(Rng) * (S.MaxY - S.MinY)) / 50.0) * 50.0;
-					} while (!MachineAllowed(S, X, Y));
+					} while (S.Plinths.empty() && !MachineAllowed(S, X, Y));
+					if (!S.Plinths.empty())
+					{
+						// Where a hole has plinths, those are the only spots.
+						const FVec3& Plinth = S.Plinths[static_cast<size_t>(U(Rng) * S.Plinths.size()) % S.Plinths.size()];
+						X = Plinth.X;
+						Y = Plinth.Y;
+					}
 					// A third of the time, stand the machine on a weight plate (if the course has any).
 					std::vector<const FSwitch*> Plates;
 					for (const FSwitch& Switch : S.Course.Switches)

@@ -296,6 +296,16 @@ bool AGGCourse::LoadText(const FString& Text, const FString& CourseId)
 		const GG::FVec3 At = ReadVec(Value->AsObject(), TEXT("position"));
 		NoMachineZones.Add(FVector(At.X, At.Y, Value->AsObject()->GetNumberField(TEXT("radius"))));
 	}
+	Plinths.Reset();
+	const TArray<TSharedPtr<FJsonValue>>* PlinthValues = nullptr;
+	if (Json->TryGetArrayField(TEXT("plinths"), PlinthValues))
+	{
+		for (const TSharedPtr<FJsonValue>& Value : *PlinthValues)
+		{
+			const GG::FVec3 At = ReadVec(Value->AsObject(), TEXT("position"));
+			Plinths.Add(FVector(At.X, At.Y, Value->AsObject()->GetNumberField(TEXT("radius"))));
+		}
+	}
 	for (const TSharedPtr<FJsonValue>& Value : Json->GetArrayField(TEXT("safeZones")))
 	{
 		Course.SafeZones.push_back({ReadVec(Value->AsObject(), TEXT("position")), Value->AsObject()->GetNumberField(TEXT("radius"))});
@@ -415,6 +425,10 @@ GG::FSetup AGGCourse::MakeSetup() const
 	{
 		Setup.NoMachine.push_back({Zone.X, Zone.Y, Zone.Z});
 	}
+	for (const FVector& Plinth : Plinths)
+	{
+		Setup.Plinths.push_back({Plinth.X, Plinth.Y, Plinth.Z});
+	}
 	Setup.ZoneNeeds.assign(Course.SafeZones.size(), -1);
 	for (const FGGSolution& Answer : Solutions)
 	{
@@ -475,11 +489,7 @@ void AGGCourse::BuildDrawn()
 			// A safe pad's soft ground is a square in the simulation and a round patch to the eye (drawn below).
 			continue;
 		}
-		if (Box.Look == TEXT("sand"))
-		{
-			// Sand lies in the floor. Drawn a hair proud of it so the two surfaces don't flicker.
-			Center.Z += 0.6;
-		}
+
 		UStaticMeshComponent* Mesh = AddMesh(Cube, LookFor(Box.Look), FTransform(FRotator::ZeroRotator, Center, Size / 100.0));
 		Solid(Mesh);
 		if (Box.Look == TEXT("wall"))
@@ -767,8 +777,33 @@ void AGGCourse::BuildMachine(int32 Index)
 	MachineLights.Add(Light);
 }
 
+FVector AGGCourse::MachineSpot(const FVector& Base) const
+{
+	for (const FVector& Plinth : Plinths)
+	{
+		// A step of slack around the plinth: setting a machine down is not a test of aim.
+		if (FVector::DistSquared2D(Base, Plinth) <= FMath::Square(Plinth.Z + 60.0))
+		{
+			return FVector(Plinth.X, Plinth.Y, Base.Z);
+		}
+	}
+	return Base;
+}
+
 bool AGGCourse::CanPlaceMachine(const FVector& Base) const
 {
+	if (Plinths.Num() > 0)
+	{
+		bool bOnOne = false;
+		for (const FVector& Plinth : Plinths)
+		{
+			bOnOne = bOnOne || FVector::DistSquared2D(Base, Plinth) <= FMath::Square(Plinth.Z + 60.0);
+		}
+		if (!bOnOne)
+		{
+			return false;
+		}
+	}
 	for (const FVector& Zone : NoMachineZones)
 	{
 		if (FVector::DistSquared2D(Base, Zone) < Zone.Z * Zone.Z)
@@ -956,12 +991,13 @@ bool AGGCourse::PlaceMachine(int32 Index, const FVector& Base, AGGGolfer* Carrie
 	{
 		if (Carrier)
 		{
-			Carrier->Tell(TEXT("The machine won't stand on the court."));
+			Carrier->Tell(Plinths.Num() > 0 ? TEXT("Here a machine stands only on a plinth.") : TEXT("The machine won't stand on the court."));
 		}
 		return false;
 	}
 	// Whole centimeters keep the simulation's inputs identical on every machine.
-	NetPlace(Index, FVector(FMath::RoundToDouble(Base.X), FMath::RoundToDouble(Base.Y), FMath::RoundToDouble(Base.Z)));
+	const FVector Spot = MachineSpot(Base);
+	NetPlace(Index, FVector(FMath::RoundToDouble(Spot.X), FMath::RoundToDouble(Spot.Y), FMath::RoundToDouble(Spot.Z)));
 	return true;
 }
 

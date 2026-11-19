@@ -53,6 +53,7 @@ Never report something as good when it is merely working.
 GravityGolf.uproject          plugins: ModelContextProtocol + AllToolsets (MCP), Python, ProceduralMesh
 Source/GravityGolf/
   */Sim/GGSim.*               deterministic 3D ball physics (boxes, surfaces, machines, cup, safe pads, light and weight plates, gates)
+                              (plinths, where a hole has them, are a placement rule: GGProof.h and AGGCourse)
   */Game/GGCourse.*           loads Content/Courses/<level>.json, steps the sim at 240 Hz, ball/attractors/flag
   */Game/GGGolfer.*           first-person character: walk, keys, gamepad and touch; carry machines, swing, menus
   */Game/GGGameMode.*         starts the course matching the level name; console commands (GGDemo, GGHole, GGPerf, GGView...)
@@ -176,8 +177,11 @@ console and read the pass list in the log before guessing.
   ground was 30 cm above it (depth precision across a huge triangle). Lay big ground in tiles of a few hundred metres.
 - A material rebuilt by `Tools/build_materials.py` resets its instances. To add or change one material without
   touching the rest, run the script with `GG_ONLY` set: `runpy.run_path(path, init_globals={'GG_ONLY': ['grid']})`.
-- Overlapping floor boxes double the rolling resistance where they overlap (each box the ball touches slows it). The
-  Workshop cuts a design's squares into rectangles that never overlap, in a fixed order, for that reason.
+- Where two boxes share the ground under the ball, only the first one listed touches it (it seats the ball exactly
+  on its surface, and the next box then sees no contact). So a safe pad's sand, listed after the floor it lies in,
+  has never slowed a ball, on any hole, and must not: the next swing starts on the pad. Soft ground that should stop
+  a ball goes before the floor (`c.soft_patch`), and stops it within about 20 cm. The Workshop cuts a design into
+  rectangles that never overlap, sand included, so its sand works.
 - Keys are not axes: `BindAxisKey(EKeys::W, ...)` trips an engine ensure at startup. Read W A S D with
   `IsInputKeyDown` in Tick.
 - Design notes from holes that did not work. (1) A machine pinned to one spot (a weight plate) that also has to bend
@@ -195,7 +199,11 @@ console and read the pass list in the log before guessing.
   parked far away.
 - Rebuilding materials (`Tools/build_materials.py`) resets every level's material instances: levels render flat
   tan until their scripts run again. `Tools/regen.sh` does this for you; never run the material script alone.
-- A level script can serve several holes: `Tools/levels/returning.py` runs `canyon.py` with its own settings.
+- A level script can serve several holes: `Tools/levels/returning.py` runs `canyon.py` with its own settings, and
+  `stones.py` runs `saltmirror.py`.
+- A sun at 50 degrees throws a 15 m wall's shadow 12 m: across a whole lane. Check the picture from the tee before
+  settling a sun direction, and aim the light along long walls, not across them.
+- zsh does not split an unquoted variable into words: `tool $ARGS` passes one argument. It cost two wrong scans.
 - Geometry Script: the lathe (`append_revolve_polygon`) ignores the material in its options; remap it afterwards.
 - Megaplants need `r.Nanite.Foliage` and `r.Nanite.AllowAssemblies`, or the trees render bare.
 - Megaplants are skeletal meshes that sway. Anything that sways redraws its shadow every frame: 26 pines cost 12 ms
