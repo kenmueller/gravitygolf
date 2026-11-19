@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from coursekit import Course  # noqa: E402
 
 LENGTH, HALF = 6400, 950
-c = Course("saltmirror", "Salt Mirror", "SaltMirror")
+c = Course("saltmirror", "Salt Mirror", "SaltMirror", next_level="Canyon")
 
 # The hard crust the ball rolls on, and the soft wet salt around it that swallows it.
 c.box("Crust", (LENGTH / 2, 0, -15), (LENGTH, 2 * HALF, 30), "green", "crust")

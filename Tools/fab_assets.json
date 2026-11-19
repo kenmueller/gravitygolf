@@ -54,6 +54,36 @@
 			"listingId": "cbf4fef3-7ff2-4639-8a3f-26abd88162eb",
 			"format": "gltf",
 			"path": "/Game/Fab/Creeping_Fig_Wall"
+		},
+		{
+			"title": "Red Desert Sand",
+			"listingId": "2f317df2-6c5e-47d0-b95d-c39666b54001",
+			"format": "gltf",
+			"path": "/Game/Fab/Red_Desert_Sand"
+		},
+		{
+			"title": "Eroded Sandstone Cliff",
+			"listingId": "7fd02ac5-ba9e-41e6-8735-56ae80206e20",
+			"format": "gltf",
+			"path": "/Game/Fab/Eroded_Sandstone_Cliff"
+		},
+		{
+			"title": "Desert Western Cliff Layered XL 14",
+			"listingId": "23639c4c-ca70-49f1-b462-afaa454252b2",
+			"format": "gltf",
+			"path": "/Game/Fab/Desert_Western_Cliff_Layered_XL_14"
+		},
+		{
+			"title": "Desert Western Cliff Layered XL 11",
+			"listingId": "31071922-8885-4456-ab1a-ae6688cf67c7",
+			"format": "gltf",
+			"path": "/Game/Fab/Desert_Western_Cliff_Layered_XL_11"
+		},
+		{
+			"title": "Canyon Sandstone Boulder",
+			"listingId": "366026f1-13b7-42e8-b0e1-6d64f6363440",
+			"format": "gltf",
+			"path": "/Game/Fab/Canyon_Sandstone_Boulder"
 		}
 	]
 }

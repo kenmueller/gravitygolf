@@ -34,6 +34,43 @@ def scan_prefix(folder):
     raise RuntimeError(f"no scanned textures under /Game/Fab/{folder}")
 
 
+def fab_mesh(folder):
+    """The static mesh of a Megascans 3D asset installed from Fab."""
+    for asset in ASSETS.list_assets(f"/Game/Fab/{folder}", recursive=True):
+        package = asset.split(".")[0]
+        if "/StaticMeshes/" in package:
+            mesh = unreal.load_asset(package)
+            nanite = mesh.get_editor_property("nanite_settings")
+            if not nanite.enabled:
+                nanite.enabled = True
+                mesh.set_editor_property("nanite_settings", nanite)
+                ASSETS.save_loaded_asset(mesh)
+            return mesh
+    raise RuntimeError(f"no static mesh under /Game/Fab/{folder}")
+
+
+def scan_material(name, folder, tile, tint=(1, 1, 1, 1), roughness=1.0, stripes=(0.0, 0.0)):
+    """A world-aligned material from a Megascans surface: seamless on any box, cliff or drift."""
+    instance = material_instance("/Game/Materials/M_GG_Scan.M_GG_Scan", name,
+                                 {"Tile": tile, "RoughnessScale": roughness, "StripeWidth": stripes[0],
+                                  "StripeStrength": stripes[1]}, {"Tint": tint})
+    prefix = scan_prefix(folder)
+    mel = unreal.MaterialEditingLibrary
+    for param, suffix in (("BaseTex", "B"), ("NormalTex", "N"), ("OrmTex", "ORM")):
+        mel.set_material_instance_texture_parameter_value(instance, param, unreal.load_asset(prefix + suffix))
+    ASSETS.save_loaded_asset(instance)
+    return instance
+
+
+def static_mesh(mesh, location, rotation=(0, 0, 0), scale=(1, 1, 1), material=None, label=None, folder=None):
+    actor = spawn(unreal.StaticMeshActor, location, rotation, label, folder)
+    actor.static_mesh_component.set_static_mesh(mesh)
+    if material:
+        actor.static_mesh_component.set_material(0, material)
+    actor.set_actor_scale3d(unreal.Vector(*scale))
+    return actor
+
+
 def rotator(pitch=0.0, yaw=0.0, roll=0.0):
     return unreal.Rotator(roll=roll, pitch=pitch, yaw=yaw)
 

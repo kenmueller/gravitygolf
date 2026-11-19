@@ -65,7 +65,10 @@ Tools/fab_assets.json         Fab/Megascans packs the levels need. They are giti
 Tools/editor.sh               start the editor and wait until its MCP server is idle
 Tools/mcp.py                  shell client for the editor's MCP server
 Tests/Sim/run.sh              standalone sim tests
-Tests/Sim/solve.sh <course>   puzzle-law proof: impossible without the machine, solvable with it (about 1 min)
+Tests/Sim/solve.sh <course>   puzzle-law proof: impossible without the machines, solvable with them
+Tests/Sim/search.sh <course>  design aid: random search for machine placements and a swing that solve a leg
+Tools/courses/coursekit.py    builder used by every Tools/courses/<level>.py
+Tools/regen.sh <level>        rebuild materials and a level in the open editor; Tools/play.sh, Tools/console.sh
 ```
 
 ## Commands

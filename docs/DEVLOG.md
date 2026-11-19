@@ -32,6 +32,43 @@ Newest first. Each entry says what changed, what was verified, and an honest cri
 - Sounds are synthesized and unheard by me; they need a human ear.
 - Nobody has hand-played since the machine rule changed.
 
+## 2026-11-18, session 1 (autonomous): holes 2 and 3
+
+**Changed**
+- `Tools/courses/coursekit.py`: one small builder for course definitions (boxes, tee, cup and court, safe pads,
+  machines, intended solutions). Each hole's script is now a page.
+- Solver (`Tests/Sim/solve.sh`): handles several machines. With one machine it sweeps every placement. With two or
+  more it proves that no single machine is enough, then checks the designer's intended answer and nudges each
+  machine a pace in four directions to make sure the answer isn't fragile.
+- Design search (`Tests/Sim/search.sh`): random search over all machines and swings; finds candidate answers for a
+  new layout in about 15 seconds.
+- **Hole 2, Salt Mirror.** Teaches the safe pad and that the machine is yours to move: bend onto the pad, carry the
+  machine on, bend the other way. Proven per leg. World: white salt polygons on an endless brine mirror, obsidian
+  monoliths with a line of light, an armada of floating monoliths at sunset.
+- **Hole 3, The Narrows.** Attractor plus repulsor: "pull, then push." Proven that neither machine alone can do it
+  from any spot. World: red slot canyon from Megascans cliffs and sand, a built doorway, a stone ring overhead.
+- Safe pads settle the ball at their center, so the next leg starts from a known spot (and matches the proof).
+- Levels chain: Terraces, Salt Mirror, The Narrows.
+- Fixes: player starts in every level (the player failed to spawn in hole 2), content auto-import off (a new course
+  JSON blocked the editor on a dialog), lens flares off.
+
+**Verified in the engine**
+- Hole 2: control swing fails, with the machine the ball is "Safe", old machine spot fails for leg 2, moved machine
+  solves it.
+- Hole 3: fails with no machine, fails with the attractor alone, solved with both.
+
+**Critique**
+- Holes 2 and 3 are still teaching holes. Nothing here would send anyone to a walkthrough yet. The hard holes need
+  the other tools (plates, relays, gates) and scarcity; those don't exist.
+- Hole 2's first leg works from 31% of placements, which is generous. Its two legs are mirror images, so the second
+  is not a new thought, only a repeat.
+- Hole 3's intended answer is something the search found, not something I can explain to a player in one sentence
+  beyond "pull, then push". Whether a person can reason their way to it is untested.
+- Soft walls (sand surface on rock) are a cheat to stop bank shots. In the canyon nothing shows the walls are soft.
+- Salt Mirror and the canyon look striking in stills; neither has been walked through by a person. The canyon's
+  sunlit sand blows out to flat orange, and its walls are flat slabs up close.
+- With two machines the field arrows overlap into noise.
+
 ## When Ken is back
 
 See the top entry's "For Ken" list.

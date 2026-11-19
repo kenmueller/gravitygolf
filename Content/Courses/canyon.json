@@ -1,0 +1,212 @@
+{
+	"id": "canyon",
+	"name": "The Narrows",
+	"level": "Canyon",
+	"par": 1,
+	"ballRadius": 6,
+	"gravity": [
+		0,
+		0,
+		-980
+	],
+	"killZ": -1400,
+	"tee": {
+		"position": [
+			450,
+			80,
+			6
+		],
+		"yaw": 0
+	},
+	"cup": {
+		"position": [
+			5300,
+			700,
+			0
+		],
+		"radius": 42,
+		"captureSpeed": 650
+	},
+	"noMachine": [
+		{
+			"position": [
+				5300,
+				700,
+				0
+			],
+			"radius": 420,
+			"kind": "court"
+		}
+	],
+	"safeZones": [],
+	"attractors": [
+		{
+			"position": [
+				800,
+				-250,
+				0
+			],
+			"strength": 420,
+			"range": 1900,
+			"coreHeight": 45,
+			"movable": true
+		},
+		{
+			"position": [
+				1050,
+				-250,
+				0
+			],
+			"strength": -420,
+			"range": 1500,
+			"coreHeight": 45,
+			"movable": true
+		}
+	],
+	"boxes": [
+		{
+			"name": "Floor",
+			"center": [
+				3000,
+				450,
+				-15
+			],
+			"size": [
+				6400,
+				2300,
+				30
+			],
+			"surface": "green",
+			"look": "floor",
+			"shape": "box"
+		},
+		{
+			"name": "Wall_South",
+			"center": [
+				3000.0,
+				-550.0,
+				200.0
+			],
+			"size": [
+				6400,
+				300,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "Wall_North",
+			"center": [
+				3000.0,
+				1450.0,
+				200.0
+			],
+			"size": [
+				6400,
+				300,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "Wall_West",
+			"center": [
+				-100.0,
+				450.0,
+				200.0
+			],
+			"size": [
+				200,
+				1700,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "Wall_East",
+			"center": [
+				6100.0,
+				450.0,
+				200.0
+			],
+			"size": [
+				200,
+				1700,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "Divide_Near",
+			"center": [
+				1150.0,
+				450.0,
+				200.0
+			],
+			"size": [
+				2300,
+				100,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "Divide_Far",
+			"center": [
+				4550.0,
+				450.0,
+				200.0
+			],
+			"size": [
+				2900,
+				100,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "Fin",
+			"center": [
+				1360.0,
+				170.0,
+				200.0
+			],
+			"size": [
+				120,
+				460,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "Lower_End",
+			"center": [
+				4800.0,
+				0.0,
+				200.0
+			],
+			"size": [
+				2400,
+				800,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		}
+	]
+}
