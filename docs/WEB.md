@@ -1,7 +1,32 @@
 # Putting Gravity Golf on the web
 
-Status on 2026-11-19: **not deployed.** The launcher engine on this Mac cannot build for the web, so the engine is
-being built from source. This page records what was tried, the route taken, and how hosting will work.
+Status on 2026-11-19: **it runs in a browser on this Mac. Nothing is published.** Ken's instruction is to test
+locally for now.
+
+```bash
+Tools/web.sh Development     # package (about 2 minutes once the engine is built)
+Tools/webtest.sh             # run it in Chrome: desktop play and phone touch, with screenshots
+Tools/webtest.sh tour        # every hole: open it, picture from the tee, play its recorded solution
+../gravitygolf-web/Saved/Web/play-gravitygolf.sh    # serve it and play it yourself in your browser
+```
+
+What the browser runs showed (Chrome 156, M4 Max, the engine's harness):
+
+| | |
+| --- | --- |
+| Ready to play | 4 to 6 seconds after opening the page, on a fast local link |
+| First download | about 68 MB before the game is ready; about 100 MB in all (42 MB of code, 54 MB of content) |
+| Memory | 512 MB heap at peak |
+| Renderer | the mobile deferred tier, no WebGPU errors |
+| Works | title screen, menus, walking, carrying machines, the swing, the physics (recorded solutions sink the ball), touch stick and buttons under phone emulation (852x393) |
+
+What is different from the desktop game on the web:
+- No bounced light, no ray tracing, shadows from cascaded shadow maps. Clear sky (a dome), no volumetric clouds.
+- Scanned plants are replaced by simple generated ones (`SM_Web_Pine`, `SM_Web_Shrub`).
+- World textures are capped at 1K.
+
+Not done: a real phone (emulation only so far; a phone on the LAN needs HTTPS, see the engine's `serve.py --tls-cert`),
+Safari and Firefox, frame-rate measurement, a Shipping build, saved progress across page reloads (untested).
 
 ## What Unreal 5.9 offers
 
@@ -22,7 +47,7 @@ No tier has Nanite, virtual shadow maps, hardware ray tracing or MegaLights, whi
 The web version is the "reduced form" by construction. Chrome and Edge are the reference browsers; Safari and Firefox
 run with caveats. The heap is capped at 4 GB.
 
-## What was tried here, and what happened
+## Why the engine is built from source
 
 1. The launcher install has `Engine/Platforms/Wasm` (the platform's source and settings).
 2. Asked the build tool for a web build: **"The Wasm platform is not supported from this engine distribution."**
@@ -33,6 +58,9 @@ run with caveats. The heap is capped at 4 GB.
 4. Installed the Emscripten SDK 6.0.10 at `~/emsdk` (the version the engine pins), which any route needs.
 5. The installed editor will not even list the web platform for cooking until it finds that SDK
    (`WASM_EMSDK_ROOT`).
+6. This Mac has no Rosetta, and building the engine's C# build tools needs one Intel-only helper (`protoc`). The
+   source tree uses the launcher install's prebuilt copies of those tools instead (same engine version), which is why
+   `Tools/web.sh` passes `-nocompileuat -nocompile`.
 
 ## The route taken: engine from source
 
@@ -89,13 +117,10 @@ ticked. Per-file limit 200 MB, 1,000 files in the zip.
 Publishing is a person's step: the engine's tools only write a plan, and they check it for leaked paths, names and
 keys first. After upload, `webdoctor.py <url>` verifies the live host read-only.
 
-## What will need work for this game on the web
+## What still needs work for this game on the web
 
-- **Download size.** The levels use 8K Megascans textures and scanned trees. The web build needs its own texture
-  size caps, or the first load will be far beyond what people wait for.
-- **The look.** No Nanite means fallback meshes for cliffs and trees; no ray tracing or MegaLights means the lantern
-  court's many lights and the reflections need a second look; the ocean, clouds and custom materials have to be
-  checked tier by tier.
-- **Controls.** Mouse look needs pointer lock (one click to capture the mouse); phones need touch controls, which
-  do not exist yet.
+- **A real phone.** Touch works under emulation. Nobody has held it.
+- **Frame rate** on ordinary laptops and phones, unmeasured.
+- **The look.** No clouds, flat ambient light, stand-in plants. It is clean, not beautiful.
+- **Controls.** Mouse look needs one click to capture the mouse (the page waits for it).
 - **Multiplayer.** The web target has no networking in this preview.

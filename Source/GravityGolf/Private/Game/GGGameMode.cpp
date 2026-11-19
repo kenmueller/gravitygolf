@@ -131,7 +131,7 @@ void AGGGameMode::SpawnPlants(const FString& LevelName)
 		Actor->SetActorScale3D(FVector(Extent[0]->AsNumber(), Extent[1]->AsNumber(), Extent[2]->AsNumber()) * (Scale / 100.0));
 		++StandIns;
 	}
-	UE_LOG(LogGGMode, Log, TEXT("Plants: %d scanned, %d stand-ins"), Scans, StandIns);
+	UE_LOG(LogGGMode, Display, TEXT("Plants: %d scanned, %d stand-ins"), Scans, StandIns);
 }
 
 AGGGameMode::AGGGameMode()
@@ -309,7 +309,7 @@ void AGGGameMode::GGDemo()
 		bDemoSwung = false;
 		DemoLeg = -1;
 		DemoWait = 0.6;
-		UE_LOG(LogGGMode, Log, TEXT("Demo: playing the solution for %s"), *Course->CourseName());
+		UE_LOG(LogGGMode, Display, TEXT("Demo: playing the solution for %s"), *Course->CourseName());
 	}
 }
 
@@ -323,7 +323,7 @@ void AGGGameMode::TickDemo(float DeltaSeconds)
 	}
 	if (Course->Phase() == EGGPhase::Sunk)
 	{
-		UE_LOG(LogGGMode, Log, TEXT("Demo: PASS %s solved in %d swings"), *Course->CourseName(), Course->Strokes());
+		UE_LOG(LogGGMode, Display, TEXT("Demo: PASS %s solved in %d swings"), *Course->CourseName(), Course->Strokes());
 		bDemo = false;
 		return;
 	}
@@ -381,7 +381,8 @@ void AGGGameMode::PlacePlayer()
 
 	// A real launch (not Play-In-Editor) opens on the title screen, once per run of the game.
 	static bool bTitleShown = false;
-	if (!bTitleShown && GetWorld()->WorldType == EWorldType::Game && CapturePath.IsEmpty() && !bHasShot)
+	if (!bTitleShown && GetWorld()->WorldType == EWorldType::Game && CapturePath.IsEmpty() && !bHasShot
+		&& !FParse::Param(FCommandLine::Get(), TEXT("GGNoTitle")))
 	{
 		bTitleShown = true;
 		if (AGGHUD* Hud = Cast<AGGHUD>(PC->GetHUD()))

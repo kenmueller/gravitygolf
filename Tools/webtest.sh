@@ -1,13 +1,18 @@
 #!/bin/sh
 # Runs the packaged web build in Chrome with the engine's harness and saves screenshots:
-#   Tools/webtest.sh [boot|play|phone ...]     default: play phone
+#   Tools/webtest.sh [boot|play|phone|tour|hole-<Level> ...]     default: play phone; tour runs every hole
 # Needs a packaged build (Tools/web.sh) and Google Chrome. Results land in ../gravitygolf-web/Saved/WebTest/<name>.
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 UE="${UE_ROOT:-$HOME/UE59}"
 WEB="${GG_WEB_COPY:-$ROOT/../gravitygolf-web}"
 PY="$UE/Engine/Binaries/ThirdParty/Python3/Mac/bin/python3"
 STATUS=0
-for NAME in ${*:-play phone}; do
+NAMES="${*:-play phone}"
+if [ "$NAMES" = "tour" ]; then
+	# Every hole: open it, picture from the tee, play its solution. A web smoke test.
+	NAMES="hole-Terraces hole-SaltMirror hole-Canyon hole-Lantern hole-Returning hole-Brief hole-Colonnade"
+fi
+for NAME in $NAMES; do
 	OUT="$WEB/Saved/WebTest/$NAME"
 	rm -rf "$OUT"
 	if [ "$NAME" = "boot" ]; then
