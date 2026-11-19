@@ -310,6 +310,11 @@ void AGGCourse::BuildActors()
 		Dots->SetMobility(EComponentMobility::Movable);
 		Dots->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		Dots->SetCastShadow(false);
+		// These markers are rebuilt every frame. Left in the lighting scene, Lumen re-captures every one of them each
+		// frame (it cost 6 to 14 ms of GPU time); they are tiny lights that the scene doesn't need to bounce.
+		Dots->bAffectDynamicIndirectLighting = false;
+		Dots->bAffectDistanceFieldLighting = false;
+		Dots->bVisibleInRayTracing = false;
 		Dots->SetupAttachment(Root);
 		Dots->RegisterComponent();
 		return Dots;

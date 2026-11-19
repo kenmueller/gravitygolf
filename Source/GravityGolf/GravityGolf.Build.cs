@@ -14,6 +14,8 @@ public class GravityGolf : ModuleRules
 			"InputCore",
 			"Json",
 			"ProceduralMeshComponent",
+			"RenderCore",
+			"RHI",
 		});
 	}
 }

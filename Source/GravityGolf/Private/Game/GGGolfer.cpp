@@ -86,6 +86,10 @@ AGGGolfer::AGGGolfer()
 	{
 		Part->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		Part->SetCastShadow(false);
+		// The club moves with the view every frame; keep it out of the bounced-light scene so it isn't re-captured.
+		Part->bAffectDynamicIndirectLighting = false;
+		Part->bAffectDistanceFieldLighting = false;
+		Part->bVisibleInRayTracing = false;
 	}
 
 	bUseControllerRotationYaw = true;

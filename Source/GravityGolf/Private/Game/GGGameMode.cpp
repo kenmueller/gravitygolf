@@ -1,5 +1,7 @@
 #include "Game/GGGameMode.h"
 
+#include "Engine/Engine.h"
+#include "Engine/GameViewportClient.h"
 #include "Engine/World.h"
 #include "Game/GGCourse.h"
 #include "Game/GGGolfer.h"
@@ -7,7 +9,10 @@
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/CommandLine.h"
+#include "Misc/App.h"
 #include "Misc/Parse.h"
+#include "DynamicRHI.h"
+#include "RenderTimer.h"
 #include "UnrealClient.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogGGMode, Log, All);
@@ -152,6 +157,13 @@ void AGGGameMode::GGHole(int32 Number)
 	}
 }
 
+void AGGGameMode::GGPerf(float Seconds)
+{
+	PerfFrames.Reset();
+	PerfLeft = FMath::Max(1.f, Seconds);
+	PerfGame = PerfRender = PerfGPU = 0.0;
+}
+
 void AGGGameMode::GGDemo()
 {
 	if (Course && Course->Phase() == EGGPhase::Ready)
@@ -253,6 +265,31 @@ void AGGGameMode::Tick(float DeltaSeconds)
 		PlacePlayer();
 	}
 	TickDemo(DeltaSeconds);
+
+	if (PerfLeft > 0.0)
+	{
+		const double Frame = FApp::GetDeltaTime();
+		PerfFrames.Add(static_cast<float>(Frame * 1000.0));
+		PerfGame += FPlatformTime::ToMilliseconds(GGameThreadTime);
+		PerfRender += FPlatformTime::ToMilliseconds(GRenderThreadTime);
+		PerfGPU += FPlatformTime::ToMilliseconds(RHIGetGPUFrameCycles());
+		PerfLeft -= Frame;
+		if (PerfLeft <= 0.0 && PerfFrames.Num() > 0)
+		{
+			PerfFrames.Sort();
+			const int32 N = PerfFrames.Num();
+			double Sum = 0.0;
+			for (const float Ms : PerfFrames)
+			{
+				Sum += Ms;
+			}
+			const FIntPoint Size = GEngine && GEngine->GameViewport ? GEngine->GameViewport->Viewport->GetSizeXY() : FIntPoint::ZeroValue;
+			UE_LOG(LogGGMode, Log,
+				TEXT("Perf: %s at %dx%d: %.1f fps average (%.1f ms), slowest 1%% of frames %.1f ms, worst %.1f ms; game %.1f ms, render %.1f ms, GPU %.1f ms; %d frames"),
+				*UGameplayStatics::GetCurrentLevelName(this, true), Size.X, Size.Y, 1000.0 * N / Sum, Sum / N,
+				PerfFrames[FMath::Min(N - 1, N * 99 / 100)], PerfFrames[N - 1], PerfGame / N, PerfRender / N, PerfGPU / N, N);
+		}
+	}
 
 	if (bHasShot && !bShotFired && Elapsed >= ShotDelay && Course)
 	{

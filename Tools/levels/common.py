@@ -204,6 +204,12 @@ def sky_and_sun(sun_pitch=-8.0, sun_yaw=135.0, sun_lux=10.0, fog_density=0.015, 
     cloud_component = clouds.get_component_by_class(unreal.VolumetricCloudComponent)
     cloud_component.set_editor_property("layer_bottom_altitude", 3.0)
     cloud_component.set_editor_property("layer_height", 6.0)
+    # Measured on an M4 Max: at full sample counts the clouds cost 8 ms a frame (the view, plus the sky light's
+    # capture of them). These settings cost under half that and look the same in play.
+    cloud_component.set_view_sample_count_scale(0.5)
+    cloud_component.set_shadow_view_sample_count_scale(0.5)
+    cloud_component.set_reflection_view_sample_count_scale(0.3)
+    cloud_component.set_shadow_reflection_view_sample_count_scale(0.3)
 
     fog = spawn(unreal.ExponentialHeightFog, (0, 0, -2500), label="Fog", folder="Lighting")
     fog_component = fog.get_component_by_class(unreal.ExponentialHeightFogComponent)

@@ -149,6 +149,8 @@ def surroundings(m):
             continue
         actor = c.spawn(unreal.SkeletalMeshActor, (x, y, -20), (0, rng.uniform(0, 360), 0), f"Pine{i}", "Landscape/Pines")
         actor.skeletal_mesh_component.set_skinned_asset_and_update(rng.choice(trees))
+        # Silhouettes against the stars. They sway, so their moon shadows would be redrawn every frame (12 ms).
+        actor.skeletal_mesh_component.set_cast_shadow(False)
         size = rng.uniform(1.0, 1.7)
         actor.set_actor_scale3d(unreal.Vector(size, size, size))
     c.mesh(c.SPHERE, (-900000, -700000, 620000), (150000, 150000, 150000), material=m["moon"], label="Moon",

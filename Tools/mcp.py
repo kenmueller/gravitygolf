@@ -56,6 +56,11 @@ def show(result):
         for block in result["result"].get("content", []):
             if block.get("type") == "text":
                 print(block["text"])
+            elif block.get("type") == "image" and os.environ.get("MCP_SAVE_IMAGE"):
+                import base64
+                with open(os.environ["MCP_SAVE_IMAGE"], "wb") as image:
+                    image.write(base64.b64decode(block["data"]))
+                print(f"saved {os.environ['MCP_SAVE_IMAGE']}")
             else:
                 print(f"[{block.get('type')} block]")
         if result["result"].get("isError"):

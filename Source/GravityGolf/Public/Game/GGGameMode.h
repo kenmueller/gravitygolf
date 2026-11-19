@@ -59,9 +59,19 @@ public:
 	UFUNCTION(Exec)
 	void GGHole(int32 Number);
 
+	/** Console: measure frame times for a number of seconds and log the result (GGPerf 5). */
+	UFUNCTION(Exec)
+	void GGPerf(float Seconds);
+
 private:
 	void PlacePlayer();
 	void TickDemo(float DeltaSeconds);
+
+	TArray<float> PerfFrames;
+	double PerfLeft = 0.0;
+	double PerfGame = 0.0;
+	double PerfRender = 0.0;
+	double PerfGPU = 0.0;
 
 	bool bDemo = false;
 	bool bDemoSwung = false;
