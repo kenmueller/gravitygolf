@@ -57,7 +57,9 @@ def materials():
         # warm sun reads as light on green grass. (At 0.34 and a yellower tint it was one flat olive plane.)
         "green": scan("MI_Terraces_Green", LAWN, 170, (0.42, 0.95, 0.5, 1), stripes=(300.0, 0.6)),
         "stone": scan("MI_Terraces_Limestone", LIMESTONE, 320, (1.0, 0.95, 0.86, 1)),
-        "hedge": scan("MI_Terraces_Hedge", c.scan_prefix("Creeping_Fig_Wall"), 220, (0.75, 0.9, 0.6, 1)),
+        # The hedges wear the lawn's own scan, tiled small and tinted deep: clipped box, close-leaved. The fig-wall
+        # scan they had is so dark that a hedge in shade was a black wall, however it was tinted.
+        "hedge": scan("MI_Terraces_Hedge", LAWN, 110, (0.3, 0.72, 0.34, 1)),
         "rock": scan("MI_Terraces_Rock", CLIFF, 900, (1.35, 1.3, 1.2, 1)),
         "farRock": scan("MI_Terraces_FarRock", CLIFF, 5200, (1.5, 1.42, 1.3, 1)),
         "ocean": unreal.load_asset("/Game/Materials/M_GG_Ocean.M_GG_Ocean"),
@@ -71,6 +73,14 @@ def hedge_row(box, shrubs, m):
     sx, sy, sz = box["size"]
     c.box((cx, cy, cz), (sx, sy, sz), m["hedge"], box["name"])
     along_x = sx > sy
+    # A clipped crown a little narrower than the body, and a limestone kerb at its foot: a hedge someone keeps, not a
+    # green box.
+    top = cz + sz / 2
+    base = cz - sz / 2
+    crown = (sx, sy - 34, 22) if along_x else (sx - 34, sy, 22)
+    c.box((cx, cy, top + 11), crown, m["hedge"], box["name"] + "_Crown", folder="Garden/Hedges", solid=False)
+    kerb = (sx, sy + 26, 12) if along_x else (sx + 26, sy, 12)
+    c.box((cx, cy, base + 6), kerb, m["stone"], box["name"] + "_Kerb", folder="Garden/Hedges", solid=False)
     length = sx if along_x else sy
     inward = -1 if (cy if along_x else cx - LENGTH / 2) > 0 else 1
     count = int(length / 170)

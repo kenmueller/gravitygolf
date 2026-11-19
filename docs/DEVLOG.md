@@ -135,7 +135,8 @@ between holes.** (Keys 1 to 9 now.)
 - Gates did not show which plate opens them while playing. Fixed at the end of the session: a plate and its gates
   now glow the same colour (a hole with one plate looks as before). Not yet judged in a hole with several.
 - **Hole 1's lawn** was a flat olive plane, and it is the first thing a player sees. It now has bold mowing stripes
-  and a cooler green. The hedges beside it are still dark boxes with sparse heather: the next worst thing there.
+  and a cooler green. Its hedges were black walls in the shade (the fig-wall scan is that dark however it is
+  tinted); they now wear the lawn's scan tiled small, with a clipped crown and a limestone kerb.
 - **The look.** The Workshop is the cleanest screen in the game, and the plainest: flat white and one glow colour.
   Fine for a tool. The test view's daytime sky fights the glowing table; dusk would suit it better.
 - The rival can race a Workshop hole once you have solved it (it follows your recorded answer). Checked once: at
