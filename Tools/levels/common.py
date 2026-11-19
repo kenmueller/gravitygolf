@@ -121,6 +121,14 @@ def material_instance(parent_path, name, scalars=None, vectors=None, folder="/Ga
     return instance
 
 
+def dais(location, size, top, light, label="MachineDais", folder="Course/Markers"):
+    """The plinth a machine waits on: a flat disc of the level's stone with a thin ring of light at its edge.
+    (A whole disc of light reads as a blown-out white pancake up close.)"""
+    x, y = location[0], location[1]
+    mesh(CYLINDER, (x, y, 0.3), (size, size, 0.4), material=light, label=label + "Ring", folder=folder, cast_shadow=False)
+    mesh(CYLINDER, (x, y, 0.5), (size - 16, size - 16, 0.8), material=top, label=label, folder=folder, cast_shadow=False)
+
+
 def player_start(course):
     """Where the player appears: just behind the ball at the tee, facing down the hole."""
     tee = course["tee"]["position"]

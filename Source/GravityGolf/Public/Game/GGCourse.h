@@ -153,6 +153,8 @@ private:
 
 	UPROPERTY()
 	TArray<TObjectPtr<UStaticMeshComponent>> MachineCores;
+	UPROPERTY()
+	TArray<TObjectPtr<class UPointLightComponent>> MachineLights;
 
 	UPROPERTY()
 	TObjectPtr<UInstancedStaticMeshComponent> TrailDots;

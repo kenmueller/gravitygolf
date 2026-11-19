@@ -93,8 +93,7 @@ def markers(course, m):
     c.mesh(c.CYLINDER, (x, y, z + 130), (2.5, 2.5, 260), material=m["obsidian"], label="FlagPole", folder="Course/Markers")
     for machine in course["attractors"]:
         mx, my, _ = machine["position"]
-        c.mesh(c.CYLINDER, (mx, my, 0.6), (240, 240, 1), material=m["glyph"], label="MachineDais", folder="Course/Markers",
-               cast_shadow=False)
+        c.dais((mx, my), 240, m["obsidian"], m["glyph"])
 
 
 def mirror_and_horizon(m):

@@ -22,6 +22,7 @@ LEVEL = "/Game/Levels/Lantern"
 COURSE = "/Users/ken/Code/gravitygolf/Content/Courses/lantern.json"
 SURFACE = "/Game/Materials/M_GG_Surface.M_GG_Surface"
 GLOW = "/Game/Materials/M_GG_Glow.M_GG_Glow"
+PAPER = "/Game/Materials/M_GG_Lantern.M_GG_Lantern"
 PINES = "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_"
 WARM = (1.0, 0.55, 0.2)
 rng = random.Random(41)
@@ -34,8 +35,8 @@ def materials():
         "hedge": c.scan_material("MI_Lantern_Hedge", "Creeping_Fig_Wall", 220, (0.6, 0.8, 0.55, 1)),
         "pad": c.scan_material("MI_Lantern_Pad", "Red_Desert_Sand", 120, (0.35, 0.3, 0.3, 1)),
         "glyph": c.material_instance(GLOW, "MI_Lantern_Glyph", {"Strength": 10.0}, {"Color": (WARM[0], WARM[1], WARM[2], 1)}),
-        "lantern": c.material_instance(GLOW, "MI_Lantern_Paper", {"Strength": 30.0}, {"Color": (1.0, 0.6, 0.25, 1)}),
-        "farLantern": c.material_instance(GLOW, "MI_Lantern_Far", {"Strength": 60.0}, {"Color": (1.0, 0.62, 0.28, 1)}),
+        "lantern": c.material_instance(PAPER, "MI_Lantern_Paper", {"Strength": 14.0}, {"Color": (1.0, 0.5, 0.16, 1)}),
+        "farLantern": c.material_instance(PAPER, "MI_Lantern_Far", {"Strength": 40.0}, {"Color": (1.0, 0.55, 0.2, 1)}),
         "moon": c.material_instance(GLOW, "MI_Lantern_Moon", {"Strength": 2.2}, {"Color": (0.8, 0.88, 1.0, 1)}),
         "bronze": c.material_instance(SURFACE, "MI_Lantern_Bronze", {"Roughness": 0.4, "Metallic": 1.0},
                                       {"BaseColor": (0.25, 0.15, 0.06, 1)}),
@@ -133,8 +134,7 @@ def markers(course, m):
     c.mesh(c.CYLINDER, (x, y, z + 130), (2.5, 2.5, 260), material=m["bronze"], label="FlagPole", folder="Course/Markers")
     for machine in course["attractors"]:
         mx, my, _ = machine["position"]
-        c.mesh(c.CYLINDER, (mx, my, 0.6), (130, 130, 1), material=m["glyph"], label="MachineDais", folder="Course/Markers",
-               cast_shadow=False)
+        c.dais((mx, my), 130, m["wall"], m["glyph"])
 
 
 def surroundings(m):

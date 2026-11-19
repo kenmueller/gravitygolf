@@ -144,6 +144,34 @@ def build_glow():
     finish(material, path)
 
 
+LANTERN = r"""
+// A paper lantern lit from inside: brightest around the flame a little below the middle, dimmer toward the top
+// and bottom, with faint ribs. LocalPos is in the cube's own space (-50..50).
+float H = LocalPos.z / 50.0;
+float Flame = exp(-pow((H + 0.22) * 1.7, 2.0));
+float Ribs = 0.88 + 0.12 * cos(LocalPos.z * 0.63);
+return (0.16 + 0.84 * Flame) * Ribs;
+"""
+
+
+def build_lantern():
+    material, path = fresh("M_GG_Lantern")
+    material.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_UNLIT)
+    local = node(material, unreal.MaterialExpressionLocalPosition, -900, 0)
+    paper = custom(material, LANTERN, ["LocalPos"], -600, 0, output_type=unreal.CustomMaterialOutputType.CMOT_FLOAT1)
+    MEL.connect_material_expressions(local, "", paper, "LocalPos")
+    color = vector_param(material, "Color", (1.0, 0.6, 0.25, 1), -600, 200)
+    strength = scalar_param(material, "Strength", 10.0, -600, 400)
+    lit = node(material, unreal.MaterialExpressionMultiply, -300, 100)
+    MEL.connect_material_expressions(color, "", lit, "A")
+    MEL.connect_material_expressions(strength, "", lit, "B")
+    product = node(material, unreal.MaterialExpressionMultiply, -100, 50)
+    MEL.connect_material_expressions(lit, "", product, "A")
+    MEL.connect_material_expressions(paper, "", product, "B")
+    MEL.connect_material_property(product, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    finish(material, path)
+
+
 def build_ball():
     material, path = fresh("M_GG_Ball")
     local = node(material, unreal.MaterialExpressionLocalPosition, -900, 0)
@@ -448,6 +476,6 @@ def build_night_sky():
     finish(material, path)
 
 
-for build in (build_surface, build_glow, build_ball, build_ocean, build_scan, build_salt, build_mirror, build_night_sky):
+for build in (build_surface, build_glow, build_lantern, build_ball, build_ocean, build_scan, build_salt, build_mirror, build_night_sky):
     build()
 unreal.log("GG: materials done")

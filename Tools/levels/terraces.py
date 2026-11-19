@@ -214,8 +214,7 @@ def halo(m, course):
     c.box((x, y, 640), (120, 120, 520), m["stone"], "Monolith", folder="Fantastical")
     c.box((x, y, 640), (126, 30, 480), m["glyph"], "MonolithGlyphA", folder="Fantastical")
     c.box((x, y, 640), (30, 126, 480), m["glyph"], "MonolithGlyphB", folder="Fantastical")
-    c.mesh(c.CYLINDER, (x, y, 0.6), (240, 240, 1), material=m["glyph"], label="MachineDaisGlyph", folder="Fantastical",
-           cast_shadow=False)
+    c.dais((x, y), 240, m["stone"], m["glyph"], folder="Fantastical")
 
 
 def floating_islands(m):

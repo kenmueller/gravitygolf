@@ -150,8 +150,7 @@ def markers(course, m):
     c.mesh(c.CYLINDER, (x, y, z + 130), (2.5, 2.5, 260), material=m["stone"], label="FlagPole", folder="Course/Markers")
     for machine in course["attractors"]:
         mx, my, _ = machine["position"]
-        c.mesh(c.CYLINDER, (mx, my, 0.6), (130, 130, 1), material=m["dais"], label="MachineDais", folder="Course/Markers",
-               cast_shadow=False)
+        c.dais((mx, my), 130, m["stone"], m["dais"])
 
 
 def sky_ring(m, boulder):
