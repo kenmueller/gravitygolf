@@ -76,6 +76,7 @@ Tools/smoke.sh [Level ...]    in the editor: play each hole's recorded solution 
 Tools/perf.sh [Level ...]     in the editor: frame rate per hole from the tee (GGPerf)
 Tools/shot.sh <Level> <png> ["x,y,z,pitch,yaw"]   save a picture of the running game
 Tools/py.sh <file.py>         run Python in the open editor; the value of the last expression is returned
+Tools/web.sh [config] [host]  package for the web (Wasm + WebGPU); blocked on this Mac's engine build, see docs/WEB.md
 ```
 
 ## Commands
@@ -128,6 +129,9 @@ console and read the pass list in the log before guessing.
   could not start on port 8000", kill it and run `Tools/editor.sh` again.
 - The editor's content-folder monitoring is turned off in config. With it on, a new `Content/Courses/*.json`
   triggers a DataTable import dialog that blocks every MCP call ("slow task") until someone clicks it.
+- Web builds: the 5.9 preview's Mac launcher build cannot target Wasm ("not supported from this engine
+  distribution"; it lacks the Wasm third-party libraries, page template and tools). The editor will not even list
+  the Wasm platform for cooking unless the Emscripten SDK is found (`WASM_EMSDK_ROOT=~/emsdk`, version 6.0.10).
 - An attractor is also a cannon: a ball tapped toward it is drawn in and released along the line through it.
   Every layout must block the straight line from the ball through any spot a machine can stand to the target, or
   the hole is trivial. The solver catches it; `Tests/Sim/search.sh` shows it as huge tolerances with one machine

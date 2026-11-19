@@ -137,7 +137,7 @@ can be text is text, and binary Unreal assets are generated from scripts in the 
 | Claude's workflow | Unreal MCP (experimental, in-editor). Editor Python run headless from the command line. Command-line builds, automation tests and screenshot captures |
 | iOS / Android | Native Unreal builds |
 | Desktop | Native Mac and Windows builds. Steam through Unreal's Steam online subsystem |
-| Web | The 5.9 WebAssembly + WebGPU target. Experimental: it needs an engine built from source and has no networking yet |
+| Web | The 5.9 WebAssembly + WebGPU target (three rendering tiers; the desktop one has software Lumen). Experimental: on Mac it needs an engine built from source or Epic's fix build, and it has no networking yet. Plan and status in `docs/WEB.md` |
 | Online | WebSockets to a Cloudflare Durable Object per room. The C++ simulation compiled to WebAssembly re-runs shots as referee. Supabase stores accounts, holes and leaderboards |
 
 **What only Ken can do:**
