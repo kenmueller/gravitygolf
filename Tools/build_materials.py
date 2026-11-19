@@ -468,7 +468,50 @@ for (int Layer = 0; Layer < 3; Layer++)
         Stars += Tint * exp(-D2 / Size) * Twinkle;
     }
 }
-return Sky + Stars * StarStrength * smoothstep(-0.02, 0.15, V.z);
+float3 Night = Sky + Stars * StarStrength * smoothstep(-0.02, 0.15, V.z);
+
+// A moon, for the levels that ask for one (MoonSize is its radius as an angle; zero is no moon). It is part of the
+// sky rather than a lit ball in the level so that still water and glass reflect it.
+if (MoonSize > 0.0)
+{
+    float3 M = normalize(MoonDir);
+    float Angle = acos(clamp(dot(V, M), -1.0, 1.0));
+    float3 Right = normalize(cross(float3(0, 0, 1), M));
+    float3 Above = cross(M, Right);
+    float2 Q = float2(dot(V, Right), dot(V, Above)) / sin(MoonSize);
+    float Disc = smoothstep(1.0, 0.985, length(Q)) * step(0.0, dot(V, M));
+    // Seas and highlands, then finer mottling; darker toward the limb, as a ball is.
+    float Seas = N.Fbm(float3(Q * 1.7 + 4.0, 2.3), 4) / 0.9375;
+    float Fine = N.Fbm(float3(Q * 9.0, 7.1), 3) / 0.875;
+    float Albedo = lerp(0.42, 1.0, smoothstep(0.38, 0.62, Seas)) * (0.82 + 0.36 * Fine);
+    float Limb = pow(saturate(1.0 - dot(Q, Q)), 0.22);
+    float Halo = exp(-Angle * Angle / (MoonSize * MoonSize * 5.0)) * 0.22 + exp(-Angle / (MoonSize * 6.0)) * 0.05;
+    Night = lerp(Night, MoonColor * Albedo * Limb, Disc) + MoonColor * Halo * (1.0 - Disc) * smoothstep(-0.05, 0.05, V.z);
+}
+
+// An aurora, likewise only where asked for. Each ray is walked up through a slab of sky; where it crosses a curtain
+// (the middle contour of a slow noise field) it gathers light, one colour at the curtain's foot and another at its top.
+// Curtains hang straight down, so seen from below they lean together toward the top of the sky, as real ones do.
+if (AuroraStrength > 0.0 && V.z > 0.02)
+{
+    float3 Glow = 0;
+    // Each pixel starts its walk at a different depth, differently every frame, and the picture's own smoothing over
+    // time blends the steps away. (Walked in step, fourteen samples drew fourteen thin lines, like a contour map.)
+    float Jitter = N.Hash(V * 791.0 + frac(Time * 7.3) * 13.0);
+    for (int Step = 0; Step < 18; Step++)
+    {
+        float T = (Step + Jitter) / 18.0;
+        float2 P = V.xy / V.z * (1.0 + T * 1.3);
+        float Field = N.Fbm(float3(P.x * 0.45, P.y * 0.15, Time * 0.012), 3) / 0.875;
+        float Sheet = pow(saturate(1.0 - abs(Field * 2.0 - 1.0)), 7.0);
+        // Fine upright streaks: quick changes along the curtain, slow ones across it.
+        float Rays = 0.35 + 0.65 * N.Noise(float3(P.y * 9.0, P.x * 2.0, Time * 0.05));
+        float Profile = exp(-T * 2.6) * smoothstep(0.0, 0.1, T);
+        Glow += lerp(AuroraLow, AuroraHigh, T) * Sheet * Rays * Profile / (1.0 + dot(P, P) * 0.015);
+    }
+    Night += Glow * (AuroraStrength / 18.0) * smoothstep(0.02, 0.16, V.z);
+}
+return Night;
 """
 
 
@@ -483,10 +526,20 @@ def build_night_sky():
     band = vector_param(material, "BandColor", (0.03, 0.035, 0.07, 1), -900, 300)
     stars = scalar_param(material, "StarStrength", 6.0, -900, 420)
     time = node(material, unreal.MaterialExpressionTime, -900, 500)
-    sky = custom(material, NIGHT, ["CameraDir", "HorizonColor", "ZenithColor", "BandColor", "StarStrength", "Time"],
+    # Off unless a level's instance turns them on (the salt at night does: Tools/levels/periscope.py).
+    moon_dir = vector_param(material, "MoonDir", (0, 0, 1, 1), -900, 600)
+    moon_size = scalar_param(material, "MoonSize", 0.0, -900, 750)
+    moon_color = vector_param(material, "MoonColor", (0.8, 0.88, 1.0, 1), -900, 850)
+    aurora = scalar_param(material, "AuroraStrength", 0.0, -900, 1000)
+    aurora_low = vector_param(material, "AuroraLow", (0.1, 1.0, 0.45, 1), -900, 1100)
+    aurora_high = vector_param(material, "AuroraHigh", (0.55, 0.2, 1.0, 1), -900, 1250)
+    sky = custom(material, NIGHT, ["CameraDir", "HorizonColor", "ZenithColor", "BandColor", "StarStrength", "Time",
+                                   "MoonDir", "MoonSize", "MoonColor", "AuroraStrength", "AuroraLow", "AuroraHigh"],
                  -500, 100)
     for source, pin in [(camera, "CameraDir"), (horizon, "HorizonColor"), (zenith, "ZenithColor"), (band, "BandColor"),
-                        (stars, "StarStrength"), (time, "Time")]:
+                        (stars, "StarStrength"), (time, "Time"), (moon_dir, "MoonDir"), (moon_size, "MoonSize"),
+                        (moon_color, "MoonColor"), (aurora, "AuroraStrength"), (aurora_low, "AuroraLow"),
+                        (aurora_high, "AuroraHigh")]:
         MEL.connect_material_expressions(source, "", sky, pin)
     MEL.connect_material_property(sky, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
     finish(material, path)

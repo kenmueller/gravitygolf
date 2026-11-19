@@ -228,6 +228,19 @@ static void TestMirrorTurnsTheBall()
 		CHECK(Turn == 0 ? Sim.Ball().Position.Y > 800.0 : Sim.Ball().Position.Y < -800.0);
 		CHECK(std::fabs(Sim.Ball().Position.X - 1000.0) < 60.0);
 	}
+	// The end of the frame is not glass. A ball that catches the end of a "\" mirror (which would send it north, as a
+	// "/" does) is stopped there instead.
+	{
+		const std::vector<FAttractor> Mirror = {{{1000, 0, 45}, 0.0, 0.0, 1}};
+		FSim Sim;
+		Sim.Begin(C, Mirror, {0, 70, 6}, {900, 0, 0});
+		while (!Sim.Finished())
+		{
+			Sim.Step(nullptr);
+		}
+		CHECK(std::fabs(Sim.Ball().Position.Y - 70.0) < 15.0);
+		CHECK(Sim.Ball().Position.X < 960.0);
+	}
 	// A ball that misses the mirror is not touched by it: the same roll, with a mirror far off to the side and with
 	// none, ends in the same place to the last bit.
 	FSim With;

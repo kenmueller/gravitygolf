@@ -84,6 +84,7 @@ Tools/play.sh, Tools/console.sh               start/stop Play-In-Editor; run a c
 Tools/smoke.sh [Level ...]    in the editor: play each hole's recorded solution through the real player code
 Tools/perf.sh [Level ...]     in the editor: frame rate per hole from the tee (GGPerf)
 Tools/shot.sh <Level> <png> ["x,y,z,pitch,yaw"]   save a picture of the running game
+Tools/look.sh <Level> <prefix> ["x,y,z,pitch,yaw" ...]   open a level, start play, save a picture from the tee and each view
 Tools/py.sh <file.py>         run Python in the open editor; the value of the last expression is returned
 Tools/web.sh [config] [host]  package for the web (Wasm + WebGPU) with the source engine at ~/UE59; see docs/WEB.md
 Tools/webtest.sh [play|phone|tour]   run the web build in Chrome with screenshots (tour: every hole's solution)
@@ -196,6 +197,8 @@ console and read the pass list in the log before guessing.
   pad with a backstop, and the cup comes a short way after the last mirror. A backstop must start close behind the
   pad's middle (about 90 cm): a hard-hit ball runs nearly a metre into sand before it stops.
   In the tools: `GG_TURNS=0,1 Tests/Sim/probe.sh ...` turns mirrors; solve and search try both turns.
+  Only the glass turns the ball: one that runs into the end of the frame stops dead (as glass, the end face was a
+  small mirror turned the other way; as a soft wall, a full swing dribbled 3 m past it. Both were second answers).
   A mirror is too light to hold a weight plate (`HoldWeightPlates` skips it): otherwise a mirror gets spent as the
   weight and the field machine used as the turn, and a hole built on two jobs for two machines has other answers.
 - The forgiving move in this physics is a straight reel: ball, machine and target in one line (hundreds of working
@@ -220,8 +223,14 @@ console and read the pass list in the log before guessing.
   parked far away.
 - Rebuilding materials (`Tools/build_materials.py`) resets every level's material instances: levels render flat
   tan until their scripts run again. `Tools/regen.sh` does this for you; never run the material script alone.
+- A pad's backstop also stops the next swing if it leaves the pad the same way the ball arrived. Hole 10's second
+  leg had 2 working swings until it was redrawn to leave the pad sideways.
+- The night sky (`M_GG_NightSky`) can draw a moon and an aurora itself (`MoonDir`, `MoonSize`, `AuroraStrength`...,
+  off by default; `c.night_sky(sky=<instance>)`). Being part of the dome, they are mirrored by still water; a glowing
+  ball hung in the level is not. A ray-marched effect in a sky shader needs a per-frame dither on its first step, or
+  each step draws its own contour line.
 - A level script can serve several holes: `Tools/levels/returning.py` runs `canyon.py` with its own settings, and
-  `stones.py` runs `saltmirror.py`.
+  `stones.py` and `periscope.py` run `saltmirror.py`.
 - A sun at 50 degrees throws a 15 m wall's shadow 12 m: across a whole lane. Check the picture from the tee before
   settling a sun direction, and aim the light along long walls, not across them.
 - zsh does not split an unquoted variable into words: `tool $ARGS` passes one argument. It cost two wrong scans.

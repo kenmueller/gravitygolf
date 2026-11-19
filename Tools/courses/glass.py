@@ -17,7 +17,7 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 from coursekit import Course  # noqa: E402
 
-c = Course("glass", "The Looking Glass", "Glass", next_level="Wires")
+c = Course("glass", "The Looking Glass", "Glass", next_level="Periscope")
 WALL_H = 400
 c.box("Floor", (1700, 1000, -15), (4000, 3600, 30), "green", "floor")
 

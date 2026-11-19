@@ -320,9 +320,22 @@ void FSim::CollideMirror(const FAttractor& Mirror, FVec3 A, double H, bool bWasO
 	{
 		return;
 	}
+	// Only the glass turns the ball. A ball that runs into the end of the frame stops dead there. Left as glass, the
+	// end face acts as a small mirror turned the other way; left as a soft wall, a full swing still dribbles three
+	// metres past it. Both were found as second answers by hard swings two degrees off line.
+	const bool bEnd = Local.X < Box.Min.X || Local.X > Box.Max.X;
 	const FVec3 WorldVelocity = B.Velocity;
 	B.Position = Local;
 	B.Velocity = {WorldVelocity.X * C + WorldVelocity.Y * S, WorldVelocity.Y * C - WorldVelocity.X * S, WorldVelocity.Z};
+	if (bEnd)
+	{
+		Box.Surface = ESurface::Sand;
+		if (B.Velocity.X * D.X + B.Velocity.Y * D.Y < 0.0)
+		{
+			B.Velocity.X = 0.0;
+			B.Velocity.Y = 0.0;
+		}
+	}
 	const FVec3 LocalA{A.X * C + A.Y * S, A.Y * C - A.X * S, A.Z};
 	const size_t EventsBefore = Events ? Events->size() : 0;
 	const bool bGroundBefore = B.bOnGround;

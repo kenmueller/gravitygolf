@@ -1,0 +1,461 @@
+{
+	"id": "periscope",
+	"name": "Periscope",
+	"level": "Periscope",
+	"par": 2,
+	"ballRadius": 6,
+	"gravity": [
+		0,
+		0,
+		-980
+	],
+	"killZ": -1400,
+	"tee": {
+		"position": [
+			400,
+			0,
+			6
+		],
+		"yaw": 0
+	},
+	"cup": {
+		"position": [
+			5050,
+			500,
+			0
+		],
+		"radius": 42,
+		"captureSpeed": 650
+	},
+	"noMachine": [
+		{
+			"position": [
+				2000,
+				700,
+				0
+			],
+			"radius": 110,
+			"kind": "switch"
+		},
+		{
+			"position": [
+				4200,
+				700,
+				0
+			],
+			"radius": 250,
+			"kind": "pad"
+		},
+		{
+			"position": [
+				5050,
+				500,
+				0
+			],
+			"radius": 200,
+			"kind": "court"
+		}
+	],
+	"safeZones": [
+		{
+			"position": [
+				4200,
+				700,
+				0
+			],
+			"radius": 190,
+			"needsSwitch": -1
+		}
+	],
+	"attractors": [
+		{
+			"position": [
+				700,
+				-350,
+				0
+			],
+			"strength": 0,
+			"range": 0,
+			"coreHeight": 45,
+			"movable": true,
+			"kind": "mirror",
+			"turn": 0
+		},
+		{
+			"position": [
+				700,
+				350,
+				0
+			],
+			"strength": 0,
+			"range": 0,
+			"coreHeight": 45,
+			"movable": true,
+			"kind": "mirror",
+			"turn": 0
+		}
+	],
+	"boxes": [
+		{
+			"name": "Backstop",
+			"center": [
+				4395,
+				700,
+				-15
+			],
+			"size": [
+				210,
+				440,
+				30
+			],
+			"surface": "sand",
+			"look": "brine",
+			"shape": "box"
+		},
+		{
+			"name": "Crust",
+			"center": [
+				3100.0,
+				700.0,
+				-15
+			],
+			"size": [
+				6200,
+				2400,
+				30
+			],
+			"surface": "green",
+			"look": "crust",
+			"shape": "box"
+		},
+		{
+			"name": "BrineS",
+			"center": [
+				3100.0,
+				-2000.0,
+				-15
+			],
+			"size": [
+				12200,
+				3000,
+				30
+			],
+			"surface": "sand",
+			"look": "brine",
+			"shape": "box"
+		},
+		{
+			"name": "BrineN",
+			"center": [
+				3100.0,
+				3400.0,
+				-15
+			],
+			"size": [
+				12200,
+				3000,
+				30
+			],
+			"surface": "sand",
+			"look": "brine",
+			"shape": "box"
+		},
+		{
+			"name": "BrineW",
+			"center": [
+				-1500.0,
+				700.0,
+				-15
+			],
+			"size": [
+				3000,
+				2400,
+				30
+			],
+			"surface": "sand",
+			"look": "brine",
+			"shape": "box"
+		},
+		{
+			"name": "BrineE",
+			"center": [
+				7700.0,
+				700.0,
+				-15
+			],
+			"size": [
+				3000,
+				2400,
+				30
+			],
+			"surface": "sand",
+			"look": "brine",
+			"shape": "box"
+		},
+		{
+			"name": "GateWall_S",
+			"center": [
+				3600.0,
+				-145.0,
+				150
+			],
+			"size": [
+				120.0,
+				1510,
+				300
+			],
+			"surface": "sand",
+			"look": "monolith",
+			"shape": "box"
+		},
+		{
+			"name": "GateWall_N",
+			"center": [
+				3600.0,
+				1545.0,
+				150
+			],
+			"size": [
+				120.0,
+				1510,
+				300
+			],
+			"surface": "sand",
+			"look": "monolith",
+			"shape": "box"
+		},
+		{
+			"name": "SafePad1",
+			"center": [
+				4200,
+				700,
+				-10
+			],
+			"size": [
+				323.0,
+				323.0,
+				20
+			],
+			"surface": "sand",
+			"look": "pad",
+			"shape": "box"
+		},
+		{
+			"name": "Blind",
+			"center": [
+				4650.0,
+				1275.0,
+				150
+			],
+			"size": [
+				120.0,
+				2050,
+				300
+			],
+			"surface": "sand",
+			"look": "monolith",
+			"shape": "box"
+		}
+	],
+	"switches": [
+		{
+			"position": [
+				2000,
+				700,
+				0
+			],
+			"radius": 70,
+			"weight": false
+		}
+	],
+	"gates": [
+		{
+			"name": "Gate",
+			"center": [
+				3600,
+				700,
+				110
+			],
+			"size": [
+				60,
+				180,
+				220
+			],
+			"switch": 0,
+			"openSeconds": 0.0,
+			"surface": "sand"
+		}
+	],
+	"solutions": [
+		{
+			"leg": 0,
+			"machines": [
+				[
+					1600,
+					0
+				],
+				[
+					1600,
+					700
+				]
+			],
+			"yaw": 0,
+			"power": 0.6,
+			"turns": [
+				0,
+				0
+			]
+		},
+		{
+			"leg": 1,
+			"machines": [
+				[
+					4200,
+					0
+				],
+				[
+					5050,
+					0
+				]
+			],
+			"yaw": -90,
+			"power": 0.35,
+			"turns": [
+				1,
+				0
+			]
+		}
+	],
+	"plinths": [
+		{
+			"position": [
+				700,
+				-350,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				700,
+				350,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				1600,
+				0,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				1600,
+				700,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				1600,
+				1400,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				2400,
+				0,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				2400,
+				700,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				2400,
+				1400,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				3200,
+				0,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				3200,
+				700,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				3200,
+				1400,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				4200,
+				0,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				5050,
+				0,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				5650,
+				0,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				4200,
+				1400,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				5650,
+				1000,
+				0
+			],
+			"radius": 65
+		}
+	],
+	"next": "Wires",
+	"ambience": "night"
+}

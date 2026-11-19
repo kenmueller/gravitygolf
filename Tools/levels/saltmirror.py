@@ -65,6 +65,20 @@ def monolith(box, m):
         else:
             c.box((cx, cy + side * (sy / 2 + 1), height * 0.5), (6, 3, height * 0.9), m["glyph"], f"{box['name']}_Glyph{side}",
                   folder="Course/Glyphs")
+    if VARIANT.get("edge_lights"):
+        # At night a black wall is a hole in the picture. A line of light along its top and down each end draws it,
+        # and frames whatever gap two walls leave between them.
+        long_y = sy >= sx
+        length, thick = (sy, sx) if long_y else (sx, sy)
+        for side in (-1, 1):
+            off = side * (thick / 2 + 1)
+            top = (cx + off, cy, height - 5) if long_y else (cx, cy + off, height - 5)
+            c.box(top, (3, length, 4) if long_y else (length, 3, 4), m["ring"], f"{box['name']}_Top{side}", folder="Course/Glyphs")
+            for end in (-1, 1):
+                along = end * (length / 2 - 3)
+                at = (cx + off, cy + along, height / 2) if long_y else (cx + along, cy + off, height / 2)
+                c.box(at, (3, 4, height) if long_y else (4, 3, height), m["ring"], f"{box['name']}_End{side}{end}",
+                      folder="Course/Glyphs")
 
 
 def course_geometry(m):
@@ -145,10 +159,13 @@ def armada(m):
                   folder="Fantastical/Armada", rotation=(rng.uniform(-9, 9), rng.uniform(0, 360), rng.uniform(-9, 9)))
             count += 1
 
-    # One colossal slab lies on its side high over the far end, a horizon line in the sky.
-    c.box((70000, -20000, 26000), (9000, 120000, 2600), m["obsidian"], "SkySlab", folder="Fantastical",
-          rotation=(4, 18, -6))
-    c.box((70000, -20000, 24660), (9100, 110000, 60), m["farGlyph"], "SkySlabGlyph", folder="Fantastical", rotation=(4, 18, -6))
+    # One colossal slab lies on its side high over the far end, a horizon line in the sky. (Not at night: its line of
+    # light cut straight across the moon.)
+    if "night" not in VARIANT:
+        c.box((70000, -20000, 26000), (9000, 120000, 2600), m["obsidian"], "SkySlab", folder="Fantastical",
+              rotation=(4, 18, -6))
+        c.box((70000, -20000, 24660), (9100, 110000, 60), m["farGlyph"], "SkySlabGlyph", folder="Fantastical",
+              rotation=(4, 18, -6))
 
     # A stair of cubes climbs out of the brine beside the course, each a little higher and a little more turned.
     for i in range(14):
@@ -160,7 +177,13 @@ def armada(m):
 
 c.fresh_level(LEVEL)
 mats = materials()
-c.sky_and_sun(**SUN)
+if "night" in VARIANT:
+    # The salt at night: stars, and a moon far too large standing low over the brine ahead. Its light comes from
+    # higher than it hangs, so the walls' shadows stay short.
+    sky = c.material_instance("/Game/Materials/M_GG_NightSky.M_GG_NightSky", f"MI_{PREFIX}_Sky", *VARIANT["sky"])
+    c.night_sky(sky=sky, **VARIANT["night"])
+else:
+    c.sky_and_sun(**SUN)
 course_data = course_geometry(mats)
 markers(course_data, mats)
 c.player_start(course_data)

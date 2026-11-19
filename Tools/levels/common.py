@@ -167,9 +167,11 @@ def player_start(course):
     spawn(unreal.PlayerStart, (tee[0] - 170, tee[1] - 45, tee[2] + 110), (0, yaw, 0), "PlayerStart", "Course")
 
 
-def night_sky(moon_pitch=-32.0, moon_yaw=40.0, moon_lux=0.35, fog_density=0.01, exposure_bias=-1.2):
-    """Night: a star dome, a moon that lights the scene, a sky light fed by the dome, thin fog."""
-    sky = unreal.load_asset("/Game/Materials/M_GG_NightSky.M_GG_NightSky")
+def night_sky(moon_pitch=-32.0, moon_yaw=40.0, moon_lux=0.35, fog_density=0.01, exposure_bias=-1.2, sky=None,
+              sky_intensity=2.0, reflection_size=None):
+    """Night: a star dome, a moon that lights the scene, a sky light fed by the dome, thin fog. Pass `sky` (an
+    instance of M_GG_NightSky) for a level with its own moon or aurora in the dome."""
+    sky = sky or unreal.load_asset("/Game/Materials/M_GG_NightSky.M_GG_NightSky")
     mesh(SPHERE, (0, 0, 0), (80000000, 80000000, 80000000), material=sky, label="NightSky", folder="Lighting",
          cast_shadow=False, solid=False)
 
@@ -191,7 +193,10 @@ def night_sky(moon_pitch=-32.0, moon_yaw=40.0, moon_lux=0.35, fog_density=0.01, 
     sky_component = sky_light.get_component_by_class(unreal.SkyLightComponent)
     sky_component.set_mobility(unreal.ComponentMobility.MOVABLE)
     sky_component.set_editor_property("real_time_capture", True)
-    sky_component.set_intensity(2.0)
+    sky_component.set_intensity(sky_intensity)
+    if reflection_size:
+        # What still water reflects of the dome comes from this capture: sharper where a level has a moon to mirror.
+        sky_component.set_editor_property("cubemap_resolution", reflection_size)
 
     post = spawn(unreal.PostProcessVolume, (0, 0, 0), label="Post", folder="Lighting")
     post.set_editor_property("unbound", True)
