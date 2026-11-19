@@ -91,6 +91,8 @@ Tools/look.sh <Level> <prefix> ["x,y,z,pitch,yaw" ...]   open a level, start pla
 Tools/py.sh <file.py>         run Python in the open editor; the value of the last expression is returned
 Tools/web.sh [config] [host]  package for the web (Wasm + WebGPU) with the source engine at ~/UE59; see docs/WEB.md
 Tools/webtest.sh [play|phone|tour]   run the web build in Chrome with screenshots (tour: every hole's solution)
+Tools/licenses.py             gathers the open-source licence texts into Build/Wasm/Template/licenses.txt (staged with
+                              a web build); the Credits screen (title menu) carries the short notices
 Tools/share.sh [check]        a temporary public link to the web build (a Cloudflare quick tunnel to this Mac), for a
                               friend to play; the only tool that puts the game on the internet. Ken runs it, not Claude
 Tools/webplay.sh [browser]    serve the web build on this Mac and open it in Safari (default) or the browser named
@@ -255,6 +257,12 @@ console and read the pass list in the log before guessing.
 - `until ! pgrep -f "Tools/testall.sh"; do sleep 5; done` never ends: `pgrep -f` matches the waiting shell's own
   command line, which contains the pattern. Write the pattern so it cannot match itself (`"[T]ools/testall.sh"`).
   Two such waits sat in the background for four hours and held up the session's own bookkeeping.
+- A brand-new host name (a quick tunnel's) is unknown to the local name server for a minute or two and the "no such
+  name" answer is remembered: test such a link through a public name server (`dig @1.1.1.1`, `curl --resolve`).
+- Multiplayer as it stands: a listen server on one player's desktop game, joined by address (UDP 7777). No hosted
+  server, nothing over the internet without an opened port, and the web build has no Play together. Epic's notes
+  (`Engine/Platforms/Wasm/Docs/Networking.md`): a browser can join through `ws_relay.py` (UDP carried in
+  WebSocket messages) but can never host, and EOS and Steam sockets do not run in it.
 - Menus are laid out by `AGGHUD::DrawMenu`: one column until the rows would be thinner than a finger, then two with
   Back centred beneath. Check any new menu at phone size (`Tools/webtest.sh phone-menus`): the list of holes had
   rows under 3 mm tall once it reached thirteen.

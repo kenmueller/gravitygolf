@@ -204,6 +204,14 @@ mirror.
 - **`Tools/share.sh`**: a temporary public link to the web build, for a friend. Ken asked how to host it and ran
   it himself; it worked. A Shipping build for proper hosting is made into its own folder (`GG_WEB_OUT`).
 
+- **A Credits screen** (title menu): the engine's notice in the words its licence asks for, Megascans, and the open
+  software inside the game. `Tools/licenses.py` gathers the full licence texts into a file staged with the web
+  build. No person is named: whose name goes on the game is Ken's to say.
+- **A Shipping web build**, made beside the Development one: Epic's release scan passes, the code is 25 MB over the
+  wire instead of 40, and it boots to the title in Chrome. With it comes Epic's upload plan for a Cloudflare R2
+  bucket behind a Worker, which is what I recommended when Ken asked how to host it properly (docs/WEB.md).
+  Nothing has been uploaded.
+
 **Verified**
 - In Chrome at phone size, from a fresh web build: the hole list in two columns, the settings, the pause menu; and on
   hole 12 by touch: GRAB, PLACE, TURN, GRAB again (the game's own state after each press), and a carried mirror
@@ -212,6 +220,12 @@ mirror.
 - Wait Here: its proof passes (24 working swings) with the five carries printed, and its answer plays in the engine
   with those carries in order.
 - The new finale: its proof passes; in the engine its answer plays in two swings with the four carries in order.
+- **The last full run:** `Tools/testall.sh` ALL PASSED with fourteen holes and the new finale (sim tests, fourteen
+  proofs, every hole in the engine, grilles, the Workshop, two players in step, in the Workshop and through the
+  grilles, host and join). The rival finishes Wait Here and the new Crossed Wires at all three skills.
+- Ken's share link, tried from here: the page, the three isolation headers, and a byte range answered as a range.
+- Not yet in any web build when this was written: hole 13 in the Development build Ken is sharing (it has 13 holes
+  and the old finale).
 - Desktop: the same code compiles; the menus were not looked at on the desktop after the change (the editor stayed
   closed). The two-column rule only applies to lists of eight or more whose rows would be under 40 units.
 
@@ -226,6 +240,10 @@ mirror.
 - *Epic's own support notes say iPhones do not run this yet* (a Development build is too big for Safari on iOS;
   smaller builds draw the scene black, "under investigation"). I read that file on the first day and did not carry
   it forward: I sent Ken to his phone twice for a test that could not have passed on an iPhone.
+- *Multiplayer is the thinnest part of the game.* Asked how the server would be hosted, the honest answer was that
+  there is none: one player's desktop game is the server, it has never been tried across the internet, and the
+  browser version cannot play together at all. I proposed Epic's relay for desktop players and Epic's WebSocket
+  relay for browser players, and have built neither.
 - *The phone goal is still unmet where it counts.* Everything about touch that can be checked without a phone is
   now checked, and it is all emulation. One real phone on one real network would be worth more than all of it.
 - *Three waits of mine sat in the background for hours*, two of them unable ever to finish (a `pgrep -f` that
