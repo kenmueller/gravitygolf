@@ -36,6 +36,10 @@ every button press is a touch.
 Safari 27 on the Mac runs it too (`Tools/webplay.sh`): WebGPU on, engine started, first frame presented, by its own
 log. Nobody has confirmed the picture.
 
+**iPhones:** Epic's `SupportMatrix.md` for this preview says Safari on iOS closes the tab on a Development build (its
+code alone holds about 913 MiB) and that Test and Shipping builds draw the 3D scene black with no errors, "under
+investigation". So an iPhone is not a working target yet, on any network. Android Chrome and desktop browsers are.
+
 Not done: a real phone in a real hand (see below: one command serves it; nobody has held it yet), Safari and Firefox,
 frame-rate measurement, a Shipping build, saved progress across page reloads (untested).
 

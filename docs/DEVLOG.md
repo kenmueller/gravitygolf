@@ -56,9 +56,7 @@ mirror.
   Hole 11, Leapfrog, teaches it; hole 12, After You, uses it with a mirror that cannot be the weight, so the ball
   has to open the door for the machine; hole 13, Wait Here, makes you leave a machine halfway. These are closer to
   what you asked for, not yet there. If you dislike the idea, it is three holes and one flag to take out.
-- More holes or more polish next. There are fourteen holes, and the fourteenth is written as the last. The last
-  one (Crossed Wires) has no grilles in it and is now easier than the three before it; it wants rebuilding as the
-  hole that uses everything. I did not wait
+- More holes or more polish next. There are fourteen holes, and the fourteenth is written as the last. I did not wait
   for the answer: I kept doing both (a new hole, then the worst-looking hole made better). Say if you want one or
   the other.
 
@@ -198,6 +196,14 @@ mirror.
   grille and left in the middle while the first changes plates. Five carries. Take away the two plinths in the
   middle and the proof fails: there is nowhere to wait.
 
+- **The finale rebuilt around grilles** (hole 14, Crossed Wires). Every gate now has rails, so the gate the weight
+  opens is the mirror's only way through, and the weight can never follow a mirror. A fourth opening in the first
+  wall is the weight's own door, and what opens it is the ball: a plate on the last stretch to the pad. It was the
+  easiest of the last four holes; it now uses what each of them taught. Its proof: one way in 264 on each swing,
+  two carries before each. Without the door the second swing's carries cannot be made.
+- **`Tools/share.sh`**: a temporary public link to the web build, for a friend. Ken asked how to host it and ran
+  it himself; it worked. A Shipping build for proper hosting is made into its own folder (`GG_WEB_OUT`).
+
 **Verified**
 - In Chrome at phone size, from a fresh web build: the hole list in two columns, the settings, the pause menu; and on
   hole 12 by touch: GRAB, PLACE, TURN, GRAB again (the game's own state after each press), and a carried mirror
@@ -205,6 +211,7 @@ mirror.
 - Safari 27 on the Mac: by the page's log, WebGPU on, engine started, first frame presented. Not seen by anyone.
 - Wait Here: its proof passes (24 working swings) with the five carries printed, and its answer plays in the engine
   with those carries in order.
+- The new finale: its proof passes; in the engine its answer plays in two swings with the four carries in order.
 - Desktop: the same code compiles; the menus were not looked at on the desktop after the change (the editor stayed
   closed). The two-column rule only applies to lists of eight or more whose rows would be under 40 units.
 
@@ -213,6 +220,12 @@ mirror.
   logistics and no golf, and none yet makes both hard at once. Its first design was wrong in a way I did not see
   and the planner did (a plain gate where a grille was needed); a design tool that says "two carries" when I meant
   five is the most useful thing built today. Its walls are nearly black under an overhead moon.
+- *The finale's new door is on the only path to the pad*, so the ball opens it whether or not the player knows
+  why. The thinking comes one step later, when the weight has to move and every gate is shut to it but one that
+  was not open before. Whether a player notices that door dropped is not something a proof can tell me.
+- *Epic's own support notes say iPhones do not run this yet* (a Development build is too big for Safari on iOS;
+  smaller builds draw the scene black, "under investigation"). I read that file on the first day and did not carry
+  it forward: I sent Ken to his phone twice for a test that could not have passed on an iPhone.
 - *The phone goal is still unmet where it counts.* Everything about touch that can be checked without a phone is
   now checked, and it is all emulation. One real phone on one real network would be worth more than all of it.
 - *Three waits of mine sat in the background for hours*, two of them unable ever to finish (a `pgrep -f` that

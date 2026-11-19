@@ -31,6 +31,15 @@
 		{
 			"position": [
 				2500,
+				170,
+				0
+			],
+			"radius": 100,
+			"kind": "switch"
+		},
+		{
+			"position": [
+				2500,
 				400,
 				0
 			],
@@ -55,7 +64,7 @@
 				0
 			],
 			"radius": 190,
-			"needsSwitch": -1
+			"needsSwitch": 3
 		}
 	],
 	"attractors": [
@@ -217,12 +226,12 @@
 			"name": "First2",
 			"center": [
 				1700.0,
-				255.0,
+				140.0,
 				55.0
 			],
 			"size": [
 				120,
-				330,
+				100,
 				110
 			],
 			"surface": "sand",
@@ -231,6 +240,22 @@
 		},
 		{
 			"name": "First3",
+			"center": [
+				1700.0,
+				375.0,
+				55.0
+			],
+			"size": [
+				120,
+				90,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "First4",
 			"center": [
 				1700.0,
 				650.0,
@@ -340,6 +365,15 @@
 		},
 		{
 			"position": [
+				2500,
+				170,
+				0
+			],
+			"radius": 60,
+			"weight": false
+		},
+		{
+			"position": [
 				1930,
 				-500,
 				0
@@ -373,7 +407,7 @@
 			"switch": 1,
 			"openSeconds": 0.0,
 			"surface": "sand",
-			"grille": false
+			"grille": true
 		},
 		{
 			"name": "Gate2",
@@ -390,7 +424,7 @@
 			"switch": 2,
 			"openSeconds": 0.0,
 			"surface": "sand",
-			"grille": false
+			"grille": true
 		},
 		{
 			"name": "Gate3",
@@ -407,7 +441,24 @@
 			"switch": 0,
 			"openSeconds": 0.0,
 			"surface": "sand",
-			"grille": false
+			"grille": true
+		},
+		{
+			"name": "Service",
+			"center": [
+				1700,
+				260.0,
+				110
+			],
+			"size": [
+				60,
+				140,
+				220
+			],
+			"switch": 3,
+			"openSeconds": 0.0,
+			"surface": "sand",
+			"grille": true
 		},
 		{
 			"name": "Gate4",
@@ -421,10 +472,10 @@
 				180,
 				220
 			],
-			"switch": 4,
+			"switch": 5,
 			"openSeconds": 0.0,
 			"surface": "sand",
-			"grille": false
+			"grille": true
 		},
 		{
 			"name": "Gate5",
@@ -438,10 +489,10 @@
 				180,
 				220
 			],
-			"switch": 3,
+			"switch": 4,
 			"openSeconds": 0.0,
 			"surface": "sand",
-			"grille": false
+			"grille": true
 		}
 	],
 	"solutions": [
