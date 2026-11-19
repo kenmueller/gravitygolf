@@ -142,8 +142,9 @@ public:
 	FVector MachineBase(int32 Index) const;
 	/** Some ground refuses machines (the paved court around a cup, for instance). */
 	bool CanPlaceMachine(const FVector& Base) const;
-	/** Would a carried machine have to cross a shut grille to go in a straight line from From to To? */
-	bool CarryBlocked(const FVector& From, const FVector& To) const;
+	/** Would a carried machine have to cross a shut grille to go in a straight line from From to To? With bReach
+	 *  (picking up, setting down) the answer is also yes for anyone standing inside a shut grille. */
+	bool CarryBlocked(const FVector& From, const FVector& To, bool bReach = false) const;
 	bool HasGrilles() const;
 	/** The switches the ball has banked so far (pressed on a leg that ended on a pad). */
 	const std::vector<bool>& Banked() const { return HeldSwitches; }

@@ -814,6 +814,23 @@ void AGGGolfer::GGNet(const FString& Command, const FString& Argument)
 			ServerCarry(static_cast<int32>(N[0]));
 		}
 	}
+	else if (Command == TEXT("pick") && N.Num() == 1)
+	{
+		// As the E key does it, rules and all, but at any distance.
+		const int32 Index = static_cast<int32>(N[0]);
+		if (C->CarryBlocked(GetActorLocation(), C->MachineBase(Index), true))
+		{
+			Tell(TEXT("A machine won't pass a shut grille."));
+		}
+		else if (HasAuthority())
+		{
+			C->CarryMachine(Index, this);
+		}
+		else
+		{
+			ServerCarry(Index);
+		}
+	}
 	else if (Command == TEXT("place") && N.Num() == 3)
 	{
 		PlaceCarried(FVector(N[0], N[1], N[2]));
@@ -1124,7 +1141,7 @@ void AGGGolfer::Interact()
 	else
 	{
 		const int32 Index = C->FindMachine(HoldPoint(), PickUpReach);
-		if (Index != INDEX_NONE && !C->CarrierOf(Index) && C->CarryBlocked(GetActorLocation(), C->MachineBase(Index)))
+		if (Index != INDEX_NONE && !C->CarrierOf(Index) && C->CarryBlocked(GetActorLocation(), C->MachineBase(Index), true))
 		{
 			// No reaching through the bars for it either.
 			Tell(TEXT("A machine won't pass a shut grille."));

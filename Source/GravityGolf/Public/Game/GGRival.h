@@ -98,7 +98,9 @@ private:
 	double Yaw = 0.0;
 	double Power = 0.0;
 	int32 Carrying = INDEX_NONE;
-	int32 NextMachine = 0;
+	/** This attempt's carries, in order: which machine, and where to. */
+	TArray<TPair<int32, FVector>> Moves;
+	int32 NextMove = 0;
 	/** 1 on the first attempt at a leg, shrinking with every miss. */
 	double Error = 1.0;
 	int32 Misses = 0;

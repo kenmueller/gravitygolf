@@ -1,5 +1,7 @@
 #include "Game/GGRival.h"
 
+#include "Sim/GGLogistics.h"
+
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Game/GGAudio.h"
@@ -212,7 +214,35 @@ void AGGRival::PlanAttempt()
 		Yaw = Answer->Yaw + S.YawError * Error * Random.FRandRange(-1.f, 1.f);
 		Power = FMath::Clamp(Answer->Power + S.PowerError * Error * Random.FRandRange(-1.f, 1.f), 0.05, 1.0);
 	}
-	NextMachine = 0;
+	// The carries, in order. Behind grilles the order matters, and the rival makes them in an order the grilles allow
+	// (Sim/GGLogistics.h plans it), by way of whatever plinths that takes. Elsewhere it is one carry a machine.
+	Moves.Reset();
+	NextMove = 0;
+	if (Answer && Course->HasGrilles())
+	{
+		const GG::FSetup Setup = Course->MakeSetup();
+		const GG::FCarryMap Map = GG::MakeCarryMap(Setup);
+		std::vector<int> On, Goal;
+		for (int32 I = 0; I < Bases.Num(); ++I)
+		{
+			On.push_back(GG::PlinthAt(Setup, Bases[I].X, Bases[I].Y));
+			Goal.push_back(GG::PlinthAt(Setup, Targets[I].X, Targets[I].Y));
+		}
+		for (const GG::FCarry& Move : GG::PlanCarries(Setup, Map, On, Banked).To(Goal))
+		{
+			Moves.Add({Move.Machine, FVector(Setup.Plinths[Move.To].X, Setup.Plinths[Move.To].Y, Bases[Move.Machine].Z)});
+		}
+	}
+	else
+	{
+		for (int32 I = 0; I < Bases.Num(); ++I)
+		{
+			if (FVector::Dist2D(Bases[I], Targets[I]) >= 1.0)
+			{
+				Moves.Add({I, Targets[I]});
+			}
+		}
+	}
 	Carrying = INDEX_NONE;
 	Step = EStep::Think;
 	StepTime = Random.FRandRange(static_cast<float>(S.ThinkMin), static_cast<float>(S.ThinkMax)) * (Misses == 0 && Leg == 0 ? 0.5 : 1.0);
@@ -325,27 +355,22 @@ void AGGRival::Tick(float DeltaSeconds)
 		}
 		break;
 	case EStep::FetchMachine:
-		// Skip machines that already stand where this attempt wants them.
-		while (NextMachine < Bases.Num() && FVector::Dist2D(Bases[NextMachine], Targets[NextMachine]) < 1.0)
-		{
-			++NextMachine;
-		}
-		if (NextMachine >= Bases.Num())
+		if (NextMove >= Moves.Num())
 		{
 			Step = EStep::GoToBall;
 		}
-		else if (Travel(Bases[NextMachine], DeltaSeconds))
+		else if (Travel(Bases[Moves[NextMove].Key], DeltaSeconds))
 		{
-			Carrying = NextMachine;
+			Carrying = Moves[NextMove].Key;
 			Step = EStep::CarryMachine;
 		}
 		break;
 	case EStep::CarryMachine:
-		if (Travel(Targets[Carrying], DeltaSeconds))
+		if (Travel(Moves[NextMove].Value, DeltaSeconds))
 		{
-			Bases[Carrying] = Targets[Carrying];
+			Bases[Carrying] = Moves[NextMove].Value;
 			Carrying = INDEX_NONE;
-			++NextMachine;
+			++NextMove;
 			Step = EStep::FetchMachine;
 		}
 		break;

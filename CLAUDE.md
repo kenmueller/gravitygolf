@@ -231,7 +231,9 @@ console and read the pass list in the log before guessing.
   (the golfer is put back), a set-down, and a pick-up through the bars. A lifted machine lets go of its plate at once.
   A light plate the ball has banked opens its grille for good, so swings and carries interleave (hole 12): the
   proof plans each leg's carries from where the leg before left the machines, with that leg's banked plates.
-  The rival does not know about grilles yet: it carries in its own ghost copy in any order.
+  Standing inside a shut grille, nobody picks a machine up or sets one down (otherwise it is taken from inside the
+  bars and walked out the far side). The rival carries in the planner's order too, though it still walks through
+  walls like the ghost it is.
 - Never edit a shell script while it is running: `sh` reads the file as it goes, and a script changed under it fails
   with a syntax error at whatever line it had reached (`Tools/webtest.sh` did, after passing).
 - sh: `[ a ] && [ b ] || [ c ] && [ d ]` is `((a && b) || c) && d`. It made a test report three failures the game

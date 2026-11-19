@@ -143,8 +143,11 @@ between holes, 0 is hole 10, minus is 11, equals is 12 and the left bracket is 1
   pass a shut grille") is the only teaching. Leapfrog itself is a tutorial, not a hard hole: one dead end (carry
   the second machine straight to the far plate and the first can never follow) and then it is done. Its swing has
   only 18 working swings out of 110,000, which is not the "easy part" its own description claims. Not verified:
-  a human walking it (my test moves the player in straight jumps), two players, touch, the web. The rival ignores
-  grilles entirely.
+  a human walking it (my test moves the player in straight jumps), two players, touch. The rival now makes its
+  carries in an order the grilles allow.
+- *I found a hole in the grille rule by rereading it, not by testing it.* Empty hands walk into a shut grille, and
+  my first rule let someone standing inside the bars pick a machine up and walk out the far side with it. The test
+  I had written could not have caught it; it has that case now, with a control beside it.
 - *After You* passed its proof on the first design, which no hole since the fourth has done. Either the planner
   makes design easier (it tells me at once whether an order exists) or the hole is simpler than I think. Its second
   swing has 15 working swings, near the floor of 12. Its look is the weakest of the thirteen: the hall at noon is a
@@ -153,7 +156,8 @@ between holes, 0 is hole 10, minus is 11, equals is 12 and the left bracket is 1
   capped at 60 (the GPU time was 12 ms, and Lantern Court, re-measured beside them, read 60.0 too, an hour after
   reading 76). I could not find what capped it; the screen may have gone to sleep. They are not slower than their
   sister holes, but I have no uncapped number for them.
-- *Process.* I blamed a hung connection on TLS before testing plain HTTP, which showed in one step that it was the
+- *Process.* An hour after writing down "never edit a shell script while it is running", I edited the grille test
+  while the full suite, which runs it, was running. It happened not to have reached it. I also blamed a hung connection on TLS before testing plain HTTP, which showed in one step that it was the
   firewall. And a server I thought I had stopped kept the port, because I had killed a subshell instead of it.
 
 ## 2026-11-19, session 2 (autonomous): the Workshop, a rival, an ending, real host and join

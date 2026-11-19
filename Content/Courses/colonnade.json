@@ -267,7 +267,8 @@
 			],
 			"switch": 0,
 			"openSeconds": 0.0,
-			"surface": "sand"
+			"surface": "sand",
+			"grille": false
 		}
 	],
 	"solutions": [

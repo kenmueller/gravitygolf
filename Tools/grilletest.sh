@@ -48,9 +48,22 @@ expect "lifting the machine off the near plate shuts the side grille again" near
 run "GGView 1300,0,100,0,0"
 run "GGView 1700,0,100,0,0"
 expect "the ball's grille is open while a machine stands on the plate beyond it" far "$(where)"
-# 4. Empty-handed, the player walks through a shut grille. (Set the machine down first, then step back through.)
+# 3b. No reaching from inside the bars: stand in the shut side grille and try to take the machine that stands 4 m
+# back on the near side. (GGNet carry takes any machine at any distance, so this tests the rule, not the reach.)
 run "GGView 2500,60,100,0,0"
 run "GGNet place 2550,0,0"
+run "GGView 1500,450,100,0,0"
+run "GGNet pick 1"
+CARRYING="$(MARK=$(($(wc -l <"$LOG") + 1)); "$ROOT/Tools/console.sh" "GGWhere"; sleep 1; tail -n +"$MARK" "$LOG" | grep "Where: at" | tail -1 | sed 's/.*carrying \([01]\).*/\1/')"
+if [ "$CARRYING" = "0" ]; then echo "ok    no reaching for a machine from inside a shut grille"; else echo "FAIL  a machine was picked up from inside a shut grille"; FAILED=1; fi
+# The same pick-up from outside the bars works (so the refusal above was the rule, not a command that does nothing).
+run "GGView 1300,450,100,0,0"
+run "GGNet pick 1"
+CARRYING="$(MARK=$(($(wc -l <"$LOG") + 1)); "$ROOT/Tools/console.sh" "GGWhere"; sleep 1; tail -n +"$MARK" "$LOG" | grep "Where: at" | tail -1 | sed 's/.*carrying \([01]\).*/\1/')"
+if [ "$CARRYING" = "1" ]; then echo "ok    the same machine is picked up from outside the grille"; else echo "FAIL  the machine could not be picked up from outside either"; FAILED=1; fi
+run "GGView 850,-350,100,0,0"
+run "GGNet place 900,-400,0"
+# 4. Empty-handed, the player walks through a shut grille. (Set the machine down first, then step back through.)
 run "GGView 1700,450,100,0,0"
 run "GGView 1300,450,100,0,0"
 expect "a player carrying nothing walks through a shut grille" near "$(where)"

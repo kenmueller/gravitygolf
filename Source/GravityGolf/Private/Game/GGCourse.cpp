@@ -1020,7 +1020,7 @@ bool AGGCourse::CanPlaceMachine(const FVector& Base) const
 	return true;
 }
 
-bool AGGCourse::CarryBlocked(const FVector& From, const FVector& To) const
+bool AGGCourse::CarryBlocked(const FVector& From, const FVector& To, bool bReach) const
 {
 	// A shut grille stops a machine in someone's arms. The walker is a disc 35 cm across the middle (as the proof's
 	// map has it, Sim/GGLogistics.h); what is tested is the straight line of this step, or of a reach.
@@ -1036,7 +1036,13 @@ bool AGGCourse::CarryBlocked(const FVector& From, const FVector& To) const
 		const FVector2D A(From), B(To);
 		if (Box.IsInside(A))
 		{
-			// Already in it (it shut around them): they may walk out either way.
+			if (bReach)
+			{
+				// Standing in a shut grille (empty hands walk into one freely) and reaching for a machine, or setting
+				// one down: no. Otherwise a machine is picked up from inside the bars and walked out the far side.
+				return true;
+			}
+			// Carrying, and already in it: it shut around them (a partner lifted the weight). They may walk out.
 			continue;
 		}
 		// Does the segment A..B enter the box? (Slab test.)
@@ -1279,7 +1285,7 @@ bool AGGCourse::PlaceMachine(int32 Index, const FVector& Base, AGGGolfer* Carrie
 		}
 		return false;
 	}
-	if (Carrier && CarryBlocked(Carrier->GetActorLocation(), MachineSpot(Base)))
+	if (Carrier && CarryBlocked(Carrier->GetActorLocation(), MachineSpot(Base), true))
 	{
 		Carrier->Tell(TEXT("A machine won't pass a shut grille."));
 		return false;
