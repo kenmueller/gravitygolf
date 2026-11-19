@@ -166,5 +166,20 @@
 			"shape": "box"
 		}
 	],
+	"switches": [],
+	"gates": [],
+	"solutions": [
+		{
+			"leg": 0,
+			"machines": [
+				[
+					3350,
+					400
+				]
+			],
+			"yaw": 44,
+			"power": 0.275
+		}
+	],
 	"next": "SaltMirror"
 }

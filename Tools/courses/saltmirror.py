@@ -34,4 +34,7 @@ c.safe_zone(2950, -640, radius=180)
 c.set_cup(5600, 420)
 c.machine(700, -450)
 c.placement_area(200, -HALF + 150, LENGTH - 200, HALF - 150)
+# Verified answers, one per leg.
+c.solution(0, [(3650, -50)], yaw=3, power=0.3)
+c.solution(1, [(4550, -200)], yaw=-10, power=0.25)
 c.write()

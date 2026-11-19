@@ -156,6 +156,26 @@ bool AGGCourse::Load(const FString& CourseId)
 	}
 	HeldSwitches.assign(Course.Switches.size(), false);
 
+	Solutions.Reset();
+	const TArray<TSharedPtr<FJsonValue>>* Answers = nullptr;
+	if (Json->TryGetArrayField(TEXT("solutions"), Answers))
+	{
+		for (const TSharedPtr<FJsonValue>& Value : *Answers)
+		{
+			const TSharedPtr<FJsonObject> A = Value->AsObject();
+			FGGSolution Solution;
+			Solution.Leg = A->GetIntegerField(TEXT("leg"));
+			Solution.Yaw = A->GetNumberField(TEXT("yaw"));
+			Solution.Power = A->GetNumberField(TEXT("power"));
+			for (const TSharedPtr<FJsonValue>& Spot : A->GetArrayField(TEXT("machines")))
+			{
+				const TArray<TSharedPtr<FJsonValue>>& XY = Spot->AsArray();
+				Solution.Machines.Add(FVector(XY[0]->AsNumber(), XY[1]->AsNumber(), 0.0));
+			}
+			Solutions.Add(Solution);
+		}
+	}
+
 	for (const TSharedPtr<FJsonValue>& Value : Json->GetArrayField(TEXT("boxes")))
 	{
 		const TSharedPtr<FJsonObject> Box = Value->AsObject();
@@ -403,6 +423,7 @@ void AGGCourse::ResetHole()
 	Lie = Course.Tee;
 	LastSafe = Course.Tee;
 	HeldSwitches.assign(Course.Switches.size(), false);
+	CurrentLeg = 0;
 	PreviousPosition = Lie;
 	StrokeCount = 0;
 	Status.Reset();
@@ -536,6 +557,7 @@ void AGGCourse::FinishStroke(GG::EBallState State)
 			}
 			const GG::FSafeZone& Zone = Course.SafeZones[Sim.Ball().SafeZone];
 			Lie = Zone.Center + GG::FVec3{0.0, 0.0, Course.BallRadius};
+			CurrentLeg = Sim.Ball().SafeZone + 1;
 			LastSafe = Lie;
 			CurrentPhase = EGGPhase::Ready;
 			Notify(TEXT("Safe."));
@@ -780,6 +802,11 @@ FVector AGGCourse::BallLocation() const
 		return ToUnreal(RestPosition);
 	}
 	return ToUnreal(Lie);
+}
+
+const FGGSolution* AGGCourse::SolutionForLeg(int32 Leg) const
+{
+	return Solutions.FindByPredicate([Leg](const FGGSolution& S) { return S.Leg == Leg; });
 }
 
 FVector AGGCourse::TeeStart() const

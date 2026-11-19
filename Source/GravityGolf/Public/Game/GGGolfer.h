@@ -33,6 +33,8 @@ public:
 	// Hooks for automated play tests. They drive the same code paths as the keys.
 	/** Pick up the nearest machine wherever it is and try to set it down at a ground point. */
 	bool TestCarryTo(const FVector& Ground);
+	/** Carry a particular machine to a ground point and set it down. */
+	bool TestPlaceMachine(int32 Index, const FVector& Ground);
 	/** Stand at the ball, face a yaw and swing with a power in [0, 1], through the club animation. */
 	void TestSwing(float Yaw, float Power);
 
@@ -65,6 +67,12 @@ private:
 	void GoToBall();
 	void WatchPressed() { bWatching = true; }
 	void WatchReleased() { bWatching = false; }
+	void ShowSolution();
+	void JumpToHole(int32 Number);
+	void Hole1() { JumpToHole(1); }
+	void Hole2() { JumpToHole(2); }
+	void Hole3() { JumpToHole(3); }
+	void Hole4() { JumpToHole(4); }
 
 	FVector SwingDirection() const;
 	FVector HoldPoint() const;

@@ -22,6 +22,15 @@ enum class EGGPhase : uint8
 	Sunk,
 };
 
+/** A verified answer for one leg of a hole: where each machine stands, and a swing that works. */
+struct FGGSolution
+{
+	int32 Leg = 0;
+	TArray<FVector> Machines;
+	double Yaw = 0.0;
+	double Power = 0.0;
+};
+
 /**
  * One hole's rules and state: loads Content/Courses/<id>.json, runs the deterministic simulation at a fixed
  * step, and owns the ball, the cup's flag and the gravity machines. The level's scenery is separate; the level
@@ -69,6 +78,10 @@ public:
 	void Advance();
 	bool HasNext() const { return !NextLevel.IsEmpty(); }
 	double KillHeight() const { return Course.KillZ; }
+	/** Which leg the ball is on: 0 from the tee, 1 after the first safe pad, and so on. */
+	int32 Leg() const { return CurrentLeg; }
+	const FGGSolution* SolutionForLeg(int32 Leg) const;
+	int32 MachineCount() const { return MachineBases.Num(); }
 
 	/** Dotted aiming guide; pass an empty array to hide it. */
 	void ShowGuide(const TArray<FVector>& Points);
@@ -119,6 +132,8 @@ private:
 	TArray<float> MachineFlash;
 	/** Switches banked on earlier legs of this hole. */
 	std::vector<bool> HeldSwitches;
+	int32 CurrentLeg = 0;
+	TArray<FGGSolution> Solutions;
 	TArray<float> GateLevel;
 	TArray<FVector> NoMachineZones; // x, y, radius
 	double CoreHeight = 45.0;

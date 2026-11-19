@@ -143,6 +143,81 @@ void AGGGameMode::GGView(const FString& XYZPitchYaw)
 	}
 }
 
+void AGGGameMode::GGHole(int32 Number)
+{
+	static const TCHAR* Holes[] = {TEXT("Terraces"), TEXT("SaltMirror"), TEXT("Canyon"), TEXT("Lantern")};
+	if (Number >= 1 && Number <= UE_ARRAY_COUNT(Holes))
+	{
+		UGameplayStatics::OpenLevel(this, FName(*(FString(TEXT("/Game/Levels/")) + Holes[Number - 1])));
+	}
+}
+
+void AGGGameMode::GGDemo()
+{
+	if (Course && Course->Phase() == EGGPhase::Ready)
+	{
+		bDemo = true;
+		bDemoSwung = false;
+		DemoLeg = -1;
+		DemoWait = 0.6;
+		UE_LOG(LogGGMode, Log, TEXT("Demo: playing the solution for %s"), *Course->CourseName());
+	}
+}
+
+void AGGGameMode::TickDemo(float DeltaSeconds)
+{
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	AGGGolfer* Golfer = PC ? Cast<AGGGolfer>(PC->GetPawn()) : nullptr;
+	if (!bDemo || !Course || !Golfer)
+	{
+		return;
+	}
+	if (Course->Phase() == EGGPhase::Sunk)
+	{
+		UE_LOG(LogGGMode, Log, TEXT("Demo: PASS %s solved in %d swings"), *Course->CourseName(), Course->Strokes());
+		bDemo = false;
+		return;
+	}
+	if (Course->Phase() != EGGPhase::Ready)
+	{
+		return;
+	}
+	DemoWait -= DeltaSeconds;
+	if (DemoWait > 0.0)
+	{
+		return;
+	}
+
+	const int32 Leg = Course->Leg();
+	if (bDemoSwung && Leg == DemoLeg)
+	{
+		// The swing for this leg has been played and the ball is back where it started: the solution failed.
+		UE_LOG(LogGGMode, Error, TEXT("Demo: FAIL %s leg %d did not complete"), *Course->CourseName(), Leg + 1);
+		bDemo = false;
+		return;
+	}
+	const FGGSolution* Solution = Course->SolutionForLeg(Leg);
+	if (!Solution)
+	{
+		UE_LOG(LogGGMode, Error, TEXT("Demo: FAIL %s has no solution recorded for leg %d"), *Course->CourseName(), Leg + 1);
+		bDemo = false;
+		return;
+	}
+	for (int32 I = 0; I < Solution->Machines.Num() && I < Course->MachineCount(); ++I)
+	{
+		if (!Golfer->TestPlaceMachine(I, Solution->Machines[I]))
+		{
+			UE_LOG(LogGGMode, Error, TEXT("Demo: FAIL %s machine %d could not be placed"), *Course->CourseName(), I + 1);
+			bDemo = false;
+			return;
+		}
+	}
+	Golfer->TestSwing(Solution->Yaw, Solution->Power);
+	DemoLeg = Leg;
+	bDemoSwung = true;
+	DemoWait = 1.0;
+}
+
 void AGGGameMode::PlacePlayer()
 {
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
@@ -177,6 +252,7 @@ void AGGGameMode::Tick(float DeltaSeconds)
 	{
 		PlacePlayer();
 	}
+	TickDemo(DeltaSeconds);
 
 	if (bHasShot && !bShotFired && Elapsed >= ShotDelay && Course)
 	{

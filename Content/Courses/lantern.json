@@ -301,5 +301,29 @@
 			"openSeconds": 0.0,
 			"surface": "sand"
 		}
+	],
+	"solutions": [
+		{
+			"leg": 0,
+			"machines": [
+				[
+					-750,
+					200
+				]
+			],
+			"yaw": 92,
+			"power": 0.125
+		},
+		{
+			"leg": 1,
+			"machines": [
+				[
+					1950,
+					1350
+				]
+			],
+			"yaw": 35,
+			"power": 0.875
+		}
 	]
 }

@@ -203,5 +203,29 @@
 	],
 	"switches": [],
 	"gates": [],
+	"solutions": [
+		{
+			"leg": 0,
+			"machines": [
+				[
+					3650,
+					-50
+				]
+			],
+			"yaw": 3,
+			"power": 0.3
+		},
+		{
+			"leg": 1,
+			"machines": [
+				[
+					4550,
+					-200
+				]
+			],
+			"yaw": -10,
+			"power": 0.25
+		}
+	],
 	"next": "Canyon"
 }

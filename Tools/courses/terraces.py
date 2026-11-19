@@ -36,4 +36,6 @@ c.set_cup(4000, -650)
 # The machine waits on a dais near the tee, so the player has to carry it somewhere and think about where.
 c.machine(1100, 600)
 c.placement_area(200, -WIDTH / 2 + 200, LENGTH - 200, WIDTH / 2 - 200)
+# Verified answer, used by the in-game solution playback and the smoke test.
+c.solution(0, [(3350, 400)], yaw=44, power=0.275)
 c.write()

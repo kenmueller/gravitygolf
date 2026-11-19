@@ -51,8 +51,22 @@ public:
 	UFUNCTION(Exec)
 	void GGView(const FString& XYZPitchYaw);
 
+	/** Console or F1: play this hole's verified solution through the real player code, leg by leg. */
+	UFUNCTION(Exec)
+	void GGDemo();
+
+	/** Console or number keys: open hole 1, 2, 3... */
+	UFUNCTION(Exec)
+	void GGHole(int32 Number);
+
 private:
 	void PlacePlayer();
+	void TickDemo(float DeltaSeconds);
+
+	bool bDemo = false;
+	bool bDemoSwung = false;
+	int32 DemoLeg = -1;
+	double DemoWait = 0.0;
 
 	UPROPERTY()
 	TObjectPtr<AGGCourse> Course;

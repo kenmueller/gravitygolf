@@ -86,7 +86,7 @@ class Course:
             "ballRadius": self.ball_radius, "gravity": [0, 0, -980], "killZ": self.kill_z,
             "tee": self.tee, "cup": self.cup, "noMachine": self.no_machine, "safeZones": self.safe_zones,
             "attractors": self.machines, "boxes": self.boxes,
-            "switches": self.switches, "gates": self.gates,
+            "switches": self.switches, "gates": self.gates, "solutions": self.solutions,
         }
         if self.next:
             data["next"] = self.next

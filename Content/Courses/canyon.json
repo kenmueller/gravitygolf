@@ -211,5 +211,22 @@
 	],
 	"switches": [],
 	"gates": [],
+	"solutions": [
+		{
+			"leg": 0,
+			"machines": [
+				[
+					2900,
+					700
+				],
+				[
+					2850,
+					1200
+				]
+			],
+			"yaw": -20,
+			"power": 0.575
+		}
+	],
 	"next": "Lantern"
 }

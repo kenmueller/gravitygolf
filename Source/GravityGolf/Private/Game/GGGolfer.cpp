@@ -8,6 +8,7 @@
 #include "EngineUtils.h"
 #include "Game/GGAudio.h"
 #include "Game/GGCourse.h"
+#include "Game/GGGameMode.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "HAL/IConsoleManager.h"
@@ -133,6 +134,12 @@ void AGGGolfer::SetupPlayerInputComponent(UInputComponent* Input)
 	Input->BindKey(EKeys::B, IE_Pressed, this, &AGGGolfer::GoToBall);
 	Input->BindKey(EKeys::RightMouseButton, IE_Pressed, this, &AGGGolfer::WatchPressed);
 	Input->BindKey(EKeys::RightMouseButton, IE_Released, this, &AGGGolfer::WatchReleased);
+	// Testing aids until there is a menu: watch the solution, or jump between holes.
+	Input->BindKey(EKeys::F1, IE_Pressed, this, &AGGGolfer::ShowSolution);
+	Input->BindKey(EKeys::One, IE_Pressed, this, &AGGGolfer::Hole1);
+	Input->BindKey(EKeys::Two, IE_Pressed, this, &AGGGolfer::Hole2);
+	Input->BindKey(EKeys::Three, IE_Pressed, this, &AGGGolfer::Hole3);
+	Input->BindKey(EKeys::Four, IE_Pressed, this, &AGGGolfer::Hole4);
 }
 
 AGGCourse* AGGGolfer::Course() const
@@ -345,6 +352,28 @@ bool AGGGolfer::TestCarryTo(const FVector& Ground)
 		Carried = C->FindMachine(GetActorLocation(), 1.0e9);
 	}
 	return PlaceCarried(Ground);
+}
+
+bool AGGGolfer::TestPlaceMachine(int32 Index, const FVector& Ground)
+{
+	Carried = Index;
+	return PlaceCarried(Ground);
+}
+
+void AGGGolfer::ShowSolution()
+{
+	if (AGGGameMode* Mode = GetWorld()->GetAuthGameMode<AGGGameMode>())
+	{
+		Mode->GGDemo();
+	}
+}
+
+void AGGGolfer::JumpToHole(int32 Number)
+{
+	if (AGGGameMode* Mode = GetWorld()->GetAuthGameMode<AGGGameMode>())
+	{
+		Mode->GGHole(Number);
+	}
 }
 
 void AGGGolfer::TestSwing(float Yaw, float Power)
