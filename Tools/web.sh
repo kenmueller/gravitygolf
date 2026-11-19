@@ -31,8 +31,12 @@ mkdir -p "$WEB"
 # Config/Mac holds the rule that makes desktop builds cook the scanned plants. The cooker reads the host's settings,
 # so on a Mac that rule would pull the scans into the web build as well: the web copy goes without it.
 rsync -a --delete --exclude .git --exclude Saved --exclude Intermediate --exclude Binaries \
-	--exclude DerivedDataCache --exclude legacy --exclude Config/Mac "$ROOT/" "$WEB/"
+	--exclude DerivedDataCache --exclude legacy --exclude Config/Mac --exclude Source "$ROOT/" "$WEB/"
 rm -rf "$WEB/Config/Mac"
+# Source files are copied by content and never given the original's time: the build tool trusts times, and a file
+# edited before the last web build but copied after it would otherwise look already built, and stale code would be
+# linked. A changed file lands with the time of the copy, so it is always newer than what was built from it.
+rsync -rlp --checksum --delete "$ROOT/Source/" "$WEB/Source/"
 # The copy keeps file times, and the build tool compares times: a build rule edited before the last build would look
 # unchanged and the link would go stale. Touch the rules so they are always re-read.
 find "$WEB/Source" \( -name "*.Build.cs" -o -name "*.Target.cs" \) -exec touch {} +

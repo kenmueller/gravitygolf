@@ -10,7 +10,10 @@
 #include "Animation/SkeletalMeshActor.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/SkeletalMesh.h"
+#include "Components/SkyLightComponent.h"
+#include "Engine/SkyLight.h"
 #include "Engine/StaticMeshActor.h"
+#include "EngineUtils.h"
 #include "Game/GGAudio.h"
 #include "Kismet/GameplayStatics.h"
 #include "RHIGlobals.h"
@@ -107,6 +110,22 @@ void AGGCourse::SpawnPlants(const FString& LevelName)
 	}
 	// The scans are Nanite foliage on swaying skeletons: desktop renderers only.
 	const bool bScans = GMaxRHIFeatureLevel >= ERHIFeatureLevel::SM5 && CVarPlantStandIns.GetValueOnGameThread() == 0;
+
+	// Where there is no bounced light (the mobile renderer: the web, phones) the sky light is the only fill, and at
+	// its desktop strength everything in shadow goes black. Each level says how much to raise it and what colour its
+	// ground would throw back.
+	const TSharedPtr<FJsonObject>* Web = nullptr;
+	if (GMaxRHIFeatureLevel < ERHIFeatureLevel::SM5 && Json->TryGetObjectField(TEXT("web"), Web))
+	{
+		const double Ambient = (*Web)->GetNumberField(TEXT("ambient"));
+		const TArray<TSharedPtr<FJsonValue>>& Tint = (*Web)->GetArrayField(TEXT("tint"));
+		for (TActorIterator<ASkyLight> It(GetWorld()); It; ++It)
+		{
+			USkyLightComponent* Sky = It->GetLightComponent();
+			Sky->SetIntensity(Sky->Intensity * static_cast<float>(Ambient));
+			Sky->SetLightColor(FLinearColor(Tint[0]->AsNumber(), Tint[1]->AsNumber(), Tint[2]->AsNumber()));
+		}
+	}
 	UStaticMesh* Pine = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Meshes/SM_Web_Pine.SM_Web_Pine"));
 	UStaticMesh* Shrub = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Meshes/SM_Web_Shrub.SM_Web_Shrub"));
 	UMaterialInterface* Surface = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/M_GG_Surface.M_GG_Surface"));

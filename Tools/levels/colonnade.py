@@ -147,4 +147,5 @@ c.mesh(c.PLANE, (3000, 250, WATER_Z), (4000000, 4000000, 1), material=mats["mirr
        cast_shadow=False)
 placed = columns(course_data)
 unreal.log(f"GG: colonnade built with {placed} columns")
+c.write_plants(LEVEL, web_ambient=2.6, web_tint=(1.0, 0.86, 0.72))
 c.LES.save_current_level()

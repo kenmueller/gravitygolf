@@ -143,6 +143,10 @@ console and read the pass list in the log before guessing.
   window is open. After any editor crash, close the crash-report window (`Tools/editor.sh` does): it holds the MCP
   port and the next editor starts deaf.
 - `Tools/rebuild.sh` leaves the editor closed when the build fails. Fix the error and run it again.
+- The web build is made in a copy (`../gravitygolf-web`). `Tools/web.sh` copies source by content and stamps changed
+  files with the time of the copy; an ordinary time-preserving copy let stale object files be linked (a source file
+  edited before the last web build but copied after it looked already built). If a web build ever seems to run old
+  code, `touch` everything under the copy's `Source/` and rebuild.
 - Web builds: the 5.9 preview's Mac launcher build cannot target Wasm ("not supported from this engine
   distribution"; it lacks the Wasm third-party libraries, page template and tools). The editor will not even list
   the Wasm platform for cooking unless the Emscripten SDK is found (`WASM_EMSDK_ROOT=~/emsdk`, version 6.0.10).

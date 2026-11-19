@@ -1,4 +1,12 @@
 {
+ "web": {
+  "ambient": 2.6,
+  "tint": [
+   1.0,
+   0.97,
+   0.9
+  ]
+ },
  "plants": [
   {
    "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",

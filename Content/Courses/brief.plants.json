@@ -1,4 +1,12 @@
 {
+ "web": {
+  "ambient": 2.2,
+  "tint": [
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
  "plants": [
   {
    "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_D.Tree_Aleppo_Pine_01_D",

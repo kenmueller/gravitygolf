@@ -137,13 +137,16 @@ def plant(asset, location, yaw, scale, kind, cast_shadow=True):
     })
 
 
-def write_plants(level_path):
-    """Write the plants recorded since the level was started to Content/Courses/<level>.plants.json."""
+def write_plants(level_path, web_ambient=2.5, web_tint=(1.0, 1.0, 1.0)):
+    """Write the level's scenery notes to Content/Courses/<level>.plants.json: the plants recorded since the level was
+    started, and how to light the level where there is no bounced light (the web, phones). There the sky light is
+    all the fill there is, so the game multiplies it by web_ambient and tints it by web_tint, which stands in for
+    light bouncing off the ground and walls."""
     import json
     name = level_path.rsplit("/", 1)[-1].lower()
     path = f"/Users/ken/Code/gravitygolf/Content/Courses/{name}.plants.json"
     with open(path, "w") as f:
-        json.dump({"plants": PLANTS}, f, indent=1)
+        json.dump({"web": {"ambient": web_ambient, "tint": list(web_tint)}, "plants": PLANTS}, f, indent=1)
     count = len(PLANTS)
     PLANTS.clear()
     return count
