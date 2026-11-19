@@ -43,6 +43,31 @@ investigation". So an iPhone is not a working target yet, on any network. Androi
 Not done: a real phone in a real hand (see below: one command serves it; nobody has held it yet), Safari and Firefox,
 frame-rate measurement, a Shipping build, saved progress across page reloads (untested).
 
+## Hosting it properly (researched 2026-11-19; nothing is hosted yet)
+
+Ken asked for the best legitimate way. Recommendation: **a Cloudflare R2 bucket behind a small Worker, on a domain of
+his own.** It is one of the hosts Epic's deploy tool plans for (`-WasmHost=r2worker`: the tool writes the object list,
+`worker.js` and the switch and rollback steps), R2 does not charge for traffic out (a first visit downloads 50 to
+100 MB), its free tier covers this game many times over (10 GB stored, 10 million reads a month; the Worker's free
+plan is 100,000 requests a day), and it takes files of any size and answers byte ranges. Cloudflare Pages caps files
+at 25 MiB; Netlify's free plan now spends credits per GB served. itch.io is a good second home (limits found second
+hand: 500 MB, 200 MB a file, 1,000 files; it needs its "SharedArrayBuffer support" option, and the game runs in its
+frame).
+
+```bash
+GG_WEB_OUT="$PWD/../gravitygolf-web/Saved/WebShipping" Tools/web.sh Shipping r2worker
+```
+
+makes the public build beside the Development one and writes the plan to `../gravitygolf-web/Saved/Wasm/Deploy/<date>/`
+(`deploy-plan.txt`, `deploy-plan.json`, `worker.js`). Measured on 2026-11-19: Epic's release scan passes (a Development
+build is refused: it carries this Mac's source paths), 55 objects, 258 MB stored, the code 25 MB over the wire (40 MB
+in Development), and the build boots to the title in Chrome in 3.3 seconds from the local server.
+
+Before a public launch: a licences page (Epic's `THIRD-PARTY.md` lists what every web build must carry notices for),
+the name (other games are called Gravity Golf), and the 5.9 release rather than its preview. Only Ken can open the
+Cloudflare account, the domain and the bucket; uploading uses his credentials. After an upload, Epic's `webdoctor.py`
+checks the live address (headers, types, ranges) and `webrun.py --url` boots it in Chrome.
+
 ## Letting a friend play
 
 ```bash
