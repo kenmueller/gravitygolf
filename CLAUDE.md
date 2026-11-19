@@ -70,7 +70,8 @@ Tests/Sim/solve.sh <course>   puzzle-law proof: impossible without the machines,
 Tests/Sim/search.sh <course>  design aid: random search for machine placements and a swing that solve a leg
 Tools/courses/coursekit.py    builder used by every Tools/courses/<level>.py
 Tests/Sim/probe.sh            design aid: trace one swing (course, leg, yaw, power, machine spots)
-Tools/regen.sh <level>        rebuild materials and a level in the open editor; Tools/play.sh, Tools/console.sh
+Tools/regen.sh <level|all> [--no-materials]   rebuild levels in the open editor (materials too, then every level)
+Tools/play.sh, Tools/console.sh               start/stop Play-In-Editor; run a console command in it
 Tools/smoke.sh [Level ...]    in the editor: play each hole's recorded solution through the real player code
 Tools/perf.sh [Level ...]     in the editor: frame rate per hole from the tee (GGPerf)
 Tools/shot.sh <Level> <png> ["x,y,z,pitch,yaw"]   save a picture of the running game
@@ -131,6 +132,8 @@ console and read the pass list in the log before guessing.
   Every layout must block the straight line from the ball through any spot a machine can stand to the target, or
   the hole is trivial. The solver catches it; `Tests/Sim/search.sh` shows it as huge tolerances with one machine
   parked far away.
+- Rebuilding materials (`Tools/build_materials.py`) resets every level's material instances: levels render flat
+  tan until their scripts run again. `Tools/regen.sh` does this for you; never run the material script alone.
 - A level script can serve several holes: `Tools/levels/returning.py` runs `canyon.py` with its own settings.
 - Geometry Script: the lathe (`append_revolve_polygon`) ignores the material in its options; remap it afterwards.
 - Megaplants need `r.Nanite.Foliage` and `r.Nanite.AllowAssemblies`, or the trees render bare.

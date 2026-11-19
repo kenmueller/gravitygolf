@@ -25,8 +25,7 @@ namespace
 constexpr double ReturnPause = 1.6;
 
 // Field preview look, tunable live from the console while playing.
-TAutoConsoleVariable<int32> CVarFieldSpokes(TEXT("gg.Field.Spokes"), 44, TEXT("Field preview: lines of arrows around a machine"));
-TAutoConsoleVariable<int32> CVarFieldArrows(TEXT("gg.Field.Arrows"), 7, TEXT("Field preview: arrows per line"));
+TAutoConsoleVariable<float> CVarFieldGrid(TEXT("gg.Field.Grid"), 190.f, TEXT("Field preview: distance between arrows (cm)"));
 TAutoConsoleVariable<float> CVarFieldSize(TEXT("gg.Field.Size"), 0.75f, TEXT("Field preview: arrow size multiplier"));
 TAutoConsoleVariable<float> CVarFieldGlow(TEXT("gg.Field.Glow"), 1.1f, TEXT("Field preview: brightness when emphasized"));
 TAutoConsoleVariable<float> CVarMachineLight(TEXT("gg.Machine.Light"), 6.f,
@@ -717,8 +716,6 @@ void AGGCourse::UpdateFieldPreview(float DeltaSeconds)
 	FieldDots->ClearInstances();
 	const double Time = GetWorld()->GetTimeSeconds();
 	constexpr int32 RingDashes = 96;
-	const int32 Spokes = FMath::Clamp(CVarFieldSpokes.GetValueOnGameThread(), 4, 96);
-	const int32 ArrowsPerSpoke = FMath::Clamp(CVarFieldArrows.GetValueOnGameThread(), 1, 16);
 	const double SizeScale = CVarFieldSize.GetValueOnGameThread();
 	for (int32 Index = 0; Index < MachineBases.Num(); ++Index)
 	{
@@ -735,35 +732,65 @@ void AGGCourse::UpdateFieldPreview(float DeltaSeconds)
 			(bPull ? FieldRing : FieldPushRing)->AddInstance(
 				FTransform(Along.Rotation(), Base + Out * Range + FVector(0, 0, 3.0), FVector(0.6, 0.06, 0.03)), true);
 		}
+	}
 
-		if (FieldLevel < 0.02f)
+	// One field, not one per machine. On a grid over the ground an arrow points the way the machines together push a
+	// ball there, sized by how hard, and drifts that way. Where two domes overlap the arrows show the sum instead of
+	// two tangled sets, and where the field is weak there are none.
+	if (FieldLevel >= 0.02f && MachineBases.Num() > 0)
+	{
+		const double Spacing = FMath::Clamp(static_cast<double>(CVarFieldGrid.GetValueOnGameThread()), 80.0, 600.0);
+		const double Soft = GG::FPhysics().AttractorSoftening;
+		FBox2D Bounds(ForceInit);
+		for (int32 Index = 0; Index < MachineBases.Num(); ++Index)
 		{
-			continue;
+			const FVector2D Base(MachineBases[Index]);
+			Bounds += Base - FVector2D(Attractors[Index].Range);
+			Bounds += Base + FVector2D(Attractors[Index].Range);
 		}
-		for (int32 Spoke = 0; Spoke < Spokes; ++Spoke)
+		const int32 X0 = FMath::FloorToInt32(Bounds.Min.X / Spacing), X1 = FMath::CeilToInt32(Bounds.Max.X / Spacing);
+		const int32 Y0 = FMath::FloorToInt32(Bounds.Min.Y / Spacing), Y1 = FMath::CeilToInt32(Bounds.Max.Y / Spacing);
+		for (int32 GY = Y0; GY <= Y1; ++GY)
 		{
-			const double Angle = 2.0 * PI * (Spoke + 0.5 * (Index % 2)) / Spokes;
-			const FVector Radial(FMath::Cos(Angle), FMath::Sin(Angle), 0.0);
-			for (int32 Arrow = 0; Arrow < ArrowsPerSpoke; ++Arrow)
+			for (int32 GX = X0; GX <= X1; ++GX)
 			{
-				// Travel from the edge to the center (outward for a repulsor), staggered per spoke.
-				double Phase = FMath::Frac(Time * CVarFieldSpeed.GetValueOnGameThread() + static_cast<double>(Arrow) / ArrowsPerSpoke + Spoke * 0.381);
-				if (!bPull)
+				// Alternate rows are offset by half a cell, so the grid doesn't read as rows and columns.
+				const FVector2D Cell((GX + 0.5 * (GY & 1)) * Spacing, GY * Spacing);
+				FVector2D Sum = FVector2D::ZeroVector;
+				double Pull = 0.0, Push = 0.0, Ground = MachineBases[0].Z;
+				bool bTooClose = false;
+				for (int32 Index = 0; Index < MachineBases.Num(); ++Index)
 				{
-					Phase = 1.0 - Phase;
+					const FVector2D To = FVector2D(MachineBases[Index]) - Cell;
+					const double R2 = To.SizeSquared();
+					const double Range = Attractors[Index].Range;
+					if (R2 >= Range * Range)
+					{
+						continue;
+					}
+					bTooClose |= R2 < 110.0 * 110.0;
+					const double Window = 1.0 - R2 / (Range * Range);
+					const double Each = Attractors[Index].Strength * Window * Window / FMath::Sqrt(R2 + Soft * Soft);
+					Sum += To * Each;
+					(Each > 0.0 ? Pull : Push) += FMath::Abs(Each) * FMath::Sqrt(R2);
+					Ground = MachineBases[Index].Z;
 				}
-				// Ease in, so arrows speed up as the pull strengthens.
-				const double R = Range * (1.0 - Phase * Phase);
-				if (R < 110.0)
+				const double Strength = Sum.Size();
+				if (bTooClose || Strength < 14.0)
 				{
 					continue;
 				}
-				const double Window = 1.0 - (R * R) / (Range * Range);
-				const double Size = (0.22 + 0.55 * Window) * FieldLevel * SizeScale;
-				// A flat cone lying on the grass with its tip along the force.
-				const FVector Tip = bPull ? -Radial : Radial;
-				(bPull ? FieldDots : FieldPushDots)->AddInstance(FTransform(FRotationMatrix::MakeFromZX(Tip, FVector::UpVector).Rotator(),
-					Base + Radial * R + FVector(0, 0, 3.0), FVector(0.03, Size * 0.36, Size)), true);
+				const FVector2D Way = Sum / Strength;
+				const double Seed = FMath::Frac(FMath::Sin(GX * 12.9898 + GY * 78.233) * 43758.5453);
+				const double Phase = FMath::Frac(Time * CVarFieldSpeed.GetValueOnGameThread() * 3.0 + Seed);
+				// Each arrow swells as it appears and shrinks as it goes, so the drift never pops.
+				const double Swell = FMath::Sin(Phase * PI);
+				const double Size = (0.16 + 0.42 * FMath::Min(Strength / 300.0, 1.0)) * Swell * FieldLevel * SizeScale;
+				const FVector2D At = Cell + Way * ((Phase - 0.5) * Spacing * 0.8);
+				const FVector Tip(Way.X, Way.Y, 0.0);
+				(Pull >= Push ? FieldDots : FieldPushDots)->AddInstance(
+					FTransform(FRotationMatrix::MakeFromZX(Tip, FVector::UpVector).Rotator(), FVector(At.X, At.Y, Ground + 3.0),
+						FVector(0.03, Size * 0.3, Size)), true);
 			}
 		}
 	}

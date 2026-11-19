@@ -63,8 +63,13 @@ Try it without F1 and tell me how long it took and whether the answer felt earne
   is that an attractor is a cannon as well as a bend, and every layout has to block that line.
 - It reuses the canyon. You asked for levels that are very different; this is a second room in a world, like a
   Talos area with several puzzles. A sixth hole should be a new place.
-- With both machines near the tee the field arrows cover the floor in blue and yellow confetti. It is the ugliest
-  thing in the game now and it hides the information it is supposed to show.
+- With both machines near the tee the field arrows covered the floor in blue and yellow confetti. Fixed the same
+  day: the game now draws one combined field on a grid (the sum of every machine's pull and push), so overlapping
+  domes show what the ball will actually feel. Two machines side by side nearly cancel, and the arrows nearly
+  vanish there. That is true to the physics; whether it reads as "nothing happens here" or as "it's broken" needs
+  your eyes.
+- Rebuilding the shared materials for the lanterns silently stripped the textures from the first two holes, and I
+  only noticed in a later screenshot. `Tools/regen.sh` now regenerates every level whenever materials are rebuilt.
 - The models are a clear step up from boxes and balls, but they are still untextured metal. No scratches, no
   maker's marks, no hands holding the club.
 
@@ -125,7 +130,7 @@ Editor (Play-In-Editor), M4 Max, 2027x1090 panel, all settings at their highest,
 - The smoke test proves the recorded answers work in the engine. It does not prove a person can find them.
 
 **Standing critique of the look** (worst first, judged against The Talos Principle)
-1. Field arrows from two machines overlap into confetti.
+1. Field arrows are now calm but small; on grass they may be too faint to read at a glance.
 2. The Terraces lawn is one flat olive plane. Hedges in shadow are black slabs.
 3. There are no hands on the club. Club and machine are clean metal with no wear.
 4. Every course is a rectangle with walls. The worlds differ; the play spaces don't.
