@@ -1,8 +1,14 @@
-# Gravity Golf, reimagined: proposal
+# Gravity Golf, reimagined
 
-**In one line:** a beautiful puzzle-golf game set on solar systems small enough to hold in your hand. You shape
-gravity, then take the shot. Alone it's a puzzle campaign of about 100 holes. With friends it plays like Golf With
-Your Friends, except everyone is trying to solve the same impossible hole at the same time.
+**In one line:** a first-person puzzle golf game set in breathtaking, photoreal places, where a vanished
+civilization left gravity machinery on every course. Walk the hole, place the machines, take the shot. Alone it
+is a puzzle campaign. With friends it plays like Golf With Your Friends, with everyone on foot in the same garden.
+
+**Direction (Ken, 2026-11-18):**
+- Look in the spirit of The Talos Principle, but even better, with an original world. Not set in space.
+- First-person on foot.
+- Puzzle first. Physical plausibility is optional. Every level should be new, exciting and unlike the others.
+- Full visual quality on PC, Mac and consoles. Phones and web accept a reduced form.
 
 ## What exists
 
@@ -37,77 +43,52 @@ Your Friends, except everyone is trying to solve the same impossible hole at the
 
 ## The game
 
-### Core loop: plan, shoot, watch
-- Every hole is a small handcrafted star system: the tee planet, a few bodies, and a green planet with the cup and
-  a flag.
-- You get a tool tray, for example two wells and a wormhole pair. Place the tools, aim, swing, then watch the shot
-  play out.
-- The ball can land on planets and roll to a stop, so a hole can take one, two or three strokes. The clever line
-  is usually a hole in one.
-- **Physics stays on one plane; everything else is full 3D.** Planning happens in a readable tactical view, which
-  is what a precise puzzle needs on a phone. When the ball launches, a cinematic camera follows it. The last world
-  breaks the plane for true 3D holes.
+### Core loop: walk, place, swing, watch
+- **Walk.** Each hole is a self-contained garden: a puzzle course inside a vast landscape. Walk it on foot to read
+  the slopes, hazards and machinery.
+- **Place.** You carry a handful of artifacts (attractors, repulsors and later inventions) and set them on the
+  course. Some machinery is fixed in place.
+- **Swing.** From beside the ball: look to aim, hold to set power, release. A short guide line shows the start of
+  the path.
+- **Watch.** The camera follows the ball as the machinery bends its flight. The ball comes to rest and you walk to
+  it for the next stroke. Scoring is golf: strokes, par and a medal under par, plus optional relics to collect.
 
 ### Puzzle design rules
-- **Solutions are ideas, not pixel-perfect aims.** A solver run on the server measures how wide each intended
-  solution's tolerance window is. It also fuzzes millions of shots to find unintended shortcuts before a hole ships.
-- **A guide line until the first encounter.** Like Peggle, you see the path up to the first flyby or bounce. After
-  that you read the bent spacetime grid yourself.
-- **Free rewind** and a ghost of your last attempt, so trying ideas is quick.
-- **One new mechanic per world.** It is taught without words, then combined with earlier ones.
-- **Scoring:** sinking the ball solves the hole. Par is counted in strokes plus tools. Three stardust motes give
-  an optional route for perfectionists. Global histograms (as in Opus Magnum) show how your solution ranks, which
-  gives puzzle players a reason to keep optimizing.
+- Solutions are ideas, not pixel-perfect aims. A server-side solver measures each intended solution's tolerance
+  window and fuzzes for unintended shortcuts.
+- Free retries, and a ghost of your last attempt.
+- Each level is its own idea and its own place. Rules can change per level: gravity sideways, courses on walls,
+  balls that float in water, time that slows in a field.
 
-### Worlds (about 100 holes, plus a bonus course)
-| World | New mechanic |
-| --- | --- |
-| Tee Time | Aiming, landing, rolling, the cup |
-| Pull | Gravity wells (the original mechanic). Bonus: a *Classic* course remastering the 12 levels from 2022 |
-| Push | Repulsors and space-station walls |
-| Ice & Dust | Surfaces: ice slides, dust stops the ball, gas giants slow it |
-| Wormholes | Portal pairs you place yourself; momentum is preserved and orientation matters |
-| Clockwork | Orbiting moons. A launch-delay dial turns timing into planning instead of reflexes |
-| Charge | Gates flip the ball's polarity; planets attract or repel depending on that charge |
-| Split | One shot splits into two balls, and both must sink |
-| Event Horizon | Black holes, slow motion near the horizon, and finally holes off the plane |
+### Levels (each one different)
+| Level | Place | Idea |
+| --- | --- | --- |
+| The Terraces | Limestone terraces over a sea at sunrise | Learn to swing; one attractor bends a shot around a ruin |
+| Salt Mirror | Endless reflective salt flat with monoliths | Repulsors; the horizon is the fairway |
+| Inverted Cloister | Monastery courtyard where gravity points up | Putt across the vaulted ceiling |
+| Canyon Orrery | Sandstone canyon with rotating stone rings | Moving gravity sources and timing |
+| Drowned Library | A flooded hall of shelves | Buoyancy and currents |
+| Spiral Lighthouse | A tower whose gravity follows its spiral | The ball falls around the stairs |
+| Glass Glacier | Ice caves under an aurora | Frictionless ice and refraction |
+| Floating Gardens | Islands in the sky around a gravity core | Orbits: the 2022 game's soul as the finale |
 
 ### Playing together
-- **Same Hole (versus, 2–12 players).** Everyone solves the same hole at once, with no turns and no waiting. Other
-  players' balls appear as ghosts. **At the end of the hole, every player's solution replays at once** in slow
-  motion, with awards such as "fewest tools", "closest miss" and "most unhinged".
-- **Chaos Field (optional setting).** Everyone shares one field. Your tools bend everyone's shots, and balls collide
-  and attract each other. The chaos comes from physics rather than bazookas.
-- **Together (co-op, 2–4 players).** Each player gets a different toolkit for the same field, so you have to talk.
-  Think Portal 2 co-op, as golf.
-- **Build-off.** Everyone has three minutes to build a hole, then everyone plays everyone's holes. You score when
-  your hole is solvable but others struggle with it.
-- **Daily Orbit.** One verified hole per day, the same for everyone, shared as a Wordle-style emoji result.
-
-### Built for streamers
-- **Streamer Cup.** The streamer hosts and up to 100 viewers join from a link in their browser with nothing to
-  install. Everyone solves the same hole against a live leaderboard. Chat can vote to drop a repulsor on the
-  streamer.
-- Instant replays and one-tap vertical clips. Every shot is a replay only a few bytes long, so a clip link opens
-  in a browser and lets the viewer try that exact hole.
-- A streamer mode that hides lobby codes, and UI that stays readable at 720p.
+- **Same Hole:** everyone plays the same garden at once, on foot, with no turns. Every solution replays together at
+  the end of the hole.
+- **Chaos Field:** everyone's machinery affects everyone's ball.
+- **Co-op:** split toolkits, so players have to talk.
+- **Build-off, Daily Hole and Streamer Cup:** as in the first proposal.
 
 ### Beautiful
-"AAA" here means AAA art direction and polish, in the league of Astro Bot or Monument Valley, not photorealism.
-That bar is reachable on a phone.
-- **Look:** jewel-box orreries. Each hole floats in its own nebula, and the materials are tactile and toy-like:
-  enamel, brass, frosted glass, felted grass on tiny planets.
-- **Tilt-shift depth of field** while planning, so each hole reads as a miniature. A cinematic camera with slow
-  motion as the ball approaches the cup.
-- **Technical art:** atmospheric rims, gas-giant bands that move, rings that cast shadows, volumetric nebulae, a
-  trail that looks light-painted, and the spacetime grid drawn as golden filigree that ripples when you drop a well.
-- **Every solution is a song.** Planets hum a note when the ball passes, bounces are percussion, and sinking the
-  ball resolves the chord. Each world has its own key, so elegant solutions literally sound better. The score is
-  adaptive, orchestral and ambient.
-- **Personality:** the ball is the hero, customizable with skins, trails and finishes. A dry robot caddie,
-  built from simple shapes, gives hints. Everything is procedural or built from primitives, so no hand-sculpted
-  characters are needed. There is a photo mode.
-- **Performance target:** 60 fps on a three-year-old phone, with quality tiers above that.
+- **Look:** monumental and serene. Sunlit natural landscapes inhabited by vast, weathered structures of an unknown
+  civilization: warm stone, bronze, and inlaid glyph lines that glow where gravity bends.
+- **Lighting:** golden-hour lighting with Lumen global illumination, MegaLights, volumetric clouds and fog.
+- **Detail:** Nanite geometry, Megascans photoscanned assets (free on Fab since November 2026) and the experimental
+  Nanite Mesh Terrain.
+- **Gravity made visible:** heat-haze distortion, drifting dust and pollen pulled into attractors, and glyphs that
+  light up along the field.
+- **Sound:** the "every solution is a song" idea from the first proposal carries over: machines hum as the ball
+  passes.
 
 ## Platforms and stack
 
@@ -118,9 +99,9 @@ can be text is text, and binary Unreal assets are generated from scripts in the 
 | Layer | Choice |
 | --- | --- |
 | Project | C++ project. Blueprints are avoided except as thin wrappers |
-| Simulation | Deterministic fixed-step 2D physics in plain C++ (no UObjects, floating-point contraction off). The same code runs in the game, the replays, the level solver and the server referee |
-| Holes | JSON files in `Content/Holes`, built into the scene at runtime. No hand-made levels |
-| Rendering | Lumen (including the new World Cache), MegaLights, Substrate materials, Niagara, Heterogeneous Volumes for nebulae, TSR. Phones and web use Unreal's mobile renderer |
+| Simulation | Deterministic fixed-step 3D ball physics in plain C++ (no UObjects, floating-point contraction off) against quantized collision meshes exported from each level. The same code runs in the game, the replays, the level solver and the server referee |
+| Levels | Generated by editor Python scripts in `Tools/levels/`: terrain, Megascans placement, PCG scatter and course machinery. Course rules and par live in JSON |
+| Rendering | Lumen (including the new World Cache), MegaLights, Substrate materials, Nanite, Mesh Terrain, SkyAtmosphere, Volumetric Clouds, Niagara, TSR. Phones and web use Lumen Lite or the mobile renderer |
 | Materials and effects | Generated by editor Python scripts in `Tools/`, so the scripts are the source and the `.uasset` files are build output |
 | Claude's workflow | Unreal MCP (experimental, in-editor). Editor Python run headless from the command line. Command-line builds, automation tests and screenshot captures |
 | iOS / Android | Native Unreal builds |
