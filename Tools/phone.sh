@@ -5,6 +5,8 @@
 # certificate made here for this Mac's name and addresses. Put the phone on the same Wi-Fi and open the address it
 # prints (or point the camera at the square). The phone will say it does not know the certificate: that is
 # expected for a certificate made at home; choose to visit the page anyway. Nothing leaves the local network.
+#   - "Safari cannot connect to the server" with nothing printed below the square means the phone never reached
+#     this Mac: a public or guest Wi-Fi that keeps devices apart, or the phone on another network.
 #   - If macOS asks whether Python may accept incoming connections, allow it. If the phone connects and then waits
 #     for ever, the Mac's firewall is refusing it: System Settings, Network, Firewall, Options, allow python3.
 #   - Build first with Tools/web.sh Development. Ctrl-C stops the server.
@@ -59,6 +61,14 @@ if [ -n "$CHECK" ]; then
 	exit 0
 fi
 
+# Public and guest Wi-Fi usually keeps the devices on it apart, and then no phone can reach this Mac whatever is
+# served. A Mac on such a network sees no neighbours at all, not even the router.
+if [ "$(arp -an 2>/dev/null | grep -vc incomplete)" -eq 0 ]; then
+	echo "WARNING: this Mac can see no other device on its network. A public or guest Wi-Fi keeps devices apart,"
+	echo "and the phone will say it cannot connect. Use your own Wi-Fi, or the phone's Personal Hotspot (join it from"
+	echo "this Mac, pause any backup first: the Mac's internet then runs on the phone's data), and run this again."
+	echo
+fi
 echo "On the phone (same Wi-Fi), open one of:"
 echo "    https://$NAME.local:$PORT/"
 for A in $ADDRESSES; do echo "    https://$A:$PORT/"; done

@@ -91,6 +91,7 @@ Tools/look.sh <Level> <prefix> ["x,y,z,pitch,yaw" ...]   open a level, start pla
 Tools/py.sh <file.py>         run Python in the open editor; the value of the last expression is returned
 Tools/web.sh [config] [host]  package for the web (Wasm + WebGPU) with the source engine at ~/UE59; see docs/WEB.md
 Tools/webtest.sh [play|phone|tour]   run the web build in Chrome with screenshots (tour: every hole's solution)
+Tools/webplay.sh [browser]    serve the web build on this Mac and open it in Safari (default) or the browser named
 Tools/phone.sh [check]        serve the web build to a real phone on the LAN over HTTPS (address and QR code); check proves it is reachable
 Tools/nettest.sh              two players in the editor; compares both copies of the hole after every step
 Tools/sounds.sh               writes every sound the game makes to WAV and measures it (length, level, pitch, brightness)
@@ -220,6 +221,16 @@ console and read the pass list in the log before guessing.
 - Nobody building this can hear it. Sound is judged by `Tools/sounds.sh` (levels, pitch, brightness, clipping) and
   the music also by its notes: every chord's spectrum must show the notes written, the loop's seam must be smaller
   than an ordinary step between samples, and no chord may hold two notes a semitone apart (three did at first).
+- Close the editor when a stretch of work ends (`Tools/play.sh stop`, then the MCP `ExitEditor`). It is configured not
+  to throttle in the background, so an idle editor holds three cores and runs the fans for as long as it is open.
+  Ken came back to a hot laptop after three and a half hours of it.
+- Frame rates are capped by the display. On a 60 Hz screen (Ken's dock) every hole reads exactly 60.0 with every
+  frame at 16.7 ms; compare GPU times instead, or measure on the laptop's own screen. The web page logs the rate it
+  found (`PAGE DISPLAY_HZ`).
+- `Tools/webplay.sh [Safari|"Google Chrome"]` serves the web build at http://localhost:8967 and opens it; the page's
+  own log lines print in the terminal. Safari 27 runs it (WebGPU on, first frame presented).
+- A phone cannot reach the Mac on a public or guest Wi-Fi (client isolation): the Mac's `arp -an` is empty there.
+  `Tools/phone.sh` warns when it sees that.
 - Python servers and the Mac's firewall: `/usr/bin/python3` may accept connections from the network; Homebrew's
   Python may not, and the connection then opens and hangs. `Tools/phone.sh` uses the system one.
 - A shell function run in the background (`serve &`) is a subshell: `$!` is the subshell, and killing it leaves the

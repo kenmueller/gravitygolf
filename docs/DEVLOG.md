@@ -167,7 +167,12 @@ between holes, 0 is hole 10, minus is 11, equals is 12 and the left bracket is 1
   beside them). Something outside the game is pacing it at 60; my guess is the display went to sleep while Ken was
   away. The GPU time is what can be compared: Leapfrog 12.5 ms and After You 13.9 ms, against Lantern Court's
   12.4 ms in the same run. When the frame time was the GPU time (the morning's runs), those would be about 80 and
-  72 frames a second. Not confirmed uncapped.
+  72 frames a second. Not confirmed uncapped. (Found afterwards: the web page measured the display at 60 Hz. The
+  Mac had been put on a 60 Hz screen, and that was the cap.)
+- *Process, after Ken came back.* I left the editor open and unthrottled when I reported, and it ran his fans for
+  three and a half hours. The phone command printed a QR code on a public Wi-Fi where no phone could ever reach the
+  Mac; it should have said so, and now does. And I told him to scan the code without ever having checked that
+  another device could see this Mac, only that the Mac could see itself.
 - *Process.* An hour after writing down "never edit a shell script while it is running", I edited the grille test
   while the full suite, which runs it, was running. It happened not to have reached it. I also blamed a hung connection on TLS before testing plain HTTP, which showed in one step that it was the
   firewall. And a server I thought I had stopped kept the port, because I had killed a subshell instead of it.
