@@ -47,93 +47,6 @@ struct GGNoise
 GGNoise N;
 """
 
-PLANET = NOISE + r"""
-float3 D = normalize(LocalPos);
-float3 Base;
-float Rough = 0.85;
-int Kind = (int)round(Style);
-
-if (Kind == 2)
-{
-    // Gas giant: latitude bands warped by turbulence, slowly drifting, with one storm.
-    float Warp = N.Fbm(D * 3.0 + float3(0, 0, Time * 0.015), 5);
-    float Lat = D.z + (Warp - 0.5) * 0.18;
-    float Bands = sin(Lat * 22.0) * 0.5 + 0.5;
-    float Fine = sin(Lat * 71.0 + Warp * 6.0) * 0.5 + 0.5;
-    Base = lerp(ColorA, ColorB, smoothstep(0.2, 0.8, Bands));
-    Base = lerp(Base, ColorC, smoothstep(0.55, 1.0, Fine) * 0.45);
-    float3 StormDir = normalize(float3(0.55, -0.6, -0.35));
-    float Storm = smoothstep(0.17, 0.05, distance(D, StormDir) + (Warp - 0.5) * 0.05);
-    Base = lerp(Base, ColorC * 1.15, Storm * 0.85);
-    Rough = 0.55;
-}
-else if (Kind == 3)
-{
-    // Ice moon: pale shell, darker frozen seas, glowing cracks.
-    float Seas = N.Fbm(D * 2.5, 4);
-    float Crack = 1.0 - abs(N.Noise(D * 9.0) * 2.0 - 1.0);
-    Crack = pow(saturate(Crack), 18.0);
-    Base = lerp(ColorA, ColorB, smoothstep(0.45, 0.6, Seas));
-    Base = lerp(Base, ColorC, Crack * 0.8);
-    Rough = lerp(0.12, 0.35, Seas);
-}
-else
-{
-    // Grassy worlds. The green (Kind 1) gets mowing stripes, like a real putting green.
-    float Patches = N.Fbm(D * 4.0, 5);
-    float Detail = N.Fbm(D * 28.0, 3);
-    Base = lerp(ColorA, ColorB, smoothstep(0.35, 0.7, Patches));
-    Base *= lerp(0.85, 1.12, Detail);
-    if (Kind == 1)
-    {
-        float Lon = atan2(D.y, D.x);
-        float Stripe = step(0.0, sin(Lon * 14.0));
-        Base *= lerp(0.88, 1.12, Stripe);
-    }
-    else
-    {
-        // A few rocky outcrops on the meadow.
-        float Rock = smoothstep(0.66, 0.72, N.Fbm(D * 6.0 + 3.1, 4));
-        Base = lerp(Base, ColorC, Rock);
-    }
-    Rough = 0.9;
-}
-
-RoughnessOut = Rough;
-return Base;
-"""
-
-SKY = NOISE + r"""
-float3 V = normalize(-CameraDir);
-
-// Nebula: two layers of soft colored clouds.
-float Cloud = N.Fbm(V * 2.2 + 4.0, 6);
-float Wisps = N.Fbm(V * 5.5 + Cloud * 1.5, 5);
-float3 Nebula = NebulaA * smoothstep(0.35, 0.85, Cloud) + NebulaB * smoothstep(0.45, 0.95, Wisps) * 0.7;
-Nebula *= NebulaStrength;
-
-// Stars: one candidate per cell on a few grid scales, sized and tinted by hash.
-float3 Stars = 0;
-for (int Layer = 0; Layer < 3; Layer++)
-{
-    float Scale = 90.0 + Layer * 110.0;
-    float3 Cell = floor(V * Scale);
-    float3 Local = frac(V * Scale) - 0.5;
-    float H = N.Hash(Cell + Layer * 31.7);
-    if (H > 0.94)
-    {
-        float3 Offset = float3(N.Hash(Cell + 1.3), N.Hash(Cell + 2.7), N.Hash(Cell + 4.1)) - 0.5;
-        float D2 = dot(Local - Offset * 0.6, Local - Offset * 0.6);
-        float Size = lerp(0.0015, 0.012, pow(N.Hash(Cell + 7.9), 6.0));
-        float Twinkle = 0.75 + 0.25 * sin(Time * (1.0 + H * 3.0) + H * 50.0);
-        float3 Tint = lerp(float3(0.75, 0.85, 1.0), float3(1.0, 0.85, 0.7), N.Hash(Cell + 9.2));
-        Stars += Tint * exp(-D2 / Size) * Twinkle * StarStrength;
-    }
-}
-
-return Nebula + Stars;
-"""
-
 BALL = NOISE + r"""
 // Golf ball dimples: distance to the nearest point on a jittered spherical lattice, as a height.
 float3 D = normalize(LocalPos);
@@ -230,56 +143,6 @@ def build_glow():
     finish(material, path)
 
 
-def build_planet():
-    material, path = fresh("M_GG_Planet")
-    local = node(material, unreal.MaterialExpressionLocalPosition, -1200, -300)
-    style = scalar_param(material, "Style", 0.0, -1200, -150)
-    a = vector_param(material, "ColorA", (0.16, 0.42, 0.14, 1), -1200, 0)
-    b = vector_param(material, "ColorB", (0.24, 0.55, 0.2, 1), -1200, 150)
-    c = vector_param(material, "ColorC", (0.4, 0.38, 0.35, 1), -1200, 300)
-    time = node(material, unreal.MaterialExpressionTime, -1200, 450)
-    surface = custom(material, PLANET, ["LocalPos", "Style", "ColorA", "ColorB", "ColorC", "Time"], -700, 0,
-                     outputs=[("RoughnessOut", unreal.CustomMaterialOutputType.CMOT_FLOAT1)])
-    for source, pin in [(local, "LocalPos"), (style, "Style"), (a, "ColorA"), (b, "ColorB"), (c, "ColorC"),
-                        (time, "Time")]:
-        MEL.connect_material_expressions(source, "", surface, pin)
-    MEL.connect_material_property(surface, "", unreal.MaterialProperty.MP_BASE_COLOR)
-    MEL.connect_material_property(surface, "RoughnessOut", unreal.MaterialProperty.MP_ROUGHNESS)
-
-    # Atmosphere: a soft rim glow that reads as air against black space.
-    fresnel = node(material, unreal.MaterialExpressionFresnel, -700, 400, exponent=3.5, base_reflect_fraction=0.0)
-    air = vector_param(material, "AtmosphereColor", (0.35, 0.6, 1.0, 1), -700, 550)
-    air_strength = scalar_param(material, "AtmosphereStrength", 3.0, -700, 700)
-    rim = node(material, unreal.MaterialExpressionMultiply, -400, 450)
-    glow = node(material, unreal.MaterialExpressionMultiply, -200, 500)
-    MEL.connect_material_expressions(fresnel, "", rim, "A")
-    MEL.connect_material_expressions(air, "", rim, "B")
-    MEL.connect_material_expressions(rim, "", glow, "A")
-    MEL.connect_material_expressions(air_strength, "", glow, "B")
-    MEL.connect_material_property(glow, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
-    finish(material, path)
-
-
-def build_sky():
-    material, path = fresh("M_GG_Sky")
-    material.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_UNLIT)
-    material.set_editor_property("two_sided", True)
-    material.set_editor_property("is_sky", True)
-    camera = node(material, unreal.MaterialExpressionCameraVectorWS, -900, -200)
-    nebula_a = vector_param(material, "NebulaA", (0.08, 0.03, 0.16, 1), -900, 0)
-    nebula_b = vector_param(material, "NebulaB", (0.02, 0.09, 0.14, 1), -900, 150)
-    nebula_strength = scalar_param(material, "NebulaStrength", 1.0, -900, 300)
-    star_strength = scalar_param(material, "StarStrength", 30.0, -900, 400)
-    time = node(material, unreal.MaterialExpressionTime, -900, 500)
-    sky = custom(material, SKY, ["CameraDir", "NebulaA", "NebulaB", "NebulaStrength", "StarStrength", "Time"],
-                 -500, 100)
-    for source, pin in [(camera, "CameraDir"), (nebula_a, "NebulaA"), (nebula_b, "NebulaB"),
-                        (nebula_strength, "NebulaStrength"), (star_strength, "StarStrength"), (time, "Time")]:
-        MEL.connect_material_expressions(source, "", sky, pin)
-    MEL.connect_material_property(sky, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
-    finish(material, path)
-
-
 def build_ball():
     material, path = fresh("M_GG_Ball")
     local = node(material, unreal.MaterialExpressionLocalPosition, -900, 0)
@@ -300,6 +163,75 @@ def build_ball():
     MEL.connect_material_expressions(node(material, unreal.MaterialExpressionConstant, -500, 200, r=0.18), "", rough, "B")
     MEL.connect_material_expressions(dimples, "", rough, "Alpha")
     MEL.connect_material_property(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
+    finish(material, path)
+
+
+TRIPLANAR = r"""
+// World-aligned (triplanar) sampling of a scanned surface, so any box or cliff gets seamless, unstretched detail.
+float3 P = WorldPos / max(Tile, 1.0);
+float3 N = normalize(WorldNormal);
+float3 W = pow(abs(N), 4.0);
+W /= (W.x + W.y + W.z);
+
+float2 UvX = P.yz;
+float2 UvY = P.xz;
+float2 UvZ = P.xy;
+
+float3 Base = Texture2DSample(BaseTex, BaseTexSampler, UvX).rgb * W.x
+            + Texture2DSample(BaseTex, BaseTexSampler, UvY).rgb * W.y
+            + Texture2DSample(BaseTex, BaseTexSampler, UvZ).rgb * W.z;
+
+float3 Orm = Texture2DSample(OrmTex, OrmTexSampler, UvX).rgb * W.x
+           + Texture2DSample(OrmTex, OrmTexSampler, UvY).rgb * W.y
+           + Texture2DSample(OrmTex, OrmTexSampler, UvZ).rgb * W.z;
+
+// Whiteout blend of the three tangent-space normals into world space.
+float3 Tx = UnpackNormalMap(Texture2DSample(NormalTex, NormalTexSampler, UvX)).xyz;
+float3 Ty = UnpackNormalMap(Texture2DSample(NormalTex, NormalTexSampler, UvY)).xyz;
+float3 Tz = UnpackNormalMap(Texture2DSample(NormalTex, NormalTexSampler, UvZ)).xyz;
+Tx = float3(Tx.xy + N.zy, abs(Tx.z) * N.x);
+Ty = float3(Ty.xy + N.xz, abs(Ty.z) * N.y);
+Tz = float3(Tz.xy + N.xy, abs(Tz.z) * N.z);
+NormalOut = normalize(Tx.zyx * W.x + Ty.xzy * W.y + Tz.xyz * W.z);
+
+AoOut = Orm.r;
+RoughnessOut = saturate(Orm.g * RoughnessScale);
+return Base * Tint;
+"""
+
+
+def texture_param(material, name, default, sampler, x, y):
+    return node(material, unreal.MaterialExpressionTextureObjectParameter, x, y, parameter_name=name,
+                texture=unreal.load_asset(default), sampler_type=sampler)
+
+
+def build_scan():
+    """Parent for Megascans surfaces applied to course geometry: world-aligned, tintable."""
+    material, path = fresh("M_GG_Scan")
+    material.set_editor_property("tangent_space_normal", False)
+    scan = "/Game/Fab/Roman_Limestone_Wall/thzldg2qx_tier_1/Textures/T_thzldg2qx_4K_"
+    world = node(material, unreal.MaterialExpressionWorldPosition, -1100, -300)
+    normal = node(material, unreal.MaterialExpressionVertexNormalWS, -1100, -200)
+    base = texture_param(material, "BaseTex", scan + "B", unreal.MaterialSamplerType.SAMPLERTYPE_COLOR, -1100, -100)
+    normal_tex = texture_param(material, "NormalTex", scan + "N", unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL,
+                               -1100, 50)
+    orm = texture_param(material, "OrmTex", scan + "ORM", unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR,
+                        -1100, 200)
+    tile = scalar_param(material, "Tile", 300.0, -1100, 350)
+    tint = vector_param(material, "Tint", (1, 1, 1, 1), -1100, 450)
+    rough = scalar_param(material, "RoughnessScale", 1.0, -1100, 600)
+    kinds = unreal.CustomMaterialOutputType
+    sample = custom(material, TRIPLANAR,
+                    ["WorldPos", "WorldNormal", "BaseTex", "NormalTex", "OrmTex", "Tile", "Tint", "RoughnessScale"],
+                    -600, 0, outputs=[("NormalOut", kinds.CMOT_FLOAT3), ("RoughnessOut", kinds.CMOT_FLOAT1),
+                                      ("AoOut", kinds.CMOT_FLOAT1)])
+    for source, pin in [(world, "WorldPos"), (normal, "WorldNormal"), (base, "BaseTex"), (normal_tex, "NormalTex"),
+                        (orm, "OrmTex"), (tile, "Tile"), (tint, "Tint"), (rough, "RoughnessScale")]:
+        MEL.connect_material_expressions(source, "", sample, pin)
+    MEL.connect_material_property(sample, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    MEL.connect_material_property(sample, "NormalOut", unreal.MaterialProperty.MP_NORMAL)
+    MEL.connect_material_property(sample, "RoughnessOut", unreal.MaterialProperty.MP_ROUGHNESS)
+    MEL.connect_material_property(sample, "AoOut", unreal.MaterialProperty.MP_AMBIENT_OCCLUSION)
     finish(material, path)
 
 
@@ -341,6 +273,6 @@ def build_ocean():
     finish(material, path)
 
 
-for build in (build_surface, build_glow, build_planet, build_sky, build_ball, build_ocean):
+for build in (build_surface, build_glow, build_ball, build_ocean, build_scan):
     build()
 unreal.log("GG: materials done")

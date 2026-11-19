@@ -3,52 +3,78 @@
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
 #include "Engine/Font.h"
-#include "EngineUtils.h"
-#include "Game/GGHoleDirector.h"
+#include "Game/GGCourse.h"
+#include "Game/GGGolfer.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 
 void AGGHUD::DrawHUD()
 {
 	Super::DrawHUD();
 
-	TActorIterator<AGGHoleDirector> It(GetWorld());
-	AGGHoleDirector* Director = It ? *It : nullptr;
-	if (!Director || !Canvas)
+	const AGGGolfer* Golfer = Cast<AGGGolfer>(GetOwningPawn());
+	const AGGCourse* Course = Golfer ? Golfer->Course() : nullptr;
+	if (!Course || !Canvas || FParse::Param(FCommandLine::Get(), TEXT("GGNoHUD")))
 	{
 		return;
 	}
 
 	UFont* Font = GEngine->GetLargeFont();
-	const float Scale = Canvas->ClipY / 1080.f * 1.4f;
-	const FLinearColor Text(0.92f, 0.95f, 1.f);
-	const FLinearColor Dim(0.6f, 0.68f, 0.8f);
+	const float S = Canvas->ClipY / 1080.f;
+	const FLinearColor Text(0.95f, 0.95f, 0.92f);
+	const FLinearColor Dim(0.95f, 0.95f, 0.92f, 0.7f);
+	const float CX = Canvas->ClipX * 0.5f;
+	const float CY = Canvas->ClipY * 0.5f;
 
-	const FGGHoleDefinition& Def = Director->Definition();
-	DrawText(Def.Name.ToUpper(), Text, 40.f * Scale / 1.4f, 32.f * Scale / 1.4f, Font, Scale);
-	DrawText(FString::Printf(TEXT("Par %d    Strokes %d    Stardust %d/%d"), Def.Sim.Par, Director->Strokes(),
-				 Director->StardustCollected(), static_cast<int32>(Def.Sim.Stardust.size())),
-		Dim, 40.f * Scale / 1.4f, 62.f * Scale / 1.4f, Font, Scale * 0.8f);
-
-	if (Def.Sim.MaxGravityWells + Def.Sim.MaxAntigravityWells > 0)
-	{
-		DrawText(FString::Printf(TEXT("Wells:  gravity %d  (G)    antigravity %d  (A)"), Director->GravityWellsLeft(),
-					 Director->AntigravityWellsLeft()),
-			Dim, 40.f * Scale / 1.4f, 88.f * Scale / 1.4f, Font, Scale * 0.8f);
-	}
-
-	const FString Status = Director->StatusText();
-	if (!Status.IsEmpty())
-	{
+	auto Centered = [&](const FString& Line, float Y, float Scale, const FLinearColor& Color) {
 		float W = 0.f;
 		float H = 0.f;
-		GetTextSize(Status, W, H, Font, Scale * 1.6f);
-		DrawText(Status, Text, (Canvas->ClipX - W) * 0.5f, Canvas->ClipY * 0.16f, Font, Scale * 1.6f);
+		GetTextSize(Line, W, H, Font, Scale);
+		DrawText(Line, Color, CX - W * 0.5f, Y, Font, Scale);
+	};
+
+	DrawRect(FLinearColor(1.f, 1.f, 1.f, 0.85f), CX - 1.5f * S, CY - 1.5f * S, 3.f * S, 3.f * S);
+
+	DrawText(Course->CourseName().ToUpper(), Text, 40.f * S, 32.f * S, Font, 1.5f * S);
+	DrawText(FString::Printf(TEXT("Par %d    Strokes %d"), Course->Par(), Course->Strokes()), Dim, 40.f * S, 66.f * S, Font,
+		1.1f * S);
+
+	if (!Course->StatusText().IsEmpty())
+	{
+		Centered(Course->StatusText(), Canvas->ClipY * 0.2f, 2.4f * S, Text);
 	}
 
-	const FString Hint = Director->Phase() == EGGPhase::Sunk
-		? TEXT("Click to play again")
-		: TEXT("Drag toward where the ball should go  ·  G: gravity well  ·  R: restart  ·  Right-drag: pan  ·  Wheel: zoom");
-	float W = 0.f;
-	float H = 0.f;
-	GetTextSize(Hint, W, H, Font, Scale * 0.7f);
-	DrawText(Hint, Dim, (Canvas->ClipX - W) * 0.5f, Canvas->ClipY - 50.f * Scale / 1.4f, Font, Scale * 0.7f);
+	FString Prompt;
+	if (Course->Phase() == EGGPhase::Sunk)
+	{
+		Prompt = TEXT("Click to play again");
+	}
+	else if (Golfer->IsCarrying())
+	{
+		Prompt = TEXT("E: set down the attractor");
+	}
+	else if (Golfer->IsCharging())
+	{
+		const float W = 320.f * S;
+		const float Y = Canvas->ClipY * 0.8f;
+		DrawRect(FLinearColor(0.f, 0.f, 0.f, 0.45f), CX - W * 0.5f, Y, W, 10.f * S);
+		DrawRect(FLinearColor::LerpUsingHSV(FLinearColor(0.5f, 1.f, 0.6f), FLinearColor(1.f, 0.35f, 0.2f), Golfer->Charge()),
+			CX - W * 0.5f, Y, W * Golfer->Charge(), 10.f * S);
+	}
+	else if (Golfer->CanPickUp())
+	{
+		Prompt = TEXT("E: pick up the attractor");
+	}
+	else if (Golfer->CanSwing())
+	{
+		Prompt = FString::Printf(TEXT("Hold click to swing    Loft %d° (scroll)"), FMath::RoundToInt32(Golfer->Loft()));
+	}
+	else if (Course->Phase() == EGGPhase::Ready)
+	{
+		Prompt = FString::Printf(TEXT("Ball: %d m    B: walk to it"), FMath::RoundToInt32(Golfer->DistanceToBall() / 100.0));
+	}
+	if (!Prompt.IsEmpty())
+	{
+		Centered(Prompt, Canvas->ClipY * 0.86f, 1.2f * S, Dim);
+	}
 }

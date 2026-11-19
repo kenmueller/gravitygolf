@@ -1,11 +1,11 @@
 #include "Game/GGGameMode.h"
 
 #include "Engine/World.h"
-#include "Game/GGCameraPawn.h"
+#include "Game/GGCourse.h"
+#include "Game/GGGolfer.h"
 #include "Game/GGHUD.h"
-#include "Game/GGHoleDirector.h"
-#include "Game/GGPlayerController.h"
-#include "Hole/GGHoleLoader.h"
+#include "GameFramework/PlayerController.h"
+#include "Kismet/GameplayStatics.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "UnrealClient.h"
@@ -14,14 +14,18 @@ DEFINE_LOG_CATEGORY_STATIC(LogGGMode, Log, All);
 
 namespace
 {
-TArray<double> ParseNumbers(const FString& Value)
+TArray<double> ParseNumbers(const TCHAR* Key)
 {
-	TArray<FString> Parts;
-	Value.ParseIntoArray(Parts, TEXT(","));
+	FString Value;
 	TArray<double> Numbers;
-	for (const FString& Part : Parts)
+	if (FParse::Value(FCommandLine::Get(), Key, Value, false))
 	{
-		Numbers.Add(FCString::Atod(*Part));
+		TArray<FString> Parts;
+		Value.ParseIntoArray(Parts, TEXT(","));
+		for (const FString& Part : Parts)
+		{
+			Numbers.Add(FCString::Atod(*Part));
+		}
 	}
 	return Numbers;
 }
@@ -30,8 +34,7 @@ TArray<double> ParseNumbers(const FString& Value)
 AGGGameMode::AGGGameMode()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	DefaultPawnClass = AGGCameraPawn::StaticClass();
-	PlayerControllerClass = AGGPlayerController::StaticClass();
+	DefaultPawnClass = AGGGolfer::StaticClass();
 	HUDClass = AGGHUD::StaticClass();
 }
 
@@ -39,70 +42,61 @@ void AGGGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
-	const TCHAR* Cmd = FCommandLine::Get();
-	FString HoleName = TEXT("ringside");
-	FParse::Value(Cmd, TEXT("GGHole="), HoleName);
-
-	Director = GetWorld()->SpawnActor<AGGHoleDirector>();
-	if (!Director->LoadHole(HoleName))
+	const FString CourseId = UGameplayStatics::GetCurrentLevelName(this, true).ToLower();
+	if (!AGGCourse::Exists(CourseId))
 	{
-		UE_LOG(LogGGMode, Error, TEXT("Failed to load hole %s"), *HoleName);
+		UE_LOG(LogGGMode, Warning, TEXT("No course file for level '%s'"), *CourseId);
 		return;
 	}
 
-	float TimeScale = 1.f;
-	if (FParse::Value(Cmd, TEXT("GGTimeScale="), TimeScale))
+	Course = GetWorld()->SpawnActor<AGGCourse>();
+	if (!Course->Load(CourseId))
 	{
-		Director->TimeScale = TimeScale;
+		Course->Destroy();
+		Course = nullptr;
+		return;
 	}
 
-	FString Value;
-	if (FParse::Value(Cmd, TEXT("GGWell="), Value, false))
+	const TArray<double> Attractor = ParseNumbers(TEXT("GGAttractor="));
+	if (Attractor.Num() == 3)
 	{
-		const TArray<double> N = ParseNumbers(Value);
-		if (N.Num() >= 2)
-		{
-			Director->PlaceWell(GGHoleLoader::ToWorld({N[0], N[1]}), N.Num() >= 3 && N[2] != 0.0);
-		}
+		Course->MoveAttractor(0, FVector(Attractor[0], Attractor[1], Attractor[2]));
 	}
 
-	if (FParse::Value(Cmd, TEXT("GGShot="), Value, false))
+	const TArray<double> ShotValues = ParseNumbers(TEXT("GGShot="));
+	if (ShotValues.Num() == 3)
 	{
-		const TArray<double> N = ParseNumbers(Value);
-		if (N.Num() >= 2)
-		{
-			bHasShot = true;
-			ShotAngle = N[0];
-			ShotPower = N[1];
-			FParse::Value(Cmd, TEXT("GGShotDelay="), ShotDelay);
-		}
+		bHasShot = true;
+		Shot = FVector(ShotValues[0], ShotValues[1], ShotValues[2]);
+		FParse::Value(FCommandLine::Get(), TEXT("GGShotDelay="), ShotDelay);
 	}
 
-	FParse::Value(Cmd, TEXT("GGCapture="), CapturePath);
-	FParse::Value(Cmd, TEXT("GGCaptureDelay="), CaptureDelay);
+	FParse::Value(FCommandLine::Get(), TEXT("GGCapture="), CapturePath);
+	FParse::Value(FCommandLine::Get(), TEXT("GGCaptureDelay="), CaptureDelay);
+}
 
-	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+void AGGGameMode::PlacePlayer()
+{
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	APawn* Pawn = PC ? PC->GetPawn() : nullptr;
+	if (!Pawn || !Course)
 	{
-		if (AGGCameraPawn* Camera = Cast<AGGCameraPawn>(PC->GetPawn()))
-		{
-			Camera->Frame(Director->HoleCenter(), Director->HoleExtent());
-			if (FParse::Value(Cmd, TEXT("GGCam="), Value, false))
-			{
-				const TArray<double> N = ParseNumbers(Value);
-				if (N.Num() >= 1)
-				{
-					Camera->Pitch = N[0];
-				}
-				if (N.Num() >= 2)
-				{
-					Camera->Yaw = N[1];
-				}
-				if (N.Num() >= 3)
-				{
-					Camera->Distance *= N[2];
-				}
-			}
-		}
+		return;
+	}
+	bPlayerPlaced = true;
+	PC->SetInputMode(FInputModeGameOnly());
+	PC->bShowMouseCursor = false;
+
+	const TArray<double> View = ParseNumbers(TEXT("GGView="));
+	if (View.Num() == 5)
+	{
+		Pawn->SetActorLocation(FVector(View[0], View[1], View[2]), false, nullptr, ETeleportType::TeleportPhysics);
+		PC->SetControlRotation(FRotator(View[3], View[4], 0.0));
+	}
+	else
+	{
+		Pawn->SetActorLocation(Course->TeeStart(), false, nullptr, ETeleportType::TeleportPhysics);
+		PC->SetControlRotation(FRotator(-6.0, Course->TeeYaw(), 0.0));
 	}
 }
 
@@ -111,10 +105,15 @@ void AGGGameMode::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	Elapsed += DeltaSeconds;
 
-	if (bHasShot && !bShotFired && Elapsed >= ShotDelay && Director)
+	if (!bPlayerPlaced)
+	{
+		PlacePlayer();
+	}
+
+	if (bHasShot && !bShotFired && Elapsed >= ShotDelay && Course)
 	{
 		bShotFired = true;
-		Director->LaunchAt(ShotAngle, ShotPower);
+		Course->Swing(FRotator(Shot.Y, Shot.X, 0.0).Vector(), Shot.Z);
 	}
 
 	if (!CapturePath.IsEmpty())

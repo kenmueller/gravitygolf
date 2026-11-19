@@ -1,10 +1,9 @@
 #include "Sim/GGSim.h"
 
 #include <cmath>
-#include <cstring>
 
 // Fused multiply-add changes rounding, and compilers fuse differently per platform. Keep every operation
-// separately rounded so a shot replays identically on Mac, Windows, phones and the WebAssembly referee.
+// separately rounded so a shot replays identically on every device and in the WebAssembly referee.
 #if defined(__clang__)
 #pragma clang fp contract(off)
 #elif defined(_MSC_VER)
@@ -13,9 +12,9 @@
 
 namespace GG
 {
-double Length(FVec2 A)
+double Length(FVec3 A)
 {
-	return std::sqrt(A.X * A.X + A.Y * A.Y);
+	return std::sqrt(A.X * A.X + A.Y * A.Y + A.Z * A.Z);
 }
 
 namespace
@@ -23,31 +22,38 @@ namespace
 struct FSurfaceProps
 {
 	double Restitution;
-	/** Rolling friction as a multiple of the gravity pressing the ball into the surface. */
-	double Friction;
+	/** Rolling resistance as a multiple of the force pressing the ball into the surface. */
+	double Rolling;
 };
 
 FSurfaceProps PropsFor(ESurface Surface)
 {
 	switch (Surface)
 	{
+	case ESurface::Green:
+		return {0.3, 0.09};
+	case ESurface::Stone:
+		return {0.55, 0.06};
+	case ESurface::Sand:
+		return {0.05, 0.9};
 	case ESurface::Ice:
-		return {0.62, 0.02};
-	case ESurface::Dust:
-		return {0.08, 1.6};
-	case ESurface::Hazard:
-		return {0.0, 0.0};
+		return {0.5, 0.01};
 	case ESurface::Grass:
 	default:
-		return {0.42, 0.32};
+		return {0.35, 0.25};
 	}
 }
 
-void Emit(std::vector<FEvent>* Events, EEventType Type, int Index, double Speed, FVec2 Position)
+double Clamp(double V, double Lo, double Hi)
+{
+	return V < Lo ? Lo : (V > Hi ? Hi : V);
+}
+
+void Emit(std::vector<FEvent>* Events, EEventType Type, ESurface Surface, double Speed, FVec3 Position)
 {
 	if (Events)
 	{
-		Events->push_back({Type, Index, Speed, Position});
+		Events->push_back({Type, Surface, Speed, Position});
 	}
 }
 
@@ -63,213 +69,187 @@ uint64_t Mix(uint64_t Hash, const void* Data, size_t Size)
 }
 } // namespace
 
-FVec2 SurfacePoint(const FHole& Hole, int Planet, FVec2 Direction)
-{
-	const FPlanet& P = Hole.Planets[Planet];
-	return P.Position + Direction * (P.Radius + Hole.BallRadius);
-}
-
-void FSim::Begin(const FHole& InHole, const std::vector<FWell>& InWells, FVec2 Start, FVec2 Launch,
+void FSim::Begin(const FCourse& InCourse, const std::vector<FAttractor>& InAttractors, FVec3 Start, FVec3 Launch,
 	const FPhysics& InPhysics)
 {
-	Hole = &InHole;
-	Wells = InWells;
+	Course = &InCourse;
+	Attractors = InAttractors;
 	Physics = InPhysics;
 	BallState = {};
 	BallState.Position = Start;
 	BallState.Velocity = Launch;
-	BallState.Radius = InHole.BallRadius;
-	Collected.assign(InHole.Stardust.size(), false);
-	bAirborne = true;
+	BallState.Radius = InCourse.BallRadius;
 	bInCupZone = false;
 }
 
-FVec2 FSim::Acceleration(FVec2 Position) const
+FVec3 FSim::Acceleration(FVec3 Position) const
 {
-	FVec2 Total;
-
-	for (const FPlanet& P : Hole->Planets)
+	FVec3 Total = Course->Gravity;
+	const double Soft2 = Physics.AttractorSoftening * Physics.AttractorSoftening;
+	for (const FAttractor& A : Attractors)
 	{
-		const FVec2 D = P.Position - Position;
+		const FVec3 D = A.Position - Position;
 		const double R2 = Dot(D, D);
-		const double R = std::sqrt(R2);
-		if (R <= 0.0)
+		const double Range2 = A.Range * A.Range;
+		if (R2 >= Range2)
 		{
 			continue;
 		}
-		const double Mu = P.SurfaceGravity * P.Radius * P.Radius;
-		const double Magnitude = R > P.Radius ? Mu / R2 : P.SurfaceGravity;
-		Total = Total + D * (Magnitude / R);
+		// Plummer-softened inverse square, windowed so the pull reaches exactly zero at Range.
+		const double Window = 1.0 - R2 / Range2;
+		const double S2 = R2 + Soft2;
+		Total = Total + D * (A.Strength * Window * Window / (S2 * std::sqrt(S2)));
 	}
-
-	const double Soft2 = Physics.WellSoftening * Physics.WellSoftening;
-	for (const FWell& W : Wells)
-	{
-		const FVec2 D = W.Position - Position;
-		const double R2 = Dot(D, D) + Soft2;
-		// Plummer softening: strength falls to zero at the center instead of blowing up.
-		FVec2 A = D * (W.Strength / (R2 * std::sqrt(R2)));
-		const double Magnitude = Length(A);
-		if (Magnitude > Physics.WellMaxAccel)
-		{
-			A = A * (Physics.WellMaxAccel / Magnitude);
-		}
-		Total = Total + A;
-	}
-
 	return Total;
 }
 
 void FSim::Step(std::vector<FEvent>* Events)
 {
-	FBall& B = BallState;
-	if (B.State != EBallState::Moving)
+	if (BallState.State != EBallState::Moving)
 	{
 		return;
 	}
 
-	const FVec2 A = Acceleration(B.Position);
-	B.Velocity = B.Velocity + A * Dt;
-
-	for (const FPlanet& P : Hole->Planets)
+	// Never move more than half a radius per sub-step.
+	const double Travel = Length(BallState.Velocity) * Dt;
+	const double Limit = BallState.Radius * 0.5;
+	int Count = 1;
+	while (Travel > Limit * Count && Count < 64)
 	{
-		if (P.AtmosphereRadius > 0.0)
-		{
-			const FVec2 D = B.Position - P.Position;
-			if (Dot(D, D) < P.AtmosphereRadius * P.AtmosphereRadius)
-			{
-				B.Velocity = B.Velocity * (1.0 - P.AtmosphereDrag * Dt);
-			}
-		}
+		Count *= 2;
 	}
-
-	B.Position = B.Position + B.Velocity * Dt;
-	B.Time += Dt;
-
-	const bool bWasAirborne = bAirborne;
-	bool bCupZoneNow = false;
-	B.Contact = -1;
-
-	for (int I = 0; I < static_cast<int>(Hole->Planets.size()); ++I)
+	const double H = Dt / Count;
+	for (int I = 0; I < Count && BallState.State == EBallState::Moving; ++I)
 	{
-		const FPlanet& P = Hole->Planets[I];
-		const FVec2 D = B.Position - P.Position;
-		const double Dist = Length(D);
-		const double MinDist = P.Radius + B.Radius;
-		if (Dist >= MinDist || Dist <= 0.0)
+		SubStep(H, Events);
+	}
+}
+
+void FSim::SubStep(double H, std::vector<FEvent>* Events)
+{
+	FBall& B = BallState;
+	const FVec3 A = Acceleration(B.Position);
+	B.Velocity = B.Velocity + A * H;
+	B.Position = B.Position + B.Velocity * H;
+	B.Time += H;
+
+	const bool bWasOnGround = B.bOnGround;
+	B.bOnGround = false;
+	ESurface Ground = ESurface::Stone;
+
+	for (const FBox& Box : Course->Boxes)
+	{
+		const FVec3 Q{Clamp(B.Position.X, Box.Min.X, Box.Max.X), Clamp(B.Position.Y, Box.Min.Y, Box.Max.Y),
+			Clamp(B.Position.Z, Box.Min.Z, Box.Max.Z)};
+		const FVec3 D = B.Position - Q;
+		const double Dist2 = Dot(D, D);
+		if (Dist2 >= B.Radius * B.Radius)
 		{
 			continue;
 		}
 
-		const FVec2 N = D * (1.0 / Dist);
-		if (P.Surface == ESurface::Hazard)
+		FVec3 N;
+		if (Dist2 > 0.0)
 		{
-			B.State = EBallState::Hazard;
-			Emit(Events, EEventType::Hazard, I, Length(B.Velocity), B.Position);
-			return;
+			const double Dist = std::sqrt(Dist2);
+			N = D * (1.0 / Dist);
+			B.Position = Q + N * B.Radius;
+		}
+		else
+		{
+			// Center is inside the box: leave through the nearest face.
+			const double Faces[6] = {B.Position.X - Box.Min.X, Box.Max.X - B.Position.X, B.Position.Y - Box.Min.Y,
+				Box.Max.Y - B.Position.Y, B.Position.Z - Box.Min.Z, Box.Max.Z - B.Position.Z};
+			int Best = 0;
+			for (int I = 1; I < 6; ++I)
+			{
+				if (Faces[I] < Faces[Best])
+				{
+					Best = I;
+				}
+			}
+			const FVec3 Normals[6] = {{-1, 0, 0}, {1, 0, 0}, {0, -1, 0}, {0, 1, 0}, {0, 0, -1}, {0, 0, 1}};
+			N = Normals[Best];
+			B.Position = B.Position + N * (Faces[Best] + B.Radius);
 		}
 
-		B.Position = P.Position + N * MinDist;
-		const FSurfaceProps Surface = PropsFor(P.Surface);
-		const FVec2 T{-N.Y, N.X};
-		double Vn = Dot(B.Velocity, N);
-		double Vt = Dot(B.Velocity, T);
+		const FSurfaceProps Surface = PropsFor(Box.Surface);
+		const double Vn = Dot(B.Velocity, N);
+		FVec3 Tangent = B.Velocity - N * Vn;
+		double NewVn = Vn > 0.0 ? Vn : 0.0;
 
 		if (Vn < 0.0)
 		{
 			const double Impact = -Vn;
 			if (Impact > Physics.BounceThreshold)
 			{
-				Vn = Impact * Surface.Restitution;
-				Emit(Events, EEventType::Bounce, I, Impact, B.Position);
+				NewVn = Impact * Surface.Restitution;
+				Tangent = Tangent * Physics.BounceGrip;
+				Emit(Events, EEventType::Bounce, Box.Surface, Impact, B.Position);
 			}
-			else
+			else if (!bWasOnGround && N.Z > 0.5)
 			{
-				Vn = 0.0;
-				if (bWasAirborne)
-				{
-					Emit(Events, EEventType::Land, I, Impact, B.Position);
-				}
+				Emit(Events, EEventType::Land, Box.Surface, Impact, B.Position);
 			}
 		}
 
-		// Kinetic friction scaled by how hard gravity presses the ball into the surface. Because it can zero
-		// the tangential speed outright, it also acts as static friction on gentle slopes.
+		// Rolling resistance scaled by the load on the surface. Because it can zero the tangential speed
+		// outright, it also holds the ball still on a surface a weak pull couldn't move it across.
 		double Load = -Dot(A, N);
-		if (Load < 0.0)
+		if (Load > 0.0)
 		{
-			Load = 0.0;
-		}
-		const double Decel = Surface.Friction * Load * Dt;
-		if (Vt > Decel)
-		{
-			Vt -= Decel;
-		}
-		else if (Vt < -Decel)
-		{
-			Vt += Decel;
-		}
-		else
-		{
-			Vt = 0.0;
+			const double Speed = Length(Tangent);
+			const double Decel = Surface.Rolling * Load * H;
+			Tangent = Speed > Decel ? Tangent * ((Speed - Decel) / Speed) : FVec3{};
 		}
 
-		B.Velocity = N * Vn + T * Vt;
-		B.Contact = I;
-
-		if (P.bHasCup && Dot(N, P.CupDirection) >= P.CupCos)
+		B.Velocity = Tangent + N * NewVn;
+		if (N.Z > 0.5)
 		{
-			bCupZoneNow = true;
-			const double Speed = Length(B.Velocity);
-			if (Speed <= Physics.CupCaptureSpeed)
-			{
-				B.State = EBallState::Sunk;
-				B.Position = P.Position + P.CupDirection * P.Radius;
-				B.Velocity = {};
-				Emit(Events, EEventType::Sunk, I, Speed, B.Position);
-				return;
-			}
-			if (!bInCupZone)
-			{
-				Emit(Events, EEventType::LipOut, I, Speed, B.Position);
-			}
+			B.bOnGround = true;
+			Ground = Box.Surface;
 		}
 	}
 
-	bInCupZone = bCupZoneNow;
-	bAirborne = B.Contact < 0;
-
-	for (int I = 0; I < static_cast<int>(Hole->Stardust.size()); ++I)
+	// Cup: the ball drops when it rolls over the mouth slowly enough.
+	const double CupDx = B.Position.X - Course->Cup.X;
+	const double CupDy = B.Position.Y - Course->Cup.Y;
+	const double CupDz = B.Position.Z - (Course->Cup.Z + B.Radius);
+	const bool bOverCup = CupDx * CupDx + CupDy * CupDy < Course->CupRadius * Course->CupRadius &&
+		CupDz < B.Radius && CupDz > -B.Radius;
+	if (bOverCup)
 	{
-		if (Collected[I])
+		const double Speed = Length(B.Velocity);
+		if (Speed <= Physics.CupCaptureSpeed)
 		{
-			continue;
+			B.State = EBallState::Sunk;
+			B.Position = {Course->Cup.X, Course->Cup.Y, Course->Cup.Z - B.Radius};
+			B.Velocity = {};
+			Emit(Events, EEventType::Sunk, Ground, Speed, B.Position);
+			return;
 		}
-		const FStardust& S = Hole->Stardust[I];
-		const FVec2 D = B.Position - S.Position;
-		const double Reach = S.Radius + B.Radius;
-		if (Dot(D, D) <= Reach * Reach)
+		if (!bInCupZone)
 		{
-			Collected[I] = true;
-			Emit(Events, EEventType::Stardust, I, Length(B.Velocity), S.Position);
+			Emit(Events, EEventType::LipOut, Ground, Speed, B.Position);
 		}
 	}
+	bInCupZone = bOverCup;
 
-	if (Length(B.Position - Hole->BoundsCenter) > Hole->BoundsRadius)
+	if (B.Position.Z < Course->KillZ)
 	{
-		B.State = EBallState::OutOfBounds;
-		Emit(Events, EEventType::OutOfBounds, -1, Length(B.Velocity), B.Position);
+		B.State = EBallState::Lost;
+		Emit(Events, EEventType::Lost, Ground, Length(B.Velocity), B.Position);
 		return;
 	}
 
-	if (B.Contact >= 0 && Length(B.Velocity) < Physics.RestSpeed)
+	if (B.bOnGround && Length(B.Velocity) < Physics.RestSpeed)
 	{
-		B.SlowTime += Dt;
+		B.SlowTime += H;
 		if (B.SlowTime >= Physics.RestTime)
 		{
 			B.State = EBallState::AtRest;
 			B.Velocity = {};
-			Emit(Events, EEventType::Rest, B.Contact, 0.0, B.Position);
+			Emit(Events, EEventType::Rest, Ground, 0.0, B.Position);
 			return;
 		}
 	}
@@ -281,7 +261,7 @@ void FSim::Step(std::vector<FEvent>* Events)
 	if (B.Time >= Physics.MaxFlightTime)
 	{
 		B.State = EBallState::TimedOut;
-		Emit(Events, EEventType::TimedOut, -1, Length(B.Velocity), B.Position);
+		Emit(Events, EEventType::TimedOut, Ground, Length(B.Velocity), B.Position);
 	}
 }
 
@@ -297,15 +277,10 @@ EBallState FSim::Run(std::vector<FEvent>* Events, int MaxSteps)
 uint64_t FSim::Hash() const
 {
 	uint64_t H = 14695981039346656037ull;
-	H = Mix(H, &BallState.Position, sizeof(FVec2));
-	H = Mix(H, &BallState.Velocity, sizeof(FVec2));
+	H = Mix(H, &BallState.Position, sizeof(FVec3));
+	H = Mix(H, &BallState.Velocity, sizeof(FVec3));
 	H = Mix(H, &BallState.Time, sizeof(double));
 	H = Mix(H, &BallState.State, sizeof(EBallState));
-	for (bool C : Collected)
-	{
-		const unsigned char Byte = C ? 1 : 0;
-		H = Mix(H, &Byte, 1);
-	}
 	return H;
 }
 } // namespace GG

@@ -1,10 +1,8 @@
-// Standalone tests for the deterministic simulation. No Unreal needed:
-//   Tests/Sim/run.sh
+// Standalone tests for the deterministic 3D simulation. No Unreal needed:  Tests/Sim/run.sh
 #include "Sim/GGSim.h"
 
 #include <cmath>
 #include <cstdio>
-#include <cstdlib>
 #include <vector>
 
 using namespace GG;
@@ -21,194 +19,132 @@ static int Failures = 0;
 		}                                                                                                  \
 	} while (0)
 
-static FVec2 Dir(double Degrees)
+/** A 40 m by 10 m green slab with its top at Z = 0, a wall at the far end and the cup 20 m out. */
+static FCourse Fairway(ESurface Surface)
 {
-	const double R = Degrees * 3.14159265358979323846 / 180.0;
-	return {std::cos(R), std::sin(R)};
+	FCourse C;
+	C.Boxes.push_back({{-500, -500, -100}, {4000, 500, 0}, Surface});
+	C.Boxes.push_back({{4000, -500, -100}, {4100, 500, 300}, ESurface::Stone});
+	C.Tee = {0, 0, 6};
+	C.Cup = {2000, 0, 0};
+	return C;
 }
 
-static FPlanet Planet(double X, double Y, double R, double G, ESurface S = ESurface::Grass)
+static void TestRestsOnGround()
 {
-	FPlanet P;
-	P.Position = {X, Y};
-	P.Radius = R;
-	P.SurfaceGravity = G;
-	P.Surface = S;
-	return P;
-}
-
-/** The bake-off hole, mirrored in Content/Holes/ringside.json. */
-static FHole Ringside()
-{
-	FHole H;
-	H.Planets.push_back(Planet(-2600, -700, 320, 700)); // 0 tee
-	FPlanet Giant = Planet(0, 250, 1000, 650, ESurface::Hazard);
-	Giant.AtmosphereRadius = 1350;
-	Giant.AtmosphereDrag = 0.8;
-	H.Planets.push_back(Giant); // 1 gas giant
-	FPlanet Green = Planet(2650, 450, 360, 700);
-	Green.bHasCup = true;
-	Green.CupDirection = Dir(150);
-	Green.CupCos = std::cos(7.0 * 3.14159265358979323846 / 180.0);
-	H.Planets.push_back(Green); // 2 green
-	H.Planets.push_back(Planet(1000, -1650, 220, 520, ESurface::Ice)); // 3 ice moon
-	H.Stardust = {{{-900, 1700}, 45}, {{400, 2050}, 45}, {{1700, 1750}, 45}};
-	H.TeePlanet = 0;
-	H.TeeDirection = Dir(40);
-	H.BoundsCenter = {0, 0};
-	H.BoundsRadius = 7500;
-	H.BallRadius = 30;
-	H.Par = 3;
-	H.MaxGravityWells = 1;
-	return H;
-}
-
-static void TestRestsOnPlanet()
-{
-	FHole H;
-	H.Planets.push_back(Planet(0, 0, 300, 700));
-	H.BallRadius = 30;
+	const FCourse C = Fairway(ESurface::Green);
 	FSim Sim;
-	Sim.Begin(H, {}, SurfacePoint(H, 0, Dir(90)), {0, 0});
+	Sim.Begin(C, {}, {0, 0, 50}, {});
 	CHECK(Sim.Run() == EBallState::AtRest);
-	CHECK(std::fabs(Length(Sim.Ball().Position) - 330) < 1e-6);
+	CHECK(std::fabs(Sim.Ball().Position.Z - 6.0) < 1e-6);
 }
 
-static void TestPuttIntoCup()
+static void TestPuttDistanceBySurface()
 {
-	FHole H;
-	FPlanet P = Planet(0, 0, 300, 700);
-	P.bHasCup = true;
-	P.CupDirection = Dir(60);
-	P.CupCos = std::cos(6.0 * 3.14159265358979323846 / 180.0);
-	H.Planets.push_back(P);
-	H.BallRadius = 30;
-	FSim Sim;
-	// Roll counter-clockwise along the surface toward the cup, 30 degrees away.
-	const FVec2 Start = SurfacePoint(H, 0, Dir(90));
-	Sim.Begin(H, {}, Start, Dir(180) * 240.0);
-	std::vector<FEvent> Events;
-	const EBallState End = Sim.Run(&Events);
-	CHECK(End != EBallState::Sunk); // rolling the wrong way (away from the cup at 60 degrees)
+	double Rolled[3];
+	const ESurface Surfaces[3] = {ESurface::Grass, ESurface::Green, ESurface::Ice};
+	for (int I = 0; I < 3; ++I)
+	{
+		FCourse C = Fairway(Surfaces[I]);
+		C.Cup = {0, 400, 0}; // out of the way
+		FSim Sim;
+		Sim.Begin(C, {}, C.Tee, {400, 0, 0});
+		Sim.Run();
+		Rolled[I] = Sim.Ball().Position.X;
+	}
+	std::printf("4 m/s putt rolls: grass %.0f cm, green %.0f cm, ice %.0f cm\n", Rolled[0], Rolled[1], Rolled[2]);
+	CHECK(Rolled[0] < Rolled[1] && Rolled[1] < Rolled[2]);
+	// v^2 / (2 * mu * g) = 160000 / (2 * 0.09 * 980) = 907 cm on the green.
+	CHECK(std::fabs(Rolled[1] - 907.0) < 15.0);
+}
 
-	Sim.Begin(H, {}, Start, Dir(0) * 240.0);
+static void TestCupCapture()
+{
+	const FCourse C = Fairway(ESurface::Green);
+	FSim Sim;
+	Sim.Begin(C, {}, C.Tee, {640, 0, 0}); // arrives at the cup at about 2.4 m/s
 	CHECK(Sim.Run() == EBallState::Sunk);
+
+	std::vector<FEvent> Events;
+	Sim.Begin(C, {}, C.Tee, {1400, 0, 0}); // far too fast: skips over the cup on the way out
+	Sim.Run(&Events);
+	bool bLipOut = false;
+	for (const FEvent& E : Events)
+	{
+		bLipOut |= E.Type == EEventType::LipOut;
+	}
+	CHECK(bLipOut);
 }
 
-static void TestHazardAndBounds()
+static void TestChipBouncesAndStops()
 {
-	FHole H;
-	H.Planets.push_back(Planet(0, 0, 300, 700));
-	H.Planets.push_back(Planet(1500, 0, 400, 500, ESurface::Hazard));
-	H.BallRadius = 30;
-	H.BoundsRadius = 5000;
+	FCourse C = Fairway(ESurface::Grass);
+	C.Cup = {0, 400, 0};
+	std::vector<FEvent> Events;
 	FSim Sim;
-	Sim.Begin(H, {}, SurfacePoint(H, 0, Dir(0)), Dir(0) * 1500.0);
-	CHECK(Sim.Run() == EBallState::Hazard);
+	Sim.Begin(C, {}, C.Tee, {900, 0, 900});
+	CHECK(Sim.Run(&Events) == EBallState::AtRest);
+	int Bounces = 0;
+	for (const FEvent& E : Events)
+	{
+		Bounces += E.Type == EEventType::Bounce;
+	}
+	CHECK(Bounces >= 2);
+	CHECK(Sim.Ball().Position.X > 1600 && Sim.Ball().Position.X < 4000);
+}
 
-	Sim.Begin(H, {}, SurfacePoint(H, 0, Dir(180)), Dir(180) * 2600.0);
-	CHECK(Sim.Run() == EBallState::OutOfBounds);
+static void TestWallAndLoss()
+{
+	FCourse C = Fairway(ESurface::Stone);
+	C.Cup = {0, 400, 0};
+	FSim Sim;
+	Sim.Begin(C, {}, C.Tee, {2990, 0, 100}); // fast and low: must hit the wall, not tunnel through it
+	Sim.Run();
+	CHECK(Sim.Ball().Position.X < 4000);
+
+	Sim.Begin(C, {}, C.Tee, {0, 1500, 300}); // off the side
+	CHECK(Sim.Run() == EBallState::Lost);
+}
+
+static void TestAttractorBendsShot()
+{
+	FCourse C = Fairway(ESurface::Green);
+	C.Cup = {0, 400, 0};
+	FSim Straight;
+	Straight.Begin(C, {}, C.Tee, {600, 0, 0});
+	Straight.Run();
+
+	FSim Bent;
+	Bent.Begin(C, {{{800, 300, 60}, 1.35e8, 1300}}, C.Tee, {600, 0, 0});
+	Bent.Run();
+	std::printf("attractor pulled the putt %.0f cm sideways\n", Bent.Ball().Position.Y - Straight.Ball().Position.Y);
+	CHECK(std::fabs(Straight.Ball().Position.Y) < 1e-9);
+	CHECK(Bent.Ball().Position.Y > 30.0);
 }
 
 static void TestDeterminism()
 {
-	const FHole H = Ringside();
-	const std::vector<FWell> Wells = {{{600, 1900}, 3.0e8}};
-	const FVec2 Start = SurfacePoint(H, 0, H.TeeDirection);
-	FSim A;
-	FSim B;
-	A.Begin(H, Wells, Start, Dir(52.5) * 1900.0);
-	B.Begin(H, Wells, Start, Dir(52.5) * 1900.0);
-	A.Run();
-	B.Run();
-	CHECK(A.Hash() == B.Hash());
-	std::printf("determinism hash %016llx\n", static_cast<unsigned long long>(A.Hash()));
+	const FCourse C = Fairway(ESurface::Grass);
+	const std::vector<FAttractor> A = {{{900, -200, 150}, 1.35e8, 1300}};
+	FSim One;
+	FSim Two;
+	One.Begin(C, A, C.Tee, {1700, 120, 1300});
+	Two.Begin(C, A, C.Tee, {1700, 120, 1300});
+	One.Run();
+	Two.Run();
+	CHECK(One.Hash() == Two.Hash());
+	std::printf("determinism hash %016llx\n", static_cast<unsigned long long>(One.Hash()));
 }
 
-struct FSweep
+int main()
 {
-	int Shots = 0;
-	int Sunk = 0;
-	int Rest = 0;
-	int Hazard = 0;
-	int Out = 0;
-	int Timeout = 0;
-	int RestOnGreen = 0;
-	double BestAngle = 0;
-	double BestSpeed = 0;
-};
-
-static FSweep Sweep(const FHole& H, const std::vector<FWell>& Wells)
-{
-	FSweep S;
-	const FVec2 Start = SurfacePoint(H, H.TeePlanet, H.TeeDirection);
-	for (double Angle = 0; Angle < 360; Angle += 0.5)
-	{
-		for (double Power = 0.2; Power <= 1.0001; Power += 0.025)
-		{
-			FSim Sim;
-			Sim.Begin(H, Wells, Start, Dir(Angle) * (Power * 2600.0));
-			const EBallState End = Sim.Run();
-			++S.Shots;
-			switch (End)
-			{
-			case EBallState::Sunk:
-				++S.Sunk;
-				S.BestAngle = Angle;
-				S.BestSpeed = Power * 2600.0;
-				break;
-			case EBallState::AtRest:
-				++S.Rest;
-				if (Sim.Ball().Contact == 2)
-				{
-					++S.RestOnGreen;
-				}
-				break;
-			case EBallState::Hazard:
-				++S.Hazard;
-				break;
-			case EBallState::OutOfBounds:
-				++S.Out;
-				break;
-			default:
-				++S.Timeout;
-				break;
-			}
-		}
-	}
-	return S;
-}
-
-static void Report(const char* Label, const FSweep& S)
-{
-	std::printf("%-28s shots %5d  sunk %4d  restOnGreen %4d  rest %5d  hazard %5d  out %5d  timeout %4d", Label,
-		S.Shots, S.Sunk, S.RestOnGreen, S.Rest, S.Hazard, S.Out, S.Timeout);
-	if (S.Sunk)
-	{
-		std::printf("  e.g. angle %.1f speed %.0f", S.BestAngle, S.BestSpeed);
-	}
-	std::printf("\n");
-}
-
-int main(int Argc, char** Argv)
-{
-	TestRestsOnPlanet();
-	TestPuttIntoCup();
-	TestHazardAndBounds();
+	TestRestsOnGround();
+	TestPuttDistanceBySurface();
+	TestCupCapture();
+	TestChipBouncesAndStops();
+	TestWallAndLoss();
+	TestAttractorBendsShot();
 	TestDeterminism();
-
-	if (Argc > 1 && std::string_view(Argv[1]) == "--sweep")
-	{
-		const FHole H = Ringside();
-		Report("ringside, no wells", Sweep(H, {}));
-		for (const FVec2 W : {FVec2{0, 1900}, FVec2{600, 1900}, FVec2{1200, 1600}, FVec2{1700, 1100}})
-		{
-			char Label[64];
-			std::snprintf(Label, sizeof(Label), "well at (%.0f,%.0f)", W.X, W.Y);
-			Report(Label, Sweep(H, {{W, 3.0e8}}));
-		}
-	}
-
 	std::printf(Failures ? "%d FAILED\n" : "all passed\n", Failures);
 	return Failures ? 1 : 0;
 }

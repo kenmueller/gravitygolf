@@ -78,6 +78,12 @@ is a puzzle campaign. With friends it plays like Golf With Your Friends, with ev
 - **Chaos Field:** everyone's machinery affects everyone's ball.
 - **Co-op:** split toolkits, so players have to talk.
 - **Build-off, Daily Hole and Streamer Cup:** as in the first proposal.
+- **Avatars (required):** players always see each other. Everyone has a full-body character that walks, carries
+  machinery and swings, with emotes and cosmetics. Unreal's free MetaHuman and mannequin animation sets cover the
+  base; the style is original.
+- **Bots, like CS:GO:** easy, medium and hard bots fill empty slots or give a solo player opponents. They walk the
+  course as avatars too. Because the simulation is deterministic, a bot searches shots with the real physics, then
+  adds aim and power error by difficulty: hard bots find near-optimal lines, easy bots make believable mistakes.
 
 ### Beautiful
 - **Look:** monumental and serene. Sunlit natural landscapes inhabited by vast, weathered structures of an unknown

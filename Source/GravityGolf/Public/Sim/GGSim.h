@@ -1,10 +1,10 @@
-// Deterministic 2D simulation for Gravity Golf.
+// Deterministic 3D golf ball simulation.
 //
-// Plain C++ with no Unreal types, so the exact same code runs in the game, in replays, in the level solver
-// and (compiled to WebAssembly) in the server referee. Only + - * / and sqrt touch doubles, and the .cpp
-// disables floating-point contraction, so a shot produces bit-identical results on every platform.
+// Plain C++ with no Unreal types, so the same code runs in the game, in replays, in the level solver and
+// (compiled to WebAssembly) in the server referee. Only + - * / and sqrt touch doubles, and the .cpp disables
+// floating-point contraction, so a shot produces bit-identical results on every platform.
 //
-// Units: centimeters and seconds, in the plane of play (Unreal's X/Y plane).
+// Units: centimeters and seconds, in Unreal world axes (Z up).
 
 #pragma once
 
@@ -13,83 +13,71 @@
 
 namespace GG
 {
-struct FVec2
+struct FVec3
 {
 	double X = 0.0;
 	double Y = 0.0;
+	double Z = 0.0;
 };
 
-inline FVec2 operator+(FVec2 A, FVec2 B) { return {A.X + B.X, A.Y + B.Y}; }
-inline FVec2 operator-(FVec2 A, FVec2 B) { return {A.X - B.X, A.Y - B.Y}; }
-inline FVec2 operator*(FVec2 A, double S) { return {A.X * S, A.Y * S}; }
-inline double Dot(FVec2 A, FVec2 B) { return A.X * B.X + A.Y * B.Y; }
-double Length(FVec2 A);
+inline FVec3 operator+(FVec3 A, FVec3 B) { return {A.X + B.X, A.Y + B.Y, A.Z + B.Z}; }
+inline FVec3 operator-(FVec3 A, FVec3 B) { return {A.X - B.X, A.Y - B.Y, A.Z - B.Z}; }
+inline FVec3 operator*(FVec3 A, double S) { return {A.X * S, A.Y * S, A.Z * S}; }
+inline double Dot(FVec3 A, FVec3 B) { return A.X * B.X + A.Y * B.Y + A.Z * B.Z; }
+double Length(FVec3 A);
 
 enum class ESurface : uint8_t
 {
 	Grass,
+	Green,
+	Stone,
+	Sand,
 	Ice,
-	Dust,
-	Hazard,
 };
 
-struct FPlanet
+/** Axis-aligned collision box. */
+struct FBox
 {
-	FVec2 Position;
-	double Radius = 300.0;
-	/** Gravitational acceleration at the surface, cm/s^2. Mass follows as SurfaceGravity * Radius^2. */
-	double SurfaceGravity = 600.0;
-	ESurface Surface = ESurface::Grass;
-	/** Drag applies inside this radius. Zero means no atmosphere. */
-	double AtmosphereRadius = 0.0;
-	/** Fraction of velocity lost per second inside the atmosphere. */
-	double AtmosphereDrag = 0.0;
-	bool bHasCup = false;
-	/** Unit vector from the planet center to the cup. Quantized by the loader so it's identical everywhere. */
-	FVec2 CupDirection{1.0, 0.0};
-	/** Cosine of the cup's angular half-width; the ball drops in when its contact normal is within it. */
-	double CupCos = 0.999;
+	FVec3 Min;
+	FVec3 Max;
+	ESurface Surface = ESurface::Stone;
 };
 
-struct FWell
+/** A gravity machine. Positive strength pulls, negative pushes. Its pull fades smoothly to zero at Range. */
+struct FAttractor
 {
-	FVec2 Position;
-	/** Signed strength in cm^3/s^2. Positive pulls (gravity), negative pushes (antigravity). */
-	double Strength = 0.0;
+	FVec3 Position;
+	double Strength = 1.35e8;
+	double Range = 1200.0;
 };
 
-struct FStardust
+struct FCourse
 {
-	FVec2 Position;
-	double Radius = 40.0;
-};
-
-struct FHole
-{
-	std::vector<FPlanet> Planets;
-	std::vector<FWell> FixedWells;
-	std::vector<FStardust> Stardust;
-	int TeePlanet = 0;
-	FVec2 TeeDirection{0.0, 1.0};
-	FVec2 BoundsCenter;
-	double BoundsRadius = 12000.0;
-	double BallRadius = 25.0;
+	std::vector<FBox> Boxes;
+	FVec3 Gravity{0.0, 0.0, -980.0};
+	/** Where the ball's center starts. */
+	FVec3 Tee;
+	/** Center of the cup's mouth, on the surface. */
+	FVec3 Cup;
+	double CupRadius = 18.0;
+	double BallRadius = 6.0;
+	/** The ball is lost below this height. */
+	double KillZ = -1000.0;
 	int Par = 3;
-	int MaxGravityWells = 0;
-	int MaxAntigravityWells = 0;
 };
 
 struct FPhysics
 {
-	double MaxLaunchSpeed = 2600.0;
-	double WellSoftening = 150.0;
-	double WellMaxAccel = 4000.0;
+	double MaxLaunchSpeed = 3000.0;
+	double AttractorSoftening = 80.0;
 	/** Normal impact speed below which the ball settles instead of bouncing. */
-	double BounceThreshold = 70.0;
-	double RestSpeed = 10.0;
-	double RestTime = 0.3;
-	double CupCaptureSpeed = 340.0;
-	double MaxFlightTime = 20.0;
+	double BounceThreshold = 60.0;
+	/** Fraction of tangential speed kept through a bounce. */
+	double BounceGrip = 0.8;
+	double RestSpeed = 6.0;
+	double RestTime = 0.35;
+	double CupCaptureSpeed = 320.0;
+	double MaxFlightTime = 30.0;
 };
 
 enum class EBallState : uint8_t
@@ -97,18 +85,16 @@ enum class EBallState : uint8_t
 	Moving,
 	AtRest,
 	Sunk,
-	OutOfBounds,
-	Hazard,
+	Lost,
 	TimedOut,
 };
 
 struct FBall
 {
-	FVec2 Position;
-	FVec2 Velocity;
-	double Radius = 25.0;
-	/** Planet the ball touched this step, or -1 while airborne. */
-	int Contact = -1;
+	FVec3 Position;
+	FVec3 Velocity;
+	double Radius = 6.0;
+	bool bOnGround = false;
 	double SlowTime = 0.0;
 	double Time = 0.0;
 	EBallState State = EBallState::Moving;
@@ -116,63 +102,50 @@ struct FBall
 
 enum class EEventType : uint8_t
 {
-	Launch,
 	Bounce,
 	Land,
-	Stardust,
 	LipOut,
 	Sunk,
 	Rest,
-	OutOfBounds,
-	Hazard,
+	Lost,
 	TimedOut,
 };
 
 struct FEvent
 {
 	EEventType Type = EEventType::Bounce;
-	/** Planet or stardust index, when relevant. */
-	int Index = -1;
+	ESurface Surface = ESurface::Stone;
 	double Speed = 0.0;
-	FVec2 Position;
+	FVec3 Position;
 };
-
-/** Where a ball rests on a planet's surface in a given direction from its center. */
-FVec2 SurfacePoint(const FHole& Hole, int Planet, FVec2 Direction);
 
 class FSim
 {
 public:
 	static constexpr double Dt = 1.0 / 240.0;
 
-	/**
-	 * Start a stroke. Wells are everything active this stroke (fixed + placed). Launch is the initial velocity;
-	 * callers clamp it to FPhysics::MaxLaunchSpeed.
-	 */
-	void Begin(const FHole& InHole, const std::vector<FWell>& InWells, FVec2 Start, FVec2 Launch,
+	void Begin(const FCourse& InCourse, const std::vector<FAttractor>& InAttractors, FVec3 Start, FVec3 Launch,
 		const FPhysics& InPhysics = {});
 
-	/** Advance one fixed step. Appends anything notable to Events when it's provided. */
+	/** Advance one fixed step (internally sub-stepped at high speed so thin walls can't be tunneled). */
 	void Step(std::vector<FEvent>* Events = nullptr);
 
-	/** Step until the stroke ends or MaxSteps pass. Returns the final state. */
 	EBallState Run(std::vector<FEvent>* Events = nullptr, int MaxSteps = 1 << 20);
 
 	const FBall& Ball() const { return BallState; }
-	const std::vector<bool>& StardustCollected() const { return Collected; }
-	FVec2 Acceleration(FVec2 Position) const;
+	FVec3 Acceleration(FVec3 Position) const;
 	bool Finished() const { return BallState.State != EBallState::Moving; }
 
 	/** Order-sensitive hash of the full state, for determinism checks. */
 	uint64_t Hash() const;
 
 private:
-	const FHole* Hole = nullptr;
-	std::vector<FWell> Wells;
+	void SubStep(double H, std::vector<FEvent>* Events);
+
+	const FCourse* Course = nullptr;
+	std::vector<FAttractor> Attractors;
 	FPhysics Physics;
 	FBall BallState;
-	std::vector<bool> Collected;
-	bool bAirborne = true;
 	bool bInCupZone = false;
 };
 } // namespace GG

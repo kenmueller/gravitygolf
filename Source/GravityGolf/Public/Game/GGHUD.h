@@ -5,7 +5,7 @@
 
 #include "GGHUD.generated.h"
 
-/** Placeholder HUD for the spike: score line, wells left and status. */
+/** Placeholder HUD for the spike: crosshair, score line, power bar and prompts. */
 UCLASS()
 class GRAVITYGOLF_API AGGHUD : public AHUD
 {

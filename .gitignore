@@ -18,3 +18,8 @@ Plugins/*/Intermediate/
 
 # Old 2022 repos, cloned for reference only
 /legacy/
+
+# Third-party asset packs installed from Fab (large; reinstall from Tools/fab_assets.json)
+/Content/Fab/
+/Content/Megaplant_Library/
+/Content/Ancient_Pillars/
