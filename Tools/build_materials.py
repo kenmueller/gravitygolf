@@ -195,9 +195,17 @@ Ty = float3(Ty.xy + N.xz, abs(Ty.z) * N.y);
 Tz = float3(Tz.xy + N.xy, abs(Tz.z) * N.z);
 NormalOut = normalize(Tx.zyx * W.x + Ty.xzy * W.y + Tz.xyz * W.z);
 
+// Mowing stripes: alternate bands where the grass lies toward or away from the light.
+float Stripe = 1.0;
+if (StripeWidth > 1.0)
+{
+    float Band = sin(WorldPos.x * 3.14159265 / StripeWidth);
+    Stripe = 1.0 + StripeStrength * smoothstep(-0.15, 0.15, Band) - StripeStrength * 0.5;
+}
+
 AoOut = Orm.r;
-RoughnessOut = saturate(Orm.g * RoughnessScale);
-return Base * Tint;
+RoughnessOut = saturate(Orm.g * RoughnessScale * (2.0 - Stripe));
+return Base * Tint * Stripe;
 """
 
 
@@ -221,13 +229,17 @@ def build_scan():
     tile = scalar_param(material, "Tile", 300.0, -1100, 350)
     tint = vector_param(material, "Tint", (1, 1, 1, 1), -1100, 450)
     rough = scalar_param(material, "RoughnessScale", 1.0, -1100, 600)
+    stripe_width = scalar_param(material, "StripeWidth", 0.0, -1100, 700)
+    stripe_strength = scalar_param(material, "StripeStrength", 0.0, -1100, 800)
     kinds = unreal.CustomMaterialOutputType
     sample = custom(material, TRIPLANAR,
-                    ["WorldPos", "WorldNormal", "BaseTex", "NormalTex", "OrmTex", "Tile", "Tint", "RoughnessScale"],
+                    ["WorldPos", "WorldNormal", "BaseTex", "NormalTex", "OrmTex", "Tile", "Tint", "RoughnessScale", "StripeWidth",
+                     "StripeStrength"],
                     -600, 0, outputs=[("NormalOut", kinds.CMOT_FLOAT3), ("RoughnessOut", kinds.CMOT_FLOAT1),
                                       ("AoOut", kinds.CMOT_FLOAT1)])
     for source, pin in [(world, "WorldPos"), (normal, "WorldNormal"), (base, "BaseTex"), (normal_tex, "NormalTex"),
-                        (orm, "OrmTex"), (tile, "Tile"), (tint, "Tint"), (rough, "RoughnessScale")]:
+                        (orm, "OrmTex"), (tile, "Tile"), (tint, "Tint"), (rough, "RoughnessScale"),
+                        (stripe_width, "StripeWidth"), (stripe_strength, "StripeStrength")]:
         MEL.connect_material_expressions(source, "", sample, pin)
     MEL.connect_material_property(sample, "", unreal.MaterialProperty.MP_BASE_COLOR)
     MEL.connect_material_property(sample, "NormalOut", unreal.MaterialProperty.MP_NORMAL)

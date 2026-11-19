@@ -57,7 +57,7 @@ void Emit(std::vector<FEvent>* Events, EEventType Type, ESurface Surface, double
 {
 	if (Events)
 	{
-		Events->push_back({Type, Surface, Speed, Position});
+		Events->push_back({Type, Surface, Speed, Position, -1});
 	}
 }
 
@@ -88,7 +88,7 @@ void FSim::Begin(const FCourse& InCourse, const std::vector<FAttractor>& InAttra
 	Released.assign(Attractors.size(), false);
 }
 
-FVec3 FSim::Acceleration(FVec3 Position, FVec3 Velocity)
+FVec3 FSim::Acceleration(FVec3 Position, FVec3 Velocity, std::vector<FEvent>* Events)
 {
 	FVec3 Total = Course->Gravity;
 	const double Soft2 = Physics.AttractorSoftening * Physics.AttractorSoftening;
@@ -103,21 +103,34 @@ FVec3 FSim::Acceleration(FVec3 Position, FVec3 Velocity)
 			continue;
 		}
 
-		// A machine bends the ball as it passes, then lets go: it pulls only while the ball is approaching.
-		// Once the ball has made its closest pass and starts to move away, the machine releases it for the
-		// rest of the swing. So a machine turns corners; it never traps the ball.
-		const double Closing = Dot(Velocity, D) * A.Strength;
-		if (Closing <= 0.0)
+		if (A.Strength > 0.0)
 		{
-			if (Engaged[I])
+			// An attractor bends the ball as it passes, then lets go: it pulls only while the ball is
+			// approaching. Once the ball has made its closest pass and starts to move away, the machine
+			// releases it for the rest of the swing. So it turns corners; it never traps the ball.
+			if (Dot(Velocity, D) <= 0.0)
 			{
-				Released[I] = true;
+				if (Engaged[I])
+				{
+					Released[I] = true;
+					if (Events)
+					{
+						Events->push_back({EEventType::Released, ESurface::Stone, Length(Velocity), Position, static_cast<int>(I)});
+					}
+				}
+				continue;
 			}
-			continue;
+			if (!Engaged[I])
+			{
+				Engaged[I] = true;
+				if (Events)
+				{
+					Events->push_back({EEventType::Engaged, ESurface::Stone, Length(Velocity), Position, static_cast<int>(I)});
+				}
+			}
 		}
-		Engaged[I] = true;
 
-		// Dome-shaped field: a steady pull that eases to zero at the dome's edge and at its very center.
+		// Dome-shaped field: a steady force that eases to zero at the dome's edge and at its very center.
 		const double Window = 1.0 - R2 / Range2;
 		const double Direction = 1.0 / std::sqrt(R2 + Soft2);
 		Total = Total + D * (A.Strength * Window * Window * Direction);
@@ -150,7 +163,7 @@ void FSim::Step(std::vector<FEvent>* Events)
 void FSim::SubStep(double H, std::vector<FEvent>* Events)
 {
 	FBall& B = BallState;
-	const FVec3 A = Acceleration(B.Position, B.Velocity);
+	const FVec3 A = Acceleration(B.Position, B.Velocity, Events);
 	B.Velocity = B.Velocity + A * H;
 	B.Position = B.Position + B.Velocity * H;
 	B.Time += H;

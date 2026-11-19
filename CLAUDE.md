@@ -87,8 +87,8 @@ Work through the Unreal MCP (`mcp__unreal__*`) while the editor is open:
 - Play and look: `EditorAppToolset.StartPIE` (warmupSeconds 10+), `SceneCaptureToolset.CaptureGameViewport` with
   the PIE world from `ListWorlds`, then `StopPIE`.
 - Read the log with `ConsoleToolset.LogsToolset.GetLogEntries`.
-- Replay a solver result in PIE with console commands (`ConsoleToolset.RunConsoleCommand`): `GGMachine x y z`,
-  then `GGShot yaw power`, and read `LogGGCourse` for the outcome.
+- Replay a solver result in PIE with console commands (`ConsoleToolset.RunConsoleCommand`): `GGMachine x,y,z`,
+  then `GGShot yaw,power`, and read `LogGGCourse` for the outcome.
 - Fab installs: `FabToolset.InstallFabListing`, then save dirty packages.
 
 ## Gotchas

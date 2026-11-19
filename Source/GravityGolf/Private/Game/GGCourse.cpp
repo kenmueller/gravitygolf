@@ -8,6 +8,9 @@
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
 #include "Game/GGAudio.h"
+#include "HAL/IConsoleManager.h"
+#include "Kismet/GameplayStatics.h"
+#include "Misc/PackageName.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
@@ -20,6 +23,13 @@ namespace
 {
 /** Seconds the ball lies where it stopped before returning to the tee. */
 constexpr double ReturnPause = 1.6;
+
+// Field preview look, tunable live from the console while playing.
+TAutoConsoleVariable<int32> CVarFieldSpokes(TEXT("gg.Field.Spokes"), 44, TEXT("Field preview: lines of arrows around a machine"));
+TAutoConsoleVariable<int32> CVarFieldArrows(TEXT("gg.Field.Arrows"), 7, TEXT("Field preview: arrows per line"));
+TAutoConsoleVariable<float> CVarFieldSize(TEXT("gg.Field.Size"), 0.75f, TEXT("Field preview: arrow size multiplier"));
+TAutoConsoleVariable<float> CVarFieldGlow(TEXT("gg.Field.Glow"), 1.1f, TEXT("Field preview: brightness when emphasized"));
+TAutoConsoleVariable<float> CVarFieldSpeed(TEXT("gg.Field.Speed"), 0.12f, TEXT("Field preview: flow speed"));
 
 FVector ToUnreal(GG::FVec3 V)
 {
@@ -94,6 +104,8 @@ bool AGGCourse::Load(const FString& CourseId)
 
 	Course = GG::FCourse();
 	Name = Json->GetStringField(TEXT("name"));
+	NextLevel.Reset();
+	Json->TryGetStringField(TEXT("next"), NextLevel);
 	Course.Par = Json->GetIntegerField(TEXT("par"));
 	Course.BallRadius = Json->GetNumberField(TEXT("ballRadius"));
 	Course.KillZ = Json->GetNumberField(TEXT("killZ"));
@@ -223,7 +235,10 @@ void AGGCourse::BuildActors()
 	};
 	TrailDots = MakeDots(FLinearColor(0.55f, 0.85f, 1.f), 6.f);
 	GuideDots = MakeDots(FLinearColor(1.f, 0.92f, 0.7f), 8.f);
-	FieldDots = MakeDots(FLinearColor(0.25f, 0.6f, 1.f), 16.f);
+	FieldRing = MakeDots(FLinearColor(0.25f, 0.6f, 1.f), 4.f);
+	FieldDots = MakeDots(FLinearColor(0.25f, 0.6f, 1.f), 4.f);
+	FieldDots->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cone.Cone")));
+	MachineFlash.Init(0.f, MachineBases.Num());
 }
 
 void AGGCourse::BuildMachine(int32 Index)
@@ -497,6 +512,15 @@ void AGGCourse::Tick(float DeltaSeconds)
 				{
 					GGAudio::Sunk(this, ToUnreal(Event.Position));
 				}
+				else if (Event.Type == GG::EEventType::Engaged || Event.Type == GG::EEventType::Released)
+				{
+					const bool bRelease = Event.Type == GG::EEventType::Released;
+					if (MachineFlash.IsValidIndex(Event.Index))
+					{
+						MachineFlash[Event.Index] = 1.f;
+						GGAudio::MachineField(this, MachineBases[Event.Index], bRelease);
+					}
+				}
 			}
 			Accumulator -= GG::FSim::Dt;
 			++Steps;
@@ -522,14 +546,7 @@ void AGGCourse::Tick(float DeltaSeconds)
 
 	BallMesh->SetWorldLocation(BallLocation());
 
-	// Machines breathe.
-	const float Pulse = 1.f + 0.08f * FMath::Sin(GetWorld()->GetTimeSeconds() * 2.2f);
-	for (UStaticMeshComponent* Core : MachineCores)
-	{
-		Core->SetRelativeScale3D(FVector(0.14f * Pulse));
-	}
-
-	UpdateFieldPreview();
+	UpdateFieldPreview(DeltaSeconds);
 
 	// The ball draws its path in light, fading behind it.
 	TrailDots->ClearInstances();
@@ -540,58 +557,100 @@ void AGGCourse::Tick(float DeltaSeconds)
 	}
 }
 
-void AGGCourse::UpdateFieldPreview()
+void AGGCourse::SetFieldEmphasis(bool bEmphasize)
 {
-	// Each machine shows its field on the ground: a ring at the dome's edge, and motes that stream inward along
-	// the pull. Faster, larger motes mean a stronger pull, so the player can read a placement before swinging.
+	bFieldEmphasis = bEmphasize;
+}
+
+void AGGCourse::UpdateFieldPreview(float DeltaSeconds)
+{
+	// Each machine draws its field on the ground. Always: a dashed ring at the dome's edge. While it matters
+	// (carrying a machine, standing over the ball, a shot in motion): arrowheads that stream along the pull,
+	// larger and faster where it is stronger, so the player can read a placement before swinging.
+	FieldLevel = FMath::FInterpTo(FieldLevel, bFieldEmphasis ? 1.f : 0.f, DeltaSeconds, 4.f);
+	if (UMaterialInstanceDynamic* Ring = Cast<UMaterialInstanceDynamic>(FieldRing->GetMaterial(0)))
+	{
+		Ring->SetScalarParameterValue(TEXT("Strength"), FMath::Lerp(0.8f, CVarFieldGlow.GetValueOnGameThread(), FieldLevel));
+	}
+	if (UMaterialInstanceDynamic* Arrows = Cast<UMaterialInstanceDynamic>(FieldDots->GetMaterial(0)))
+	{
+		Arrows->SetScalarParameterValue(TEXT("Strength"), FMath::Lerp(0.f, CVarFieldGlow.GetValueOnGameThread(), FieldLevel));
+	}
+
+	FieldRing->ClearInstances();
 	FieldDots->ClearInstances();
 	const double Time = GetWorld()->GetTimeSeconds();
-	constexpr int32 RingDots = 96;
-	constexpr int32 Spokes = 30;
-	constexpr int32 MotesPerSpoke = 5;
+	constexpr int32 RingDashes = 96;
+	const int32 Spokes = FMath::Clamp(CVarFieldSpokes.GetValueOnGameThread(), 4, 96);
+	const int32 ArrowsPerSpoke = FMath::Clamp(CVarFieldArrows.GetValueOnGameThread(), 1, 16);
+	const double SizeScale = CVarFieldSize.GetValueOnGameThread();
 	for (int32 Index = 0; Index < MachineBases.Num(); ++Index)
 	{
 		const FVector Base = MachineBases[Index];
 		const double Range = Attractors[Index].Range;
 		const bool bPull = Attractors[Index].Strength > 0.0;
 
-		for (int32 I = 0; I < RingDots; ++I)
+		for (int32 I = 0; I < RingDashes; ++I)
 		{
-			const double Angle = 2.0 * PI * I / RingDots;
 			// Dashes laid along the circle, slowly turning, so the dome's edge reads as a boundary.
-			const double Turn = Angle + Time * 0.05;
+			const double Turn = 2.0 * PI * I / RingDashes + Time * 0.05;
 			const FVector Out(FMath::Cos(Turn), FMath::Sin(Turn), 0.0);
 			const FVector Along(-Out.Y, Out.X, 0.0);
-			FieldDots->AddInstance(FTransform(Along.Rotation(), Base + Out * Range + FVector(0, 0, 4.0),
-				FVector(0.75, 0.1, 0.05)), true);
+			FieldRing->AddInstance(FTransform(Along.Rotation(), Base + Out * Range + FVector(0, 0, 3.0), FVector(0.6, 0.06, 0.03)),
+				true);
 		}
 
+		if (FieldLevel < 0.02f)
+		{
+			continue;
+		}
 		for (int32 Spoke = 0; Spoke < Spokes; ++Spoke)
 		{
 			const double Angle = 2.0 * PI * (Spoke + 0.5 * (Index % 2)) / Spokes;
 			const FVector Radial(FMath::Cos(Angle), FMath::Sin(Angle), 0.0);
-			for (int32 Mote = 0; Mote < MotesPerSpoke; ++Mote)
+			for (int32 Arrow = 0; Arrow < ArrowsPerSpoke; ++Arrow)
 			{
-				// Travel from the edge to the center (or outward for a repulsor), staggered per spoke.
-				double Phase = FMath::Frac(Time * 0.22 + static_cast<double>(Mote) / MotesPerSpoke + Spoke * 0.381);
+				// Travel from the edge to the center (outward for a repulsor), staggered per spoke.
+				double Phase = FMath::Frac(Time * CVarFieldSpeed.GetValueOnGameThread() + static_cast<double>(Arrow) / ArrowsPerSpoke + Spoke * 0.381);
 				if (!bPull)
 				{
 					Phase = 1.0 - Phase;
 				}
-				// Ease in, so motes speed up as the pull strengthens.
+				// Ease in, so arrows speed up as the pull strengthens.
 				const double R = Range * (1.0 - Phase * Phase);
-				if (R < 90.0)
+				if (R < 110.0)
 				{
 					continue;
 				}
 				const double Window = 1.0 - (R * R) / (Range * Range);
-				const double Size = 0.1 + 0.34 * Window;
-				// Stretch each mote along the pull so it reads as a direction.
-				FieldDots->AddInstance(FTransform(Radial.Rotation(), Base + Radial * R + FVector(0, 0, 4.0),
-					FVector(Size * 3.0, Size * 0.45, 0.05)), true);
+				const double Size = (0.22 + 0.55 * Window) * FieldLevel * SizeScale;
+				// A flat cone lying on the grass with its tip along the force.
+				const FVector Tip = bPull ? -Radial : Radial;
+				FieldDots->AddInstance(FTransform(FRotationMatrix::MakeFromZX(Tip, FVector::UpVector).Rotator(),
+					Base + Radial * R + FVector(0, 0, 3.0), FVector(0.03, Size * 0.36, Size)), true);
 			}
 		}
 	}
+
+	// A machine flashes when it takes hold of the ball and again when it lets go.
+	for (int32 Index = 0; Index < MachineCores.Num(); ++Index)
+	{
+		MachineFlash[Index] = FMath::Max(0.f, MachineFlash[Index] - DeltaSeconds * 2.2f);
+		const float Pulse = 1.f + 0.08f * FMath::Sin(Time * 2.2f) + 1.6f * MachineFlash[Index] * MachineFlash[Index];
+		MachineCores[Index]->SetRelativeScale3D(FVector(0.14f * Pulse));
+	}
+}
+
+void AGGCourse::Advance()
+{
+	// After a solve: on to the next hole if there is one, otherwise play this one again.
+	const FString Package = TEXT("/Game/Levels/") + NextLevel;
+	if (!NextLevel.IsEmpty() && FPackageName::DoesPackageExist(Package))
+	{
+		UGameplayStatics::OpenLevel(this, FName(*Package));
+		return;
+	}
+	ResetHole();
 }
 
 FVector AGGCourse::BallLocation() const

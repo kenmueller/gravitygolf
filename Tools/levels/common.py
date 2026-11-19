@@ -25,6 +25,15 @@ def fresh_level(path):
             raise RuntimeError(f"could not create {path}")
 
 
+def scan_prefix(folder):
+    """Texture path prefix of a Megascans surface installed from Fab, e.g. '/Game/Fab/X/id_tier_1/Textures/T_id_4K_'."""
+    for asset in ASSETS.list_assets(f"/Game/Fab/{folder}", recursive=True):
+        package = asset.split(".")[0]
+        if "/Textures/" in package and package.endswith("_B"):
+            return package[:-1]
+    raise RuntimeError(f"no scanned textures under /Game/Fab/{folder}")
+
+
 def rotator(pitch=0.0, yaw=0.0, roll=0.0):
     return unreal.Rotator(roll=roll, pitch=pitch, yaw=yaw)
 
@@ -71,7 +80,8 @@ def material_instance(parent_path, name, scalars=None, vectors=None, folder="/Ga
     return instance
 
 
-def sky_and_sun(sun_pitch=-8.0, sun_yaw=135.0, sun_lux=10.0, fog_density=0.015, exposure_bias=0.0):
+def sky_and_sun(sun_pitch=-8.0, sun_yaw=135.0, sun_lux=10.0, fog_density=0.015, exposure_bias=0.0, sun_kelvin=5200.0,
+                sky_intensity=1.0):
     """Physically based sky: atmosphere, volumetric clouds, height fog, real-time sky light and the sun."""
     sun = spawn(unreal.DirectionalLight, (0, 0, 5000), (sun_pitch, sun_yaw, 0), "Sun", "Lighting")
     light = sun.get_component_by_class(unreal.DirectionalLightComponent)
@@ -79,6 +89,8 @@ def sky_and_sun(sun_pitch=-8.0, sun_yaw=135.0, sun_lux=10.0, fog_density=0.015, 
     light.set_intensity(sun_lux)
     light.set_atmosphere_sun_light(True)
     light.set_editor_property("light_source_angle", 0.6)
+    light.set_editor_property("use_temperature", True)
+    light.set_editor_property("temperature", sun_kelvin)
     light.set_editor_property("forward_shading_priority", 1)
     light.set_editor_property("cast_shadows_on_atmosphere", True)
     light.set_editor_property("cast_cloud_shadows", False)
@@ -101,6 +113,7 @@ def sky_and_sun(sun_pitch=-8.0, sun_yaw=135.0, sun_lux=10.0, fog_density=0.015, 
     sky_component = sky.get_component_by_class(unreal.SkyLightComponent)
     sky_component.set_mobility(unreal.ComponentMobility.MOVABLE)
     sky_component.set_editor_property("real_time_capture", True)
+    sky_component.set_intensity(sky_intensity)
 
     post = spawn(unreal.PostProcessVolume, (0, 0, 0), label="Post", folder="Lighting")
     post.set_editor_property("unbound", True)
@@ -109,6 +122,11 @@ def sky_and_sun(sun_pitch=-8.0, sun_yaw=135.0, sun_lux=10.0, fog_density=0.015, 
     settings.set_editor_property("auto_exposure_method", unreal.AutoExposureMethod.AEM_HISTOGRAM)
     settings.set_editor_property("override_auto_exposure_bias", True)
     settings.set_editor_property("auto_exposure_bias", exposure_bias)
+    # Local exposure keeps shadowed hedges and tree trunks readable beside sunlit stone.
+    settings.set_editor_property("override_local_exposure_shadow_contrast_scale", True)
+    settings.set_editor_property("local_exposure_shadow_contrast_scale", 0.72)
+    settings.set_editor_property("override_local_exposure_highlight_contrast_scale", True)
+    settings.set_editor_property("local_exposure_highlight_contrast_scale", 0.85)
     settings.set_editor_property("override_bloom_intensity", True)
     settings.set_editor_property("bloom_intensity", 0.45)
     settings.set_editor_property("override_lens_flare_intensity", True)

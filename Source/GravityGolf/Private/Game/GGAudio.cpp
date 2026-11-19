@@ -156,3 +156,19 @@ void GGAudio::MachinePlace(UObject* WorldContext, const FVector& Location)
 	Tone.Sine(0.08f, 0.3f, 660.f, 330.f, 0.12f);
 	Play(WorldContext, Location, Tone, 0.7f);
 }
+
+void GGAudio::MachineField(UObject* WorldContext, const FVector& Location, bool bRelease)
+{
+	FTone Tone(0.6f);
+	if (bRelease)
+	{
+		Tone.Sine(0.f, 0.22f, 660.f, 330.f, 0.3f);
+		Tone.Sine(0.f, 0.22f, 990.f, 495.f, 0.14f);
+	}
+	else
+	{
+		Tone.Sine(0.f, 0.25f, 220.f, 440.f, 0.28f);
+		Tone.Sine(0.f, 0.25f, 330.f, 660.f, 0.12f);
+	}
+	Play(WorldContext, Location, Tone, 0.55f);
+}

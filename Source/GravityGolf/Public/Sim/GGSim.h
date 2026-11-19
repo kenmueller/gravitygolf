@@ -44,8 +44,10 @@ struct FBox
 };
 
 /**
- * A gravity machine. Strength is its peak pull in cm/s^2 (negative pushes); the field is a dome of radius Range
- * that fades smoothly to zero at its edge. It acts only while the ball approaches, then releases it.
+ * A gravity machine. Strength is its peak pull in cm/s^2; the field is a dome of radius Range that fades smoothly
+ * to zero at its edge.
+ *  - Attractor (positive): pulls only while the ball approaches, then releases it for the rest of the swing.
+ *  - Repulsor (negative): pushes the ball away whenever it is inside the dome.
  */
 struct FAttractor
 {
@@ -114,6 +116,9 @@ struct FBall
 
 enum class EEventType : uint8_t
 {
+	/** A machine took hold of the ball / let it go. Index is the machine. */
+	Engaged,
+	Released,
 	Bounce,
 	Land,
 	LipOut,
@@ -129,6 +134,7 @@ struct FEvent
 	ESurface Surface = ESurface::Stone;
 	double Speed = 0.0;
 	FVec3 Position;
+	int Index = -1;
 };
 
 class FSim
@@ -153,7 +159,7 @@ public:
 
 private:
 	void SubStep(double H, std::vector<FEvent>* Events);
-	FVec3 Acceleration(FVec3 Position, FVec3 Velocity);
+	FVec3 Acceleration(FVec3 Position, FVec3 Velocity, std::vector<FEvent>* Events);
 
 	const FCourse* Course = nullptr;
 	std::vector<FAttractor> Attractors;

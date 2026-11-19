@@ -75,19 +75,71 @@ void AGGGameMode::BeginPlay()
 	FParse::Value(FCommandLine::Get(), TEXT("GGCaptureDelay="), CaptureDelay);
 }
 
-void AGGGameMode::GGShot(float Yaw, float Power)
+namespace
 {
-	if (Course)
+TArray<double> Numbers(const FString& Text)
+{
+	TArray<FString> Parts;
+	Text.ParseIntoArray(Parts, TEXT(","));
+	TArray<double> Out;
+	for (const FString& Part : Parts)
 	{
-		Course->Swing(FRotator(0.f, Yaw, 0.f).Vector(), Power);
+		Out.Add(FCString::Atod(*Part));
+	}
+	return Out;
+}
+} // namespace
+
+void AGGGameMode::GGShot(const FString& YawPower)
+{
+	const TArray<double> N = Numbers(YawPower);
+	if (Course && N.Num() == 2)
+	{
+		Course->Swing(FRotator(0.0, N[0], 0.0).Vector(), N[1]);
 	}
 }
 
-void AGGGameMode::GGMachine(float X, float Y, float Z)
+void AGGGameMode::GGMachine(const FString& XYZ)
 {
-	if (Course)
+	const TArray<double> N = Numbers(XYZ);
+	if (Course && N.Num() >= 3)
 	{
-		Course->MoveMachine(0, FVector(X, Y, Z), false);
+		Course->MoveMachine(N.Num() >= 4 ? static_cast<int32>(N[3]) : 0, FVector(N[0], N[1], N[2]), false);
+	}
+}
+
+void AGGGameMode::GGCarry(const FString& XYZ)
+{
+	const TArray<double> N = Numbers(XYZ);
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	AGGGolfer* Golfer = PC ? Cast<AGGGolfer>(PC->GetPawn()) : nullptr;
+	if (Golfer && N.Num() == 3)
+	{
+		const bool bPlaced = Golfer->TestCarryTo(FVector(N[0], N[1], N[2]));
+		UE_LOG(LogGGMode, Log, TEXT("GGCarry (%s): %s"), *XYZ, bPlaced ? TEXT("placed") : TEXT("refused"));
+	}
+}
+
+void AGGGameMode::GGSwing(const FString& YawPower)
+{
+	const TArray<double> N = Numbers(YawPower);
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	AGGGolfer* Golfer = PC ? Cast<AGGGolfer>(PC->GetPawn()) : nullptr;
+	if (Golfer && N.Num() == 2)
+	{
+		Golfer->TestSwing(N[0], N[1]);
+	}
+}
+
+void AGGGameMode::GGView(const FString& XYZPitchYaw)
+{
+	const TArray<double> N = Numbers(XYZPitchYaw);
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	APawn* Pawn = PC ? PC->GetPawn() : nullptr;
+	if (Pawn && N.Num() == 5)
+	{
+		Pawn->SetActorLocation(FVector(N[0], N[1], N[2]), false, nullptr, ETeleportType::TeleportPhysics);
+		PC->SetControlRotation(FRotator(N[3], N[4], 0.0));
 	}
 }
 

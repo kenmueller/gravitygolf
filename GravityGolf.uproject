@@ -33,6 +33,10 @@
 		{
 			"Name": "AllToolsets",
 			"Enabled": true
+		},
+		{
+			"Name": "ProceduralVegetationEditor",
+			"Enabled": true
 		}
 	]
 }

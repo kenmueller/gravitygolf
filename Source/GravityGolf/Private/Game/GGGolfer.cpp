@@ -5,13 +5,15 @@
 #include "Components/InputComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
-#include "Game/GGAudio.h"
-#include "Materials/MaterialInstanceDynamic.h"
-#include "UObject/ConstructorHelpers.h"
 #include "EngineUtils.h"
+#include "Game/GGAudio.h"
 #include "Game/GGCourse.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/PlayerController.h"
+#include "HAL/IConsoleManager.h"
 #include "InputCoreTypes.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "UObject/ConstructorHelpers.h"
 
 namespace
 {
@@ -19,15 +21,26 @@ constexpr double SwingReach = 320.0;
 constexpr double PickUpReach = 380.0;
 constexpr double HoldDistance = 170.0;
 constexpr float ChargeSeconds = 1.4f;
-constexpr float BackswingDegrees = 62.f;
-constexpr float DownswingSeconds = 0.13f;
-constexpr float FollowThroughDegrees = 48.f;
-constexpr float RecoverSeconds = 0.55f;
+constexpr float DownswingSeconds = 0.14f;
+constexpr float RecoverSeconds = 0.6f;
 constexpr double StrideLength = 150.0;
 constexpr float WalkSpeed = 480.f;
 constexpr float SprintSpeed = 950.f;
-/** The club rests angled ahead of the hands so it stays in view, as first-person tools do. */
-constexpr float ClubRestPitch = 64.f;
+constexpr float ClubLength = 72.f;
+
+// The club's pose in view space, tunable live from the console while playing.
+TAutoConsoleVariable<float> CVarClubX(TEXT("gg.Club.X"), 34.f, TEXT("Club grip: forward of the eyes (cm)"));
+TAutoConsoleVariable<float> CVarClubY(TEXT("gg.Club.Y"), 21.f, TEXT("Club grip: right of the eyes (cm)"));
+TAutoConsoleVariable<float> CVarClubZ(TEXT("gg.Club.Z"), -19.f, TEXT("Club grip: above the eyes (cm)"));
+TAutoConsoleVariable<float> CVarClubYaw(TEXT("gg.Club.Yaw"), -17.f, TEXT("Club at address: yaw (degrees)"));
+TAutoConsoleVariable<float> CVarClubPitch(TEXT("gg.Club.Pitch"), -15.f, TEXT("Club at address: pitch (degrees)"));
+TAutoConsoleVariable<float> CVarClubBackYaw(TEXT("gg.Club.BackYaw"), 38.f, TEXT("Backswing: extra yaw at full power"));
+TAutoConsoleVariable<float> CVarClubBackPitch(TEXT("gg.Club.BackPitch"), 16.f, TEXT("Backswing: extra pitch at full power"));
+TAutoConsoleVariable<float> CVarClubThroughYaw(TEXT("gg.Club.ThroughYaw"), -46.f, TEXT("Follow-through: extra yaw"));
+TAutoConsoleVariable<float> CVarClubThroughPitch(TEXT("gg.Club.ThroughPitch"), -6.f, TEXT("Follow-through: extra pitch"));
+TAutoConsoleVariable<float> CVarClubCarryYaw(TEXT("gg.Club.CarryYaw"), 12.f, TEXT("Walking: extra yaw"));
+TAutoConsoleVariable<float> CVarClubCarryPitch(TEXT("gg.Club.CarryPitch"), -34.f, TEXT("Walking: extra pitch (negative points the head down)"));
+TAutoConsoleVariable<float> CVarClubCarryDrop(TEXT("gg.Club.CarryDrop"), 10.f, TEXT("Walking: how far the grip drops (cm)"));
 } // namespace
 
 AGGGolfer::AGGGolfer()
@@ -41,23 +54,34 @@ AGGGolfer::AGGGolfer()
 	Camera->bUsePawnControlRotation = true;
 	Camera->SetFieldOfView(80.f);
 
-	// The club: a steel shaft and a bronze head, held low on the right and swung like a pendulum.
+	// The club is held like a first-person tool: grip low on the right, head out ahead where you can see it.
+	// Its parts lie along the pivot's forward axis.
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> Cylinder(TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> Cube(TEXT("/Engine/BasicShapes/Cube.Cube"));
 	ClubPivot = CreateDefaultSubobject<USceneComponent>(TEXT("ClubPivot"));
 	ClubPivot->SetupAttachment(Camera);
-	ClubPivot->SetRelativeLocation(FVector(52.f, 20.f, -24.f));
+
+	const FRotator AlongForward(90.f, 0.f, 0.f); // the cylinder's long axis is Z
 	ClubShaft = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ClubShaft"));
 	ClubShaft->SetupAttachment(ClubPivot);
 	ClubShaft->SetStaticMesh(Cylinder.Object);
-	ClubShaft->SetRelativeLocation(FVector(0.f, 0.f, -46.f));
-	ClubShaft->SetRelativeScale3D(FVector(0.014f, 0.014f, 0.92f));
+	ClubShaft->SetRelativeLocationAndRotation(FVector(ClubLength * 0.5f, 0.f, 0.f), AlongForward);
+	ClubShaft->SetRelativeScale3D(FVector(0.011f, 0.011f, ClubLength / 100.f));
+
+	ClubGrip = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ClubGrip"));
+	ClubGrip->SetupAttachment(ClubPivot);
+	ClubGrip->SetStaticMesh(Cylinder.Object);
+	ClubGrip->SetRelativeLocationAndRotation(FVector(9.f, 0.f, 0.f), AlongForward);
+	ClubGrip->SetRelativeScale3D(FVector(0.022f, 0.022f, 0.24f));
+
+	// A blade putter head: long across, short along the shaft, hanging just below it.
 	ClubHead = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ClubHead"));
 	ClubHead->SetupAttachment(ClubPivot);
 	ClubHead->SetStaticMesh(Cube.Object);
-	ClubHead->SetRelativeLocation(FVector(1.f, -5.f, -93.f));
-	ClubHead->SetRelativeScale3D(FVector(0.03f, 0.13f, 0.035f));
-	for (UStaticMeshComponent* Part : {ClubShaft.Get(), ClubHead.Get()})
+	ClubHead->SetRelativeLocation(FVector(ClubLength, -3.5f, -2.2f));
+	ClubHead->SetRelativeScale3D(FVector(0.034f, 0.1f, 0.05f));
+
+	for (UStaticMeshComponent* Part : {ClubShaft.Get(), ClubGrip.Get(), ClubHead.Get()})
 	{
 		Part->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		Part->SetCastShadow(false);
@@ -69,6 +93,27 @@ AGGGolfer::AGGGolfer()
 	Movement->JumpZVelocity = 480.f;
 	Movement->AirControl = 0.4f;
 	Movement->BrakingDecelerationWalking = 1800.f;
+}
+
+void AGGGolfer::BeginPlay()
+{
+	Super::BeginPlay();
+
+	UMaterialInterface* Base = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/M_GG_Surface.M_GG_Surface"));
+	if (!Base)
+	{
+		return;
+	}
+	auto Metal = [&](UStaticMeshComponent* Part, const FLinearColor& Color, float Metallic, float Roughness) {
+		UMaterialInstanceDynamic* Material = UMaterialInstanceDynamic::Create(Base, this);
+		Material->SetVectorParameterValue(TEXT("BaseColor"), Color);
+		Material->SetScalarParameterValue(TEXT("Metallic"), Metallic);
+		Material->SetScalarParameterValue(TEXT("Roughness"), Roughness);
+		Part->SetMaterial(0, Material);
+	};
+	Metal(ClubShaft, FLinearColor(0.55f, 0.56f, 0.58f), 1.f, 0.22f);
+	Metal(ClubGrip, FLinearColor(0.015f, 0.015f, 0.017f), 0.f, 0.75f);
+	Metal(ClubHead, FLinearColor(0.3f, 0.19f, 0.08f), 1.f, 0.34f);
 }
 
 void AGGGolfer::SetupPlayerInputComponent(UInputComponent* Input)
@@ -146,9 +191,8 @@ bool AGGGolfer::CanPickUp() const
 
 FVector AGGGolfer::SwingDirection() const
 {
-	// Aim with where you look; loft comes from the selected club.
-	const FRotator Aim(LoftDegrees, GetControlRotation().Yaw, 0.f);
-	return Aim.Vector();
+	// A putter: the ball leaves along the ground in the direction you face.
+	return FRotator(0.f, GetControlRotation().Yaw, 0.f).Vector();
 }
 
 void AGGGolfer::SwingPressed()
@@ -156,8 +200,7 @@ void AGGGolfer::SwingPressed()
 	AGGCourse* C = Course();
 	if (C && C->Phase() == EGGPhase::Sunk)
 	{
-		C->ResetHole();
-		GoToBall();
+		C->Advance();
 		return;
 	}
 	if (CanSwing())
@@ -167,20 +210,25 @@ void AGGGolfer::SwingPressed()
 	}
 }
 
+void AGGGolfer::StartSwing()
+{
+	// Release starts the downswing; the ball leaves when the head reaches it.
+	bCharging = false;
+	SwingTime = 0.f;
+	bStruck = false;
+	SwingPower = ChargeAmount;
+	SwingAim = SwingDirection();
+	if (AGGCourse* C = Course())
+	{
+		C->ShowGuide({});
+	}
+}
+
 void AGGGolfer::SwingReleased()
 {
 	if (bCharging)
 	{
-		// Release starts the downswing; the ball leaves when the head reaches it.
-		bCharging = false;
-		SwingTime = 0.f;
-		bStruck = false;
-		SwingPower = ChargeAmount;
-		SwingAim = SwingDirection();
-		if (AGGCourse* C = Course())
-		{
-			C->ShowGuide({});
-		}
+		StartSwing();
 	}
 }
 
@@ -197,6 +245,24 @@ bool AGGGolfer::GroundBelow(const FVector& From, FVector& OutGround) const
 	return false;
 }
 
+bool AGGGolfer::PlaceCarried(const FVector& Ground)
+{
+	AGGCourse* C = Course();
+	if (!C || !IsCarrying())
+	{
+		return false;
+	}
+	if (!C->CanPlaceMachine(Ground))
+	{
+		C->Notify(TEXT("The machine won't stand on the court."));
+		return false;
+	}
+	C->MoveMachine(Carried, Ground, false);
+	GGAudio::MachinePlace(this, Ground);
+	Carried = INDEX_NONE;
+	return true;
+}
+
 void AGGGolfer::Interact()
 {
 	AGGCourse* C = Course();
@@ -208,15 +274,9 @@ void AGGGolfer::Interact()
 	{
 		// Set the machine down on its feet where you're looking. No ground there, no placement.
 		FVector Ground;
-		if (GroundBelow(HoldPoint(), Ground) && !C->CanPlaceMachine(Ground))
+		if (GroundBelow(HoldPoint(), Ground))
 		{
-			C->Notify(TEXT("The machine won't stand on the court."));
-		}
-		else if (GroundBelow(HoldPoint(), Ground))
-		{
-			C->MoveMachine(Carried, Ground, false);
-			GGAudio::MachinePlace(this, Ground);
-			Carried = INDEX_NONE;
+			PlaceCarried(Ground);
 		}
 	}
 	else
@@ -227,16 +287,6 @@ void AGGGolfer::Interact()
 			GGAudio::MachinePickUp(this, C->MachineBase(Carried));
 		}
 	}
-}
-
-void AGGGolfer::LoftUp()
-{
-	LoftDegrees = FMath::Min(LoftDegrees + 15.f, 60.f);
-}
-
-void AGGGolfer::LoftDown()
-{
-	LoftDegrees = FMath::Max(LoftDegrees - 15.f, 0.f);
 }
 
 void AGGGolfer::ReturnBall()
@@ -255,6 +305,9 @@ void AGGGolfer::ResetHole()
 	if (AGGCourse* C = Course())
 	{
 		Carried = INDEX_NONE;
+		bCharging = false;
+		SwingTime = -1.f;
+		C->ShowGuide({});
 		C->ResetHole();
 		GoToBall();
 	}
@@ -280,57 +333,86 @@ void AGGGolfer::GoToBall()
 	}
 }
 
+bool AGGGolfer::TestCarryTo(const FVector& Ground)
+{
+	AGGCourse* C = Course();
+	if (!C)
+	{
+		return false;
+	}
+	if (!IsCarrying())
+	{
+		Carried = C->FindMachine(GetActorLocation(), 1.0e9);
+	}
+	return PlaceCarried(Ground);
+}
+
+void AGGGolfer::TestSwing(float Yaw, float Power)
+{
+	GoToBall();
+	if (AController* PC = GetController())
+	{
+		PC->SetControlRotation(FRotator(-8.f, Yaw, 0.f));
+	}
+	if (CanSwing())
+	{
+		ChargeAmount = FMath::Clamp(Power, 0.f, 1.f);
+		StartSwing();
+	}
+}
+
 void AGGGolfer::UpdateClub(float DeltaSeconds)
 {
+	// ClubPhase runs -1 (top of the backswing) .. 0 (address) .. +1 (end of the follow-through).
 	float Target = 0.f;
 	if (bCharging)
 	{
-		Target = -BackswingDegrees * ChargeAmount;
+		Target = -ChargeAmount;
 	}
 	else if (SwingTime >= 0.f)
 	{
 		SwingTime += DeltaSeconds;
-		const float Back = -BackswingDegrees * SwingPower;
-		const float Through = FollowThroughDegrees * (0.35f + 0.65f * SwingPower);
+		const float Back = -SwingPower;
+		const float Through = 0.35f + 0.65f * SwingPower;
 		if (SwingTime < DownswingSeconds)
 		{
 			// Accelerate through the ball.
 			const float T = SwingTime / DownswingSeconds;
 			Target = FMath::Lerp(Back, Through, T * T);
-			if (!bStruck && Target >= 0.f)
-			{
-				bStruck = true;
-				if (AGGCourse* C = Course())
-				{
-					C->Swing(SwingAim, SwingPower);
-				}
-			}
 		}
 		else
 		{
-			if (!bStruck)
-			{
-				bStruck = true;
-				if (AGGCourse* C = Course())
-				{
-					C->Swing(SwingAim, SwingPower);
-				}
-			}
 			const float T = (SwingTime - DownswingSeconds) / RecoverSeconds;
-			Target = FMath::Lerp(Through, 0.f, FMath::SmoothStep(0.25f, 1.f, T));
+			Target = FMath::Lerp(Through, 0.f, FMath::SmoothStep(0.3f, 1.f, T));
 			if (T >= 1.f)
 			{
 				SwingTime = -1.f;
 			}
 		}
+		if (!bStruck && (Target >= 0.f || SwingTime >= DownswingSeconds || SwingTime < 0.f))
+		{
+			bStruck = true;
+			if (AGGCourse* C = Course())
+			{
+				C->Swing(SwingAim, SwingPower);
+			}
+		}
 	}
-	ClubPitch = (bCharging || SwingTime >= 0.f) ? Target : FMath::FInterpTo(ClubPitch, 0.f, DeltaSeconds, 10.f);
+	ClubPhase = (bCharging || SwingTime >= 0.f) ? Target : FMath::FInterpTo(ClubPhase, 0.f, DeltaSeconds, 10.f);
 
-	// Lower the club out of the way while carrying a machine or away from the ball.
+	// Away from the ball the club is carried low, head down, mostly out of view; at the ball it comes up to address.
 	const bool bAddressing = CanSwing() || bCharging || SwingTime >= 0.f;
-	const FVector Rest = bAddressing ? FVector(52.f, 20.f, -24.f) : FVector(40.f, 30.f, -34.f);
-	ClubPivot->SetRelativeLocation(FMath::VInterpTo(ClubPivot->GetRelativeLocation(), Rest, DeltaSeconds, 8.f));
-	ClubPivot->SetRelativeRotation(FRotator(ClubRestPitch + ClubPitch, 0.f, bAddressing ? 0.f : 24.f));
+	ClubRaise = FMath::FInterpTo(ClubRaise, bAddressing ? 0.f : 1.f, DeltaSeconds, 7.f);
+
+	const float Back = FMath::Max(-ClubPhase, 0.f);
+	const float Through = FMath::Max(ClubPhase, 0.f);
+	const float Yaw = CVarClubYaw.GetValueOnGameThread() + Back * CVarClubBackYaw.GetValueOnGameThread() +
+		Through * CVarClubThroughYaw.GetValueOnGameThread() + ClubRaise * CVarClubCarryYaw.GetValueOnGameThread();
+	const float Pitch = CVarClubPitch.GetValueOnGameThread() + Back * CVarClubBackPitch.GetValueOnGameThread() +
+		Through * CVarClubThroughPitch.GetValueOnGameThread() + ClubRaise * CVarClubCarryPitch.GetValueOnGameThread();
+	ClubPivot->SetRelativeLocation(FVector(CVarClubX.GetValueOnGameThread(), CVarClubY.GetValueOnGameThread() + ClubRaise * 6.f,
+		CVarClubZ.GetValueOnGameThread() - ClubRaise * CVarClubCarryDrop.GetValueOnGameThread()));
+	ClubPivot->SetRelativeRotation(FRotator(Pitch, Yaw, Back * 14.f - Through * 10.f));
 	ClubPivot->SetVisibility(!IsCarrying(), true);
 }
 
@@ -366,6 +448,13 @@ void AGGGolfer::Tick(float DeltaSeconds)
 	const bool bSprint = Player && Player->IsInputKeyDown(EKeys::LeftShift) && !bCharging;
 	GetCharacterMovement()->MaxWalkSpeed = bSprint ? SprintSpeed : WalkSpeed;
 
+	// Fell off the world: back to the ball.
+	if (GetActorLocation().Z < C->KillHeight())
+	{
+		GetCharacterMovement()->StopMovementImmediately();
+		GoToBall();
+	}
+
 	UpdateClub(DeltaSeconds);
 	UpdateFootsteps();
 
@@ -374,6 +463,9 @@ void AGGGolfer::Tick(float DeltaSeconds)
 		// Carried at the hip, a little ahead.
 		C->MoveMachine(Carried, HoldPoint() - FVector(0, 0, 95.0), true);
 	}
+
+	// The field shows strongly while it matters: carrying a machine, standing over the ball, or watching a shot.
+	C->SetFieldEmphasis(IsCarrying() || CanSwing() || bCharging || SwingTime >= 0.f || C->Phase() == EGGPhase::Flying);
 
 	// Hold right mouse to watch the ball through a long lens.
 	const bool bZoom = bWatching && C->Phase() == EGGPhase::Flying;
@@ -389,7 +481,7 @@ void AGGGolfer::Tick(float DeltaSeconds)
 
 	if (bCharging)
 	{
-		if (!CanSwing() && SwingTime < 0.f && (C->Phase() != EGGPhase::Ready || DistanceToBall() >= SwingReach))
+		if (C->Phase() != EGGPhase::Ready || DistanceToBall() >= SwingReach)
 		{
 			bCharging = false;
 			C->ShowGuide({});
@@ -399,7 +491,7 @@ void AGGGolfer::Tick(float DeltaSeconds)
 			ChargeAmount = FMath::Min(ChargeAmount + DeltaSeconds / ChargeSeconds, 1.f);
 			// Guide: the start of the path only. Reading the rest is the puzzle.
 			TArray<FVector> Points;
-			C->PreviewSwing(SwingDirection(), ChargeAmount, 0.7, Points);
+			C->PreviewSwing(SwingDirection(), ChargeAmount, 1.2, Points);
 			C->ShowGuide(Points);
 		}
 	}

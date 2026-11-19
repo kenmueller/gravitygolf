@@ -38,9 +38,10 @@ PINES = "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Alepp
 rng = random.Random(7)
 
 
-def scan(name, textures, tile, tint=(1, 1, 1, 1), roughness=1.0):
-    instance = c.material_instance("/Game/Materials/M_GG_Scan.M_GG_Scan", name, {"Tile": tile, "RoughnessScale": roughness},
-                                   {"Tint": tint})
+def scan(name, textures, tile, tint=(1, 1, 1, 1), roughness=1.0, stripes=(0.0, 0.0)):
+    instance = c.material_instance("/Game/Materials/M_GG_Scan.M_GG_Scan", name,
+                                   {"Tile": tile, "RoughnessScale": roughness, "StripeWidth": stripes[0],
+                                    "StripeStrength": stripes[1]}, {"Tint": tint})
     mel = unreal.MaterialEditingLibrary
     for param, suffix in (("BaseTex", "B"), ("NormalTex", "N"), ("OrmTex", "ORM")):
         mel.set_material_instance_texture_parameter_value(instance, param, unreal.load_asset(textures + suffix))
@@ -52,21 +53,68 @@ def materials():
     glow = "/Game/Materials/M_GG_Glow.M_GG_Glow"
     return {
         "grass": scan("MI_Terraces_Grass", LAWN, 260, (0.8, 0.95, 0.7, 1)),
-        "green": scan("MI_Terraces_Green", LAWN, 180, (0.62, 1.0, 0.6, 1)),
+        "green": scan("MI_Terraces_Green", LAWN, 170, (0.7, 1.0, 0.62, 1), stripes=(240.0, 0.34)),
         "stone": scan("MI_Terraces_Limestone", LIMESTONE, 320, (1.0, 0.95, 0.86, 1)),
-        "hedge": scan("MI_Terraces_Hedge", LAWN, 90, (0.28, 0.5, 0.2, 1)),
+        "hedge": scan("MI_Terraces_Hedge", c.scan_prefix("Creeping_Fig_Wall"), 220, (0.75, 0.9, 0.6, 1)),
         "rock": scan("MI_Terraces_Rock", CLIFF, 900, (1.35, 1.3, 1.2, 1)),
+        "farRock": scan("MI_Terraces_FarRock", CLIFF, 5200, (1.5, 1.42, 1.3, 1)),
         "ocean": unreal.load_asset("/Game/Materials/M_GG_Ocean.M_GG_Ocean"),
         "glyph": c.material_instance(glow, "MI_Terraces_Glyph", {"Strength": 18.0}, {"Color": (0.25, 0.6, 1.0, 1)}),
     }
 
 
+def hedge_row(box, shrubs, m):
+    """A hedge is a soft barrier, so it should look like one: clipped and leafy, with heather at its foot."""
+    cx, cy, cz = box["center"]
+    sx, sy, sz = box["size"]
+    c.box((cx, cy, cz), (sx, sy, sz), m["hedge"], box["name"])
+    along_x = sx > sy
+    length = sx if along_x else sy
+    inward = -1 if (cy if along_x else cx - LENGTH / 2) > 0 else 1
+    count = int(length / 170)
+    for i in range(count):
+        if rng.random() < 0.3:
+            continue
+        t = (i + 0.5) / count - 0.5
+        offset = inward * ((sy if along_x else sx) / 2 + rng.uniform(15, 45))
+        x = cx + (t * length if along_x else offset)
+        y = cy + (offset if along_x else t * length)
+        actor = c.spawn(unreal.SkeletalMeshActor, (x, y, cz - sz / 2), (0, rng.uniform(0, 360), 0), f"{box['name']}_{i}",
+                        "Course/Hedges")
+        actor.skeletal_mesh_component.set_skinned_asset_and_update(rng.choice(shrubs))
+        size = rng.uniform(0.9, 1.5)
+        actor.set_actor_scale3d(unreal.Vector(size, size, size))
+
+
+def great_wall(box, m):
+    """The wall that hides the cup: plinth, pilasters, a capping course and a line of glyphs."""
+    cx, cy, cz = box["center"]
+    sx, sy, sz = box["size"]
+    base = cz - sz / 2
+    c.box((cx, cy, cz), (sx, sy, sz), m["stone"], box["name"])
+    c.box((cx, cy, base + 18), (sx + 36, sy + 36, 36), m["stone"], "Wall_Plinth", folder="Ruins/Wall")
+    c.box((cx, cy, base + sz + 14), (sx + 30, sy + 30, 28), m["stone"], "Wall_Cap", folder="Ruins/Wall")
+    c.box((cx, cy, base + sz + 38), (sx + 6, sy + 10, 20), m["stone"], "Wall_Cap2", folder="Ruins/Wall")
+    for i, t in enumerate(range(int(-sy / 2) + 90, int(sy / 2), 330)):
+        c.box((cx, cy + t, cz), (sx + 28, 62, sz), m["stone"], f"Wall_Pilaster{i}", folder="Ruins/Wall")
+    for side in (-1, 1):
+        c.box((cx + side * (sx / 2 + 1), cy, base + sz * 0.72), (3, sy - 120, 5), m["glyph"], f"Wall_Glyph{side}",
+              folder="Ruins/Wall")
+    # The free end is finished with a heavier pier.
+    c.box((cx, cy + sy / 2 - 30, cz + 20), (sx + 60, 110, sz + 40), m["stone"], "Wall_Pier", folder="Ruins/Wall")
+    c.box((cx, cy + sy / 2 - 30, base + sz + 62), (sx + 84, 134, 26), m["stone"], "Wall_PierCap", folder="Ruins/Wall")
+
+
 def course_geometry(m):
     with open(COURSE) as f:
         course = json.load(f)
+    heather = [unreal.load_asset(HEATHER + letter) for letter in "ABCDEF"]
     for b in course["boxes"]:
-        if b["shape"] == "cylinder":
-            # Scanned pillars stand in for collision cylinders: tall ones intact, short ones broken.
+        if b["look"] == "hedge":
+            hedge_row(b, heather, m)
+        elif b["name"] == "Great_Wall":
+            great_wall(b, m)
+        elif b["shape"] == "cylinder":
             tall = b["size"][2] > 400
             mesh = PILLARS + ("3" if tall else "6")
             base = (b["center"][0], b["center"][1], b["center"][2] - b["size"][2] / 2)
@@ -170,6 +218,26 @@ def halo(m, course):
            cast_shadow=False)
 
 
+def floating_islands(m):
+    """Pieces of the headland that gravity forgot: rocks hanging in the air with pines still growing on them."""
+    mesh = unreal.load_asset(CLIFF_MESH)
+    trees = [unreal.load_asset(PINES + letter) for letter in "BCD"]
+    for i, (x, y, z, size) in enumerate([(5200, 2300, 620, 1.0), (2700, -2500, 980, 0.8), (7400, -900, 1500, 1.3)]):
+        for part, (yaw, flip) in enumerate([(rng.uniform(0, 360), 0), (rng.uniform(0, 360), 180)]):
+            actor = c.spawn(unreal.StaticMeshActor, (x, y, z - (0 if flip == 0 else -60)), (flip, yaw, 0), f"Island{i}_{part}",
+                            "Fantastical/Islands")
+            actor.static_mesh_component.set_static_mesh(mesh)
+            actor.static_mesh_component.set_material(0, m["rock"])
+            actor.set_actor_scale3d(unreal.Vector(0.42 * size, 1.5 * size, 0.55 * size))
+        top = z + 250 * size
+        c.mesh(c.CYLINDER, (x, y, top - 10), (520 * size, 520 * size, 40), material=m["grass"], label=f"Island{i}_Turf",
+               folder="Fantastical/Islands")
+        tree = c.spawn(unreal.SkeletalMeshActor, (x + rng.uniform(-60, 60), y + rng.uniform(-60, 60), top),
+                       (0, rng.uniform(0, 360), 0), f"Island{i}_Pine", "Fantastical/Islands")
+        tree.skeletal_mesh_component.set_skinned_asset_and_update(rng.choice(trees))
+        tree.set_actor_scale3d(unreal.Vector(0.8 * size, 0.8 * size, 0.8 * size))
+
+
 def shrubs():
     """Heather and beach rose soften every edge where stone meets grass."""
     heather = [unreal.load_asset(HEATHER + letter) for letter in "ABCDEF"]
@@ -200,16 +268,15 @@ def rubble(m):
 
 
 def sea_and_horizon(m):
-    # Sea stacks: cliff scans stood on end, far out, catching the low sun.
+    # Sea stacks far out on the horizon, softened by haze.
     mesh = unreal.load_asset(CLIFF_MESH)
-    for i, (x, y, size) in enumerate([(30000, -24000, 9), (47000, 21000, 14), (21000, 30000, 7), (64000, -9000, 18),
-                                      (15000, -17000, 5)]):
-        for part in range(3):
-            actor = c.spawn(unreal.StaticMeshActor, (x + rng.uniform(-600, 600) * part, y + rng.uniform(-600, 600) * part,
-                            SEA_LEVEL - 500), (0, rng.uniform(0, 360), 0), f"SeaStack{i}_{part}", "Landscape/SeaStacks")
+    for i, (x, y, size) in enumerate([(52000, -30000, 7), (70000, 26000, 10), (38000, 44000, 6), (90000, -6000, 12)]):
+        for part in range(2):
+            actor = c.spawn(unreal.StaticMeshActor, (x + rng.uniform(-900, 900) * part, y + rng.uniform(-900, 900) * part,
+                            SEA_LEVEL - 800), (0, rng.uniform(0, 360), 0), f"SeaStack{i}_{part}", "Landscape/SeaStacks")
             actor.static_mesh_component.set_static_mesh(mesh)
-            actor.static_mesh_component.set_material(0, m["rock"])
-            actor.set_actor_scale3d(unreal.Vector(size * 0.5, size * 1.2, size * rng.uniform(0.7, 1.2)))
+            actor.static_mesh_component.set_material(0, m["farRock"])
+            actor.set_actor_scale3d(unreal.Vector(size * 0.8, size * 1.6, size * rng.uniform(1.5, 2.4)))
     c.mesh(c.PLANE, (0, 0, SEA_LEVEL), (1200000, 1200000, 1), material=m["ocean"], label="Sea", folder="Landscape",
            cast_shadow=False)
 
@@ -237,13 +304,14 @@ def markers(course, m):
 
 c.fresh_level(LEVEL)
 mats = materials()
-c.sky_and_sun(sun_pitch=-22.0, sun_yaw=112.0, fog_density=0.012)
+c.sky_and_sun(sun_pitch=-19.0, sun_yaw=28.0, fog_density=0.03, sun_kelvin=4800.0, sky_intensity=1.2)
 course_data = course_geometry(mats)
 cliffs(mats)
 pines()
 shrubs()
 rubble(mats)
 halo(mats, course_data)
+floating_islands(mats)
 sea_and_horizon(mats)
 markers(course_data, mats)
 c.LES.save_current_level()

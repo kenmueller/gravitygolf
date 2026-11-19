@@ -63,6 +63,13 @@ public:
 	/** What the ground is made of under a point. */
 	GG::ESurface SurfaceAt(const FVector& Location) const;
 
+	/** Show the machines' fields boldly (true) or as faint rings only (false). */
+	void SetFieldEmphasis(bool bEmphasize);
+	/** After a solve: open the next hole, or replay this one if it's the last. */
+	void Advance();
+	bool HasNext() const { return !NextLevel.IsEmpty(); }
+	double KillHeight() const { return Course.KillZ; }
+
 	/** Dotted aiming guide; pass an empty array to hide it. */
 	void ShowGuide(const TArray<FVector>& Points);
 
@@ -84,7 +91,7 @@ private:
 	void BuildActors();
 	void FinishStroke(GG::EBallState State);
 	void BuildMachine(int32 Index);
-	void UpdateFieldPreview();
+	void UpdateFieldPreview(float DeltaSeconds);
 	UStaticMeshComponent* AddMesh(UStaticMesh* Mesh, UMaterialInterface* Material, const FTransform& Transform,
 		USceneComponent* Parent = nullptr);
 	UMaterialInstanceDynamic* Glow(const FLinearColor& Color, float Strength);
@@ -106,6 +113,10 @@ private:
 	GG::FVec3 RestPosition;
 	GG::FVec3 LastSafe;
 	double NoticeTime = 0.0;
+	FString NextLevel;
+	bool bFieldEmphasis = false;
+	float FieldLevel = 0.f;
+	TArray<float> MachineFlash;
 	TArray<FVector> NoMachineZones; // x, y, radius
 	double CoreHeight = 45.0;
 	double Accumulator = 0.0;
@@ -133,6 +144,9 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UInstancedStaticMeshComponent> FieldDots;
+
+	UPROPERTY()
+	TObjectPtr<UInstancedStaticMeshComponent> FieldRing;
 
 	UPROPERTY()
 	TObjectPtr<UMaterialInterface> GlowBase;

@@ -48,6 +48,12 @@
 			"listingId": "1a117f26-677e-4ad9-ab4b-f2177b6cda9c",
 			"format": "gltf",
 			"path": "/Game/Fab/Ancient_Temple_Stones"
+		},
+		{
+			"title": "Creeping Fig Wall",
+			"listingId": "cbf4fef3-7ff2-4639-8a3f-26abd88162eb",
+			"format": "gltf",
+			"path": "/Game/Fab/Creeping_Fig_Wall"
 		}
 	]
 }

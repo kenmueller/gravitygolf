@@ -47,7 +47,7 @@ void AGGHUD::DrawHUD()
 	FString Prompt;
 	if (Course->Phase() == EGGPhase::Sunk)
 	{
-		Prompt = TEXT("Click to play again");
+		Prompt = Course->HasNext() ? TEXT("Click to continue") : TEXT("Click to play again");
 	}
 	else if (Golfer->IsCarrying())
 	{
