@@ -81,10 +81,12 @@ between holes.** (Keys 1 to 8 now.)
   running).
 
 **Critique**
-- **The in-game proof is weaker than the solver's.** It proves "impossible without the machines" and "the designer
-  solved it". It does not check that placement matters or that one machine alone fails. The starter hole itself
-  fails the full solver (43% of machine spots work: placement barely matters). A player can ship an easy hole and
-  see PROVEN.
+- **The in-game proof is still weaker than the solver's, though less so.** It proves "impossible without the
+  machines" and "the designer solved it", and (added late in the session) it rates how much placement matters: it
+  stands the machines at random 120 times a swing and counts how often some swing still works, then names the
+  hole Too easy, Easy, Medium, Hard or Fiendish. The starter rates 28 in 100: Easy. What it still does not check:
+  that one machine alone fails, and that an answer survives being nudged. A hole nobody has solved that rates 0 in
+  100 is reported as "very hard, or impossible", which is the honest reading.
 - **Hole 8 is a choice more than a deduction.** Seven plinths, one right: a player can try them in turn. The lines
   can be reasoned out, but nothing forces it. And its second answer is not pretty: the ball skims the long wall,
   nearly dies, and is reeled through the gap. It passes every check and I would not call it elegant.
@@ -102,6 +104,8 @@ between holes.** (Keys 1 to 8 now.)
   now glow the same colour (a hole with one plate looks as before). Not yet judged in a hole with several.
 - **The look.** The Workshop is the cleanest screen in the game, and the plainest: flat white and one glow colour.
   Fine for a tool. The test view's daytime sky fights the glowing table; dusk would suit it better.
+- The rival can race a Workshop hole once you have solved it (it follows your recorded answer). Untested beyond
+  compiling: I have not watched it do so.
 - **The rival is slow to watch** (easy takes 19 minutes on hole 5) and only ever replays the recorded answer with
   errors; it does not think.
 - **Process.** My tests had been writing solves and test holes into your save file. They now use a scratch save

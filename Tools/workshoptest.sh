@@ -39,7 +39,7 @@ def state(command=None, wait=0.4):
         found = [l for l in lines_from(at) if "LogGGMode: Display: Workshop: " in l and " squares " in l]
         if found:
             line = found[-1]
-            numbers = {k: int(v) for k, v in re.findall(r"(squares|machines|plates|gates|pads|solved|necessary|proving) (-?\d+)", line)}
+            numbers = {k: int(v) for k, v in re.findall(r"(squares|machines|plates|gates|pads|solved|necessary|luck|proving) (-?\d+)", line)}
             numbers["mode"] = "building" if "Workshop: building" in line else "testing"
             numbers["message"] = line.split("|", 1)[-1].strip()
             numbers["log"] = lines_from(at)
@@ -140,6 +140,8 @@ for _ in range(60):
     if not s.get("proving"):
         break
 check("the starter needs its machine", s.get("necessary") == 1, s.get("message"))
+check("and is rated (it is an easy one)", s.get("luck", -1) > 15, f"luck {s.get('luck')}: {s.get('message')}")
+print(f"      {s.get('luck')} in 100 random placements work")
 s = state("test")
 check("the test starts", s.get("mode") == "testing")
 console("GGMachine 1650,-50,0")

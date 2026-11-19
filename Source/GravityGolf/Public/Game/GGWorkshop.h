@@ -74,6 +74,11 @@ struct FGGDesign
 	TArray<FGGSolution> Solutions;
 	/** Has it been checked that no swing works without the machines? 0 not checked, 1 proven, -1 it isn't true. */
 	int32 Necessary = 0;
+	/** How much placement matters: of a hundred random ways to stand the machines, how many can be made to work, on
+	 *  the hole's hardest swing. Lower is harder. -1 until it has been rated (the check does it). */
+	int32 Luck = -1;
+	/** The rating in a word: Too easy, Easy, Medium, Hard, Fiendish. Empty until rated. */
+	static const TCHAR* RatingName(int32 Luck);
 
 	/** A plain strip of ground with a tee and a cup, to start from. */
 	static FGGDesign Starter();
@@ -146,7 +151,9 @@ public:
 
 	/** Check that no swing sinks the ball without the machines. Runs a little each frame. */
 	void StartProof();
-	bool Proving() const { return bProving; }
+	bool Proving() const { return bProving || bRating; }
+	/** The second half of the check: trying random placements to see how much placement matters. */
+	bool Rating() const { return bRating; }
 	float ProofProgress() const;
 	/** When the check failed: where the plain shot that works starts, and its direction, to draw it. */
 	bool ProofFlaw(FVector2D& OutFrom, double& OutYaw) const;
@@ -186,6 +193,9 @@ private:
 	void RemovePlate(int32 Index);
 	void PollInput(float DeltaSeconds);
 	void StepProof();
+	void StartRating();
+	void StepRating();
+	void NextPlacement();
 	void CollectAnswers();
 	void PlaceCamera();
 	static FIntPoint Square(const FVector2D& World);
@@ -245,4 +255,16 @@ private:
 	FVector2D ProofFlawFrom = FVector2D::ZeroVector;
 	double ProofFlawYaw = 0.0;
 	int32 SeenPlayed = 0;
+
+	// The rating under way: random placements of every machine, each tried with every swing.
+	bool bRating = false;
+	int32 RateLeg = 0;
+	int32 RatePlacement = 0;
+	int32 RateRow = 0;
+	int32 RateHits = 0;
+	int32 RateWorst = 101;
+	int32 RateBatch = 4;
+	std::vector<GG::FAttractor> RateMachines;
+	TArray<FIntPoint> RateGround;
+	FRandomStream RateRandom;
 };

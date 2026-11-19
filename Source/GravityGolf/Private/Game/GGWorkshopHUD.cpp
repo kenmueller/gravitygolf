@@ -253,7 +253,8 @@ void AGGHUD::DrawWorkshop(AGGWorkshop* Workshop)
 		Label(Text, Pad + 42.f * T, Y, 18.f * T, Color);
 	};
 	Step(26.f * S + 40.f * T, bSolved ? TEXT("You have solved it") : TEXT("Test it and solve it yourself"), bSolved ? 1 : 0);
-	Step(26.f * S + 70.f * T, Workshop->Proving() ? TEXT("Checking that no swing works without the machines...")
+	Step(26.f * S + 70.f * T, Workshop->Rating() ? TEXT("Trying the machines in random places...")
+		: Workshop->Proving() ? TEXT("Checking that no swing works without the machines...")
 		: Design.Necessary == 1 ? TEXT("No swing works without the machines")
 		: Design.Necessary == -1 ? TEXT("A plain swing does it: not a puzzle yet") : TEXT("Check that it can't be done without the machines"),
 		Workshop->Proving() ? 0 : Design.Necessary);
@@ -262,6 +263,25 @@ void AGGHUD::DrawWorkshop(AGGWorkshop* Workshop)
 		const float BarW = 300.f * T;
 		DrawRect(FLinearColor(0.f, 0.f, 0.f, 0.5f), Pad + 42.f * T, 26.f * S + 98.f * T, BarW, 6.f * T);
 		DrawRect(ShopGold, Pad + 42.f * T, 26.f * S + 98.f * T, BarW * Workshop->ProofProgress(), 6.f * T);
+	}
+	else if (Design.Necessary == 1 && Design.Luck >= 0)
+	{
+		// How hard it is: how often a random placement of the machines can be made to work.
+		const bool bEasy = Design.Luck > 35;
+		if (Design.Luck == 0 && !bSolved)
+		{
+			// Nothing worked at random and nobody has solved it: it may not be possible at all. Say so.
+			Step(26.f * S + 100.f * T, TEXT("No random placement works: very hard, or impossible"), 0);
+		}
+		else
+		{
+			Step(26.f * S + 100.f * T, *FString::Printf(TEXT("%s: %d in 100 random placements work"), FGGDesign::RatingName(Design.Luck), Design.Luck),
+				bEasy ? -1 : 1);
+		}
+		if (bProven)
+		{
+			Label(bEasy ? TEXT("PROVEN, BUT EASY") : TEXT("PROVEN PUZZLE"), Pad + 12.f * S, 26.f * S + 134.f * T, 20.f * T, ShopGold, false, true);
+		}
 	}
 	else if (bProven)
 	{

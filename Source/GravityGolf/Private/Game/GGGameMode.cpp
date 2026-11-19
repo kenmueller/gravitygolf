@@ -234,9 +234,9 @@ void AGGGameMode::GGWorkshop(const FString& Command, const FString& Argument)
 		Workshop->FrameDesign();
 	}
 	const FGGDesign& Design = Workshop->Design();
-	UE_LOG(LogGGMode, Display, TEXT("Workshop: %s \"%s\" squares %d machines %d plates %d gates %d pads %d solved %d necessary %d proving %d (%.0f%%) | %s"),
+	UE_LOG(LogGGMode, Display, TEXT("Workshop: %s \"%s\" squares %d machines %d plates %d gates %d pads %d solved %d necessary %d luck %d proving %d (%.0f%%) | %s"),
 		Workshop->Building() ? TEXT("building") : TEXT("testing"), *Design.Name, Design.Cells.Num(), Design.Machines.Num(), Design.Plates.Num(),
-		Design.Gates.Num(), Design.Pads.Num(), Design.Solved() ? 1 : 0, Design.Necessary, Workshop->Proving() ? 1 : 0, Workshop->ProofProgress() * 100.f,
+		Design.Gates.Num(), Design.Pads.Num(), Design.Solved() ? 1 : 0, Design.Necessary, Design.Luck, Workshop->Proving() ? 1 : 0, Workshop->ProofProgress() * 100.f,
 		*Workshop->Message());
 }
 

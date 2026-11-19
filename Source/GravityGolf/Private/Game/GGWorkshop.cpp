@@ -6,6 +6,7 @@
 #include "EngineUtils.h"
 #include "Game/GGGolfer.h"
 #include "Game/GGHUD.h"
+#include "Game/GGRival.h"
 #include "Game/GGSave.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
@@ -38,6 +39,10 @@ constexpr int32 MaxSquares = 16000;
 constexpr int32 MaxExtent = 400; // squares from the origin, each way: 200 m
 constexpr int32 ProofRows = 720;
 constexpr int32 ProofPowers = 77;
+// The rating: this many random placements a swing, each tried with 180 directions and 20 strengths.
+constexpr int32 RatePlacements = 120;
+constexpr int32 RateRows = 180;
+constexpr int32 RatePowers = 20;
 
 TArray<TSharedPtr<FJsonValue>> Nums(std::initializer_list<double> Values)
 {
@@ -189,6 +194,12 @@ bool FGGDesign::Bounds(FIntRect& Out) const
 	return bAny;
 }
 
+const TCHAR* FGGDesign::RatingName(int32 Luck)
+{
+	// The solver's own line for the game's holes is 35 in 100: above it, where the machine goes barely matters.
+	return Luck < 0 ? TEXT("") : Luck > 35 ? TEXT("Too easy") : Luck > 15 ? TEXT("Easy") : Luck > 5 ? TEXT("Medium") : Luck > 1 ? TEXT("Hard") : TEXT("Fiendish");
+}
+
 bool FGGDesign::Solved() const
 {
 	for (int32 Leg = 0; Leg < Legs(); ++Leg)
@@ -338,6 +349,7 @@ FString FGGDesign::ToJson() const
 	}
 	Root->SetArrayField(TEXT("solutions"), Answers);
 	Root->SetNumberField(TEXT("necessary"), Necessary);
+	Root->SetNumberField(TEXT("luck"), Luck);
 
 	FString Text;
 	const TSharedRef<TJsonWriter<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>> Writer = TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&Text);
@@ -482,6 +494,7 @@ bool FGGDesign::FromJson(const FString& Text)
 		}
 	}
 	Root->TryGetNumberField(TEXT("necessary"), Design.Necessary);
+	Root->TryGetNumberField(TEXT("luck"), Design.Luck);
 	*this = MoveTemp(Design);
 	return true;
 }
@@ -592,7 +605,9 @@ void AGGWorkshop::Changed(const FString& Before)
 	// A changed hole is a new hole: whatever was proven about the old one no longer counts.
 	Current.Solutions.Reset();
 	Current.Necessary = 0;
+	Current.Luck = -1;
 	bProving = false;
+	bRating = false;
 	Rebuild();
 	UGGSave::Get().Draft = Current.ToJson();
 	bDraftDirty = true;
@@ -605,6 +620,7 @@ void AGGWorkshop::Undo()
 		Cancel();
 		Current.FromJson(History.Pop());
 		bProving = false;
+		bRating = false;
 		Rebuild();
 		UGGSave::Get().Draft = Current.ToJson();
 		bDraftDirty = true;
@@ -666,6 +682,10 @@ void AGGWorkshop::StartBuilding()
 {
 	bBuilding = true;
 	Cancel();
+	for (TActorIterator<AGGRival> Rival(GetWorld()); Rival; ++Rival)
+	{
+		Rival->Destroy();
+	}
 	// Put the hole back as designed (a test may have moved the machines and the ball).
 	Rebuild();
 	if (AGGGolfer* Pawn = Golfer())
@@ -703,7 +723,13 @@ bool AGGWorkshop::StartTesting()
 	Cancel();
 	bBuilding = false;
 	bProving = false;
+	bRating = false;
 	Rebuild();
+	// A rival, if the player races one, can race a hole of their own too, once it has an answer for it to follow.
+	if (UGGSave::Get().Rival > 0 && Current.Solved() && GetNetMode() == NM_Standalone)
+	{
+		GetWorld()->SpawnActor<AGGRival>()->Begin(Hole, UGGSave::Get().Rival);
+	}
 	AGGGolfer* Pawn = Golfer();
 	APlayerController* PC = Player();
 	if (Pawn && PC)
@@ -1314,10 +1340,12 @@ bool AGGWorkshop::LoadJson(const FString& Json)
 	}
 	const TArray<FGGSolution> Answers = Loaded.Solutions;
 	const int32 Necessary = Loaded.Necessary;
+	const int32 Luck = Loaded.Luck;
 	Current = MoveTemp(Loaded);
 	Changed(Before);
 	// What was proven about it when it was kept still holds, if its answers still play out.
 	Current.Necessary = Necessary;
+	Current.Luck = Luck;
 	Current.Solutions.Reset();
 	if (Hole)
 	{
@@ -1534,7 +1562,7 @@ void AGGWorkshop::CollectAnswers()
 
 void AGGWorkshop::StartProof()
 {
-	if (!Hole || bProving)
+	if (!Hole || bProving || bRating)
 	{
 		return;
 	}
@@ -1585,7 +1613,13 @@ void AGGWorkshop::StartProof()
 
 float AGGWorkshop::ProofProgress() const
 {
-	return ProofCases.Num() > 0 ? static_cast<float>(ProofCase * ProofRows + ProofRow) / static_cast<float>(ProofCases.Num() * ProofRows) : 0.f;
+	// The check is the first half of the bar, the rating the second.
+	if (bRating)
+	{
+		return 0.5f + 0.5f * static_cast<float>(RateLeg * RatePlacements + RatePlacement) / static_cast<float>(Current.Legs() * RatePlacements);
+	}
+	const float Checked = ProofCases.Num() > 0 ? static_cast<float>(ProofCase * ProofRows + ProofRow) / static_cast<float>(ProofCases.Num() * ProofRows) : 0.f;
+	return bProving ? Checked * 0.5f : Checked;
 }
 
 void AGGWorkshop::StepProof()
@@ -1638,14 +1672,124 @@ void AGGWorkshop::StepProof()
 			bProving = false;
 			Current.Necessary = 1;
 			bProofFlaw = false;
-			Say(Current.Solved() ? TEXT("Proven: no swing does it without the machines, and you have solved it. This is a puzzle.")
-								 : TEXT("No swing does it without the machines. Now test it and solve it yourself to finish the proof."));
+			StartRating();
 		}
 	}
 	if (!bProving)
 	{
 		UGGSave::Get().Draft = Current.ToJson();
 		bDraftDirty = true;
+	}
+}
+
+void AGGWorkshop::StartRating()
+{
+	// The second question the puzzle law asks: does it matter where the machines go? Stand them at random, many
+	// times over, and see how often some swing still works. The hole is as hard as its hardest swing.
+	RateGround.Reset();
+	for (const TPair<FIntPoint, EGGCell>& Pair : Current.Cells)
+	{
+		const FIntPoint At(Pair.Key.X * FGGDesign::Cell + FGGDesign::Cell / 2, Pair.Key.Y * FGGDesign::Cell + FGGDesign::Cell / 2);
+		if ((Pair.Value == EGGCell::Floor || Pair.Value == EGGCell::Sand) && GG::MachineAllowed(ProofSetup, At.X, At.Y))
+		{
+			RateGround.Add(At);
+		}
+	}
+	// The same hole is always rated from the same placements.
+	RateGround.Sort([](const FIntPoint& A, const FIntPoint& B) { return A.Y != B.Y ? A.Y < B.Y : A.X < B.X; });
+	RateRandom.Initialize(static_cast<int32>(FCrc::StrCrc32(*ShareCode())));
+	if (RateGround.Num() == 0)
+	{
+		Say(TEXT("No swing does it without the machines."));
+		return;
+	}
+	RateLeg = 0;
+	RatePlacement = 0;
+	RateHits = 0;
+	RateWorst = 101;
+	bRating = true;
+	NextPlacement();
+	Say(TEXT("No swing does it without the machines. Now trying the machines in random places..."));
+}
+
+void AGGWorkshop::NextPlacement()
+{
+	RateMachines.clear();
+	for (const GG::FMachineDef& Machine : ProofSetup.Machines)
+	{
+		const FIntPoint At = RateGround[RateRandom.RandRange(0, RateGround.Num() - 1)];
+		RateMachines.push_back({{static_cast<double>(At.X), static_cast<double>(At.Y), Machine.CoreHeight}, Machine.Strength, Machine.Range});
+	}
+	RateRow = 0;
+}
+
+void AGGWorkshop::StepRating()
+{
+	const double Started = FPlatformTime::Seconds();
+	while (bRating && FPlatformTime::Seconds() - Started < 0.006)
+	{
+		GG::FLeg Leg = GG::MakeLeg(ProofSetup, RateLeg);
+		for (const FGGSolution& Answer : Current.Solutions)
+		{
+			// The plates as they stood when the designer played this swing.
+			if (Answer.Leg == RateLeg && Answer.Held.Num() == static_cast<int32>(Leg.Held.size()))
+			{
+				for (int32 I = 0; I < Answer.Held.Num(); ++I)
+				{
+					Leg.Held[I] = Answer.Held[I];
+				}
+			}
+		}
+		const int32 Rows = FMath::Min(RateBatch, RateRows - RateRow);
+		std::atomic<bool> Hit{false};
+		const GG::FSetup& Setup = ProofSetup;
+		const std::vector<GG::FAttractor>& Machines = RateMachines;
+		const int32 First = RateRow;
+		const double SliceStarted = FPlatformTime::Seconds();
+		ParallelFor(Rows, [&](int32 Row) {
+			const double Yaw = -180.0 + 360.0 * (First + Row) / RateRows;
+			for (int32 P = 0; P < RatePowers && !Hit; ++P)
+			{
+				if (GG::LegReached(Setup, Leg, Machines, GG::LaunchVelocity(Yaw, 0.05 + 0.05 * P)))
+				{
+					Hit = true;
+				}
+			}
+		});
+		const double Took = FPlatformTime::Seconds() - SliceStarted;
+		RateBatch = Took < 0.002 ? FMath::Min(RateBatch * 2, RateRows) : Took > 0.006 ? FMath::Max(RateBatch / 2, 1) : RateBatch;
+		RateRow += Rows;
+		if (!Hit && RateRow < RateRows)
+		{
+			continue;
+		}
+		RateHits += Hit ? 1 : 0;
+		if (++RatePlacement >= RatePlacements)
+		{
+			RateWorst = FMath::Min(RateWorst, FMath::RoundToInt32(100.0 * RateHits / RatePlacements));
+			RatePlacement = 0;
+			RateHits = 0;
+			if (++RateLeg >= Current.Legs())
+			{
+				bRating = false;
+				Current.Luck = RateWorst;
+				if (Current.Luck == 0 && !Current.Solved())
+				{
+					Say(TEXT("No swing does it without the machines, and no random placement of them works either. It is very hard, or impossible: solve it to show it can be done."));
+				}
+				else
+				{
+					const TCHAR* Verdict = Current.Luck > 35 ? TEXT("Almost anywhere works: make where the machines go matter.")
+						: Current.Solved() ? TEXT("And you have solved it. This is a puzzle.") : TEXT("Now test it and solve it yourself to finish the proof.");
+					Say(FString::Printf(TEXT("No swing does it without the machines. Rated %s: %d in 100 random placements can be made to work. %s"),
+						FGGDesign::RatingName(Current.Luck), Current.Luck, Verdict));
+				}
+				UGGSave::Get().Draft = Current.ToJson();
+				bDraftDirty = true;
+				return;
+			}
+		}
+		NextPlacement();
 	}
 }
 
@@ -1680,6 +1824,10 @@ void AGGWorkshop::Tick(float DeltaSeconds)
 		if (bProving)
 		{
 			StepProof();
+		}
+		else if (bRating)
+		{
+			StepRating();
 		}
 	}
 	else
