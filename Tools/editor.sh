@@ -3,7 +3,8 @@
 # editor is idle. Safe to call when it's already running.
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 UE="${UE_ROOT:-/Users/Shared/Epic Games/UE_5.9}"
-if ! python3 "$ROOT/Tools/mcp.py" info >/dev/null 2>&1; then
+# Start one only if no editor process exists; a starting editor has no MCP server yet.
+if ! ps -axo comm | grep -q "MacOS/UnrealEditor$"; then
 	(nohup "$UE/Engine/Binaries/Mac/UnrealEditor.app/Contents/MacOS/UnrealEditor" "$ROOT/GravityGolf.uproject" >/dev/null 2>&1 &)
 fi
 i=0

@@ -29,6 +29,9 @@ CLIFF = "/Game/Fab/Quarry_Cliff/uchoab3fa_tier_1/Textures/T_uchoab3fa_4K_"
 LAWN = "/Game/Fab/Grass_Lawn/sfklehwa_tier_1/Textures/T_sfklehwa_4K_"
 CLIFF_MESH = "/Game/Fab/Quarry_Cliff/uchoab3fa_tier_1/StaticMeshes/uchoab3fa_tier_1"
 PILLARS = "/Game/Ancient_Pillars/Meshes/Joined/SM_Pillars_0"
+STONES = "/Game/Fab/Ancient_Temple_Stones/tixjegefa_tier_1/StaticMeshes/tixjegefa_tier_1"
+HEATHER = "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_"
+ROSE = "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_"
 PINES = "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_"
 
 rng = random.Random(7)
@@ -50,7 +53,7 @@ def materials():
         "grass": scan("MI_Terraces_Grass", LAWN, 260, (0.8, 0.95, 0.7, 1)),
         "green": scan("MI_Terraces_Green", LAWN, 180, (0.62, 1.0, 0.6, 1)),
         "stone": scan("MI_Terraces_Limestone", LIMESTONE, 320, (1.0, 0.95, 0.86, 1)),
-        "rock": scan("MI_Terraces_Rock", CLIFF, 900, (1.0, 0.94, 0.85, 1)),
+        "rock": scan("MI_Terraces_Rock", CLIFF, 900, (1.35, 1.3, 1.2, 1)),
         "ocean": unreal.load_asset("/Game/Materials/M_GG_Ocean.M_GG_Ocean"),
         "glyph": c.material_instance(glow, "MI_Terraces_Glyph", {"Strength": 18.0}, {"Color": (0.25, 0.6, 1.0, 1)}),
     }
@@ -142,7 +145,7 @@ def halo(m):
         y = center[1] + math.cos(angle) * radius
         z = center[2] + math.sin(angle) * radius
         length = 2 * math.pi * radius / segments * 1.03
-        roll = math.degrees(angle) + 90
+        roll = 90 - math.degrees(angle)
         c.box((center[0], y, z), (900, length, 700), m["stone"], f"Halo{i}", folder="Fantastical/Halo",
               rotation=(0, 0, roll))
         c.box((center[0] - 460, y, z), (30, length * 0.9, 60), m["glyph"], f"HaloGlyph{i}", folder="Fantastical/Halo",
@@ -159,7 +162,7 @@ def halo(m):
         c.box((9900 + i * 1050, 1500 - i * 260, -520 + t * t * 1700), (620 - i * 25, 880 - i * 30, 90), m["stone"],
               f"FloatingSlab{i}", folder="Fantastical/Slabs", rotation=(rng.uniform(-6, 6), rng.uniform(-14, 14), 0))
 
-    # A monolith hovers over the first terrace, lit from within, marking where the attractor waits.
+    # A monolith hovers over the first terrace, lit from within, marking where the gravity machine waits.
     c.box((2300, 700, 620), (120, 120, 520), m["stone"], "Monolith", folder="Fantastical")
     c.box((2300, 700, 620), (126, 30, 480), m["glyph"], "MonolithGlyphA", folder="Fantastical")
     c.box((2300, 700, 620), (30, 126, 480), m["glyph"], "MonolithGlyphB", folder="Fantastical")
@@ -167,11 +170,50 @@ def halo(m):
     c.mesh(c.CYLINDER, (2300, 700, 9), (240, 240, 2), material=m["glyph"], label="AttractorDaisGlyph", folder="Fantastical")
 
 
+def shrubs():
+    """Heather and beach rose soften every edge where stone meets grass."""
+    heather = [unreal.load_asset(HEATHER + letter) for letter in "ABCDEF"]
+    rose = [unreal.load_asset(ROSE + letter) for letter in "ABCD"]
+    count = 0
+    for index in range(3):
+        top = -DROP * index - 122
+        for side in (-1, 1):
+            for _ in range(16):
+                x = 3000 * index + rng.uniform(80, 2920)
+                y = side * rng.uniform(1440, 2650)
+                kind = rose if rng.random() < 0.35 else heather
+                actor = c.spawn(unreal.SkeletalMeshActor, (x, y, top), (0, rng.uniform(0, 360), 0), f"Shrub{count}",
+                                "Landscape/Shrubs")
+                actor.skeletal_mesh_component.set_skinned_asset_and_update(rng.choice(kind))
+                size = rng.uniform(0.9, 1.6)
+                actor.set_actor_scale3d(unreal.Vector(size, size, size))
+                count += 1
+
+
+def rubble(m):
+    """Fallen temple stones lie where the ruin shed them, off the line of play."""
+    mesh = unreal.load_asset(STONES)
+    spots = [(4320, -1150, -DROP), (4700, -1000, -DROP), (4380, 1260, -DROP), (8700, -1220, -2 * DROP),
+             (8650, 1180, -2 * DROP), (300, 1150, 0), (2700, -1180, 0), (6200, 1200, -2 * DROP)]
+    for i, spot in enumerate(spots):
+        actor = c.spawn(unreal.StaticMeshActor, spot, (0, rng.uniform(0, 360), 0), f"Rubble{i}", "Ruins/Rubble")
+        actor.static_mesh_component.set_static_mesh(mesh)
+        size = rng.uniform(0.8, 1.4)
+        actor.set_actor_scale3d(unreal.Vector(size, size, size))
+
+
 def sea_and_horizon(m):
-    for i, (x, y, size) in enumerate([(52000, -42000, 9000), (90000, 30000, 16000), (38000, 52000, 7000)]):
-        c.mesh(c.SPHERE, (x, y, SEA_LEVEL - size * 0.25), (size * 2.4, size * 1.7, size), material=m["rock"],
-               label=f"Headland{i}", folder="Landscape")
-    c.mesh(c.PLANE, (0, 0, SEA_LEVEL), (600000, 600000, 1), material=m["ocean"], label="Sea", folder="Landscape",
+    # Sea stacks: cliff scans stood on end, far out, catching the low sun.
+    mesh = unreal.load_asset(CLIFF_MESH)
+    for i, (x, y, size) in enumerate([(30000, -24000, 9), (47000, 21000, 14), (21000, 30000, 7), (64000, -9000, 18),
+                                      (15000, -17000, 5)]):
+        for part in range(3):
+            actor = c.spawn(unreal.StaticMeshActor, (x + rng.uniform(-600, 600) * part, y + rng.uniform(-600, 600) * part,
+                            SEA_LEVEL - 500), (0, rng.uniform(0, 360), 0), f"SeaStack{i}_{part}", "Landscape/SeaStacks")
+            actor.static_mesh_component.set_static_mesh(mesh)
+            actor.static_mesh_component.set_material(0, m["rock"])
+            actor.set_actor_scale3d(unreal.Vector(size * 0.5, size * 1.2, size * rng.uniform(0.7, 1.2)))
+    c.mesh(c.PLANE, (0, 0, SEA_LEVEL), (1200000, 1200000, 1), material=m["ocean"], label="Sea", folder="Landscape",
            cast_shadow=False)
 
 
@@ -192,6 +234,8 @@ c.sky_and_sun(sun_pitch=-22.0, sun_yaw=112.0, fog_density=0.012)
 course_data = course_geometry(mats)
 cliffs(mats)
 pines()
+shrubs()
+rubble(mats)
 halo(mats)
 sea_and_horizon(mats)
 markers(course_data, mats)

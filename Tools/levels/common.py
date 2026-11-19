@@ -81,7 +81,7 @@ def sky_and_sun(sun_pitch=-8.0, sun_yaw=135.0, sun_lux=10.0, fog_density=0.015, 
     light.set_editor_property("light_source_angle", 0.6)
     light.set_editor_property("forward_shading_priority", 1)
     light.set_editor_property("cast_shadows_on_atmosphere", True)
-    light.set_editor_property("cast_cloud_shadows", True)
+    light.set_editor_property("cast_cloud_shadows", False)
 
     spawn(unreal.SkyAtmosphere, (0, 0, 0), label="SkyAtmosphere", folder="Lighting")
 

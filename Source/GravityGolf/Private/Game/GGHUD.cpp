@@ -51,7 +51,7 @@ void AGGHUD::DrawHUD()
 	}
 	else if (Golfer->IsCarrying())
 	{
-		Prompt = TEXT("E: set down the attractor");
+		Prompt = TEXT("E: set down the gravity machine");
 	}
 	else if (Golfer->IsCharging())
 	{
@@ -63,7 +63,7 @@ void AGGHUD::DrawHUD()
 	}
 	else if (Golfer->CanPickUp())
 	{
-		Prompt = TEXT("E: pick up the attractor");
+		Prompt = TEXT("E: pick up the gravity machine");
 	}
 	else if (Golfer->CanSwing())
 	{

@@ -93,6 +93,9 @@ is a puzzle campaign. With friends it plays like Golf With Your Friends, with ev
   Nanite Mesh Terrain.
 - **Gravity made visible:** heat-haze distortion, drifting dust and pollen pulled into attractors, and glyphs that
   light up along the field.
+- **Physical presence:** footsteps that change with the surface, a visible club that swings and strikes the ball,
+  hands that carry things. Gravity machines are tangible devices on tripod legs that you pick up, carry and set
+  down, and they hum, glow and unfold when placed.
 - **Sound:** the "every solution is a song" idea from the first proposal carries over: machines hum as the ball
   passes.
 

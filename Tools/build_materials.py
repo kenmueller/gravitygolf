@@ -133,6 +133,7 @@ def build_surface():
 
 def build_glow():
     material, path = fresh("M_GG_Glow")
+    material.set_editor_property("used_with_instanced_static_meshes", True)
     material.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_UNLIT)
     color = vector_param(material, "Color", (1, 1, 1, 1), -600, 0)
     strength = scalar_param(material, "Strength", 10.0, -600, 200)
@@ -236,20 +237,27 @@ def build_scan():
 
 
 OCEAN = r"""
-// Sum of directional waves (world-space slopes in meters) plus fine noise ripples, as a world-space normal.
+// Sum of directional waves (slopes in meters) as a world-space normal. Far from the camera the waves are
+// smaller than a pixel, so their slope fades out and roughness rises to stand in for them (no moire).
 float2 P = WorldPos.xy / 100.0;
+float Distance = length(WorldPos - CameraPos) / 100.0;
 float2 Slope = 0;
-const float2 Dirs[6] = { float2(1, 0.2), float2(0.7, 0.7), float2(0.3, -0.95), float2(-0.6, 0.8), float2(0.95, -0.3), float2(-0.2, -1) };
-const float Lens[6] = { 23.0, 11.0, 7.3, 4.1, 2.3, 1.1 };
-const float Amps[6] = { 0.22, 0.12, 0.07, 0.04, 0.02, 0.01 };
-for (int I = 0; I < 6; I++)
+const float2 Dirs[7] = { float2(1, 0.2), float2(0.7, 0.7), float2(0.3, -0.95), float2(-0.6, 0.8), float2(0.95, -0.3), float2(-0.2, -1), float2(0.5, 0.85) };
+const float Lens[7] = { 61.0, 37.0, 19.0, 9.7, 4.9, 2.3, 1.1 };
+const float Amps[7] = { 0.55, 0.32, 0.2, 0.1, 0.05, 0.022, 0.01 };
+float Lost = 0;
+for (int I = 0; I < 7; I++)
 {
     float2 D = normalize(Dirs[I]);
     float K = 6.2831853 / Lens[I];
     float Speed = sqrt(9.81 / K);
     float Phase = dot(D, P) * K - Time * Speed * K;
-    Slope += D * K * Amps[I] * cos(Phase);
+    // A wave stays visible while its length covers a few pixels: roughly Lens * 900 / Distance.
+    float Visible = saturate(Lens[I] * 70.0 / max(Distance, 1.0) - 0.5);
+    Slope += D * K * Amps[I] * cos(Phase) * Visible;
+    Lost += (1.0 - Visible) * K * Amps[I];
 }
+RoughnessOut = saturate(0.035 + Lost * 0.55);
 return normalize(float3(-Slope.x * Choppiness, -Slope.y * Choppiness, 1.0));
 """
 
@@ -257,17 +265,28 @@ return normalize(float3(-Slope.x * Choppiness, -Slope.y * Choppiness, 1.0));
 def build_ocean():
     material, path = fresh("M_GG_Ocean")
     material.set_editor_property("tangent_space_normal", False)
+    # Single Layer Water: the engine's dedicated water path, with depth absorption and its own reflections.
+    material.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_SINGLE_LAYER_WATER)
+    water = node(material, unreal.MaterialExpressionSingleLayerWaterMaterialOutput, -100, 500)
+    scatter = node(material, unreal.MaterialExpressionConstant3Vector, -500, 500,
+                   constant=unreal.LinearColor(0.0006, 0.0016, 0.0018, 1))
+    absorb = node(material, unreal.MaterialExpressionConstant3Vector, -500, 600,
+                  constant=unreal.LinearColor(0.0045, 0.0012, 0.0008, 1))
+    MEL.connect_material_expressions(scatter, "", water, "ScatteringCoefficients")
+    MEL.connect_material_expressions(absorb, "", water, "AbsorptionCoefficients")
+    MEL.connect_material_expressions(node(material, unreal.MaterialExpressionConstant, -500, 700, r=0.0), "", water, "PhaseG")
     world = node(material, unreal.MaterialExpressionWorldPosition, -900, 0)
+    camera = node(material, unreal.MaterialExpressionCameraPositionWS, -900, 80)
     time = node(material, unreal.MaterialExpressionTime, -900, 150)
-    chop = scalar_param(material, "Choppiness", 0.6, -900, 300)
-    waves = custom(material, OCEAN, ["WorldPos", "Time", "Choppiness"], -500, 100)
-    for source, pin in [(world, "WorldPos"), (time, "Time"), (chop, "Choppiness")]:
+    chop = scalar_param(material, "Choppiness", 0.8, -900, 300)
+    waves = custom(material, OCEAN, ["WorldPos", "CameraPos", "Time", "Choppiness"], -500, 100,
+                   outputs=[("RoughnessOut", unreal.CustomMaterialOutputType.CMOT_FLOAT1)])
+    for source, pin in [(world, "WorldPos"), (camera, "CameraPos"), (time, "Time"), (chop, "Choppiness")]:
         MEL.connect_material_expressions(source, "", waves, pin)
     MEL.connect_material_property(waves, "", unreal.MaterialProperty.MP_NORMAL)
-    color = vector_param(material, "WaterColor", (0.004, 0.03, 0.045, 1), -500, -200)
+    MEL.connect_material_property(waves, "RoughnessOut", unreal.MaterialProperty.MP_ROUGHNESS)
+    color = vector_param(material, "WaterColor", (0.003, 0.028, 0.04, 1), -500, -200)
     MEL.connect_material_property(color, "", unreal.MaterialProperty.MP_BASE_COLOR)
-    MEL.connect_material_property(scalar_param(material, "Roughness", 0.035, -500, 300), "",
-                                  unreal.MaterialProperty.MP_ROUGHNESS)
     MEL.connect_material_property(scalar_param(material, "Specular", 0.6, -500, 400), "",
                                   unreal.MaterialProperty.MP_SPECULAR)
     finish(material, path)

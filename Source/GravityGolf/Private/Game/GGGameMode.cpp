@@ -60,7 +60,7 @@ void AGGGameMode::BeginPlay()
 	const TArray<double> Attractor = ParseNumbers(TEXT("GGAttractor="));
 	if (Attractor.Num() == 3)
 	{
-		Course->MoveAttractor(0, FVector(Attractor[0], Attractor[1], Attractor[2]));
+		Course->MoveMachine(0, FVector(Attractor[0], Attractor[1], Attractor[2]), false);
 	}
 
 	const TArray<double> ShotValues = ParseNumbers(TEXT("GGShot="));

@@ -50,7 +50,7 @@ course = {
     "tee": {"position": [600, 0, 6], "yaw": 0},
     "cup": {"position": [7600, 500, -2 * DROP], "radius": 18},
     "attractors": [
-        {"position": [2300, 700, 120], "strength": 1.35e8, "range": 1300, "movable": True},
+        {"position": [2300, 700, 9], "strength": 1.35e8, "range": 1300, "movable": True},
     ],
     "boxes": boxes,
 }

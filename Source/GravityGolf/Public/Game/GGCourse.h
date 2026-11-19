@@ -8,6 +8,7 @@
 
 class UMaterialInstanceDynamic;
 class UMaterialInterface;
+class UInstancedStaticMeshComponent;
 class UPointLightComponent;
 class UStaticMesh;
 class UStaticMeshComponent;
@@ -46,8 +47,17 @@ public:
 	/** Samples of the path a swing would take, for the aiming guide. */
 	void PreviewSwing(const FVector& Direction, double Power, double Seconds, TArray<FVector>& OutPoints) const;
 
-	int32 FindAttractor(const FVector& Near, double Reach) const;
-	void MoveAttractor(int32 Index, const FVector& Location);
+	/** Nearest movable gravity machine to a point, or INDEX_NONE. */
+	int32 FindMachine(const FVector& Near, double Reach) const;
+	/** Move a machine. Base is where its feet stand; the field's center sits above it. */
+	void MoveMachine(int32 Index, const FVector& Base, bool bCarried);
+	FVector MachineBase(int32 Index) const;
+
+	/** What the ground is made of under a point. */
+	GG::ESurface SurfaceAt(const FVector& Location) const;
+
+	/** Dotted aiming guide; pass an empty array to hide it. */
+	void ShowGuide(const TArray<FVector>& Points);
 
 	FVector BallLocation() const;
 	FVector TeeStart() const;
@@ -66,14 +76,17 @@ public:
 private:
 	void BuildActors();
 	void FinishStroke(GG::EBallState State);
-	UStaticMeshComponent* AddMesh(UStaticMesh* Mesh, UMaterialInterface* Material, const FTransform& Transform);
+	void BuildMachine(int32 Index);
+	UStaticMeshComponent* AddMesh(UStaticMesh* Mesh, UMaterialInterface* Material, const FTransform& Transform,
+		USceneComponent* Parent = nullptr);
 	UMaterialInstanceDynamic* Glow(const FLinearColor& Color, float Strength);
 
 	GG::FCourse Course;
 	GG::FPhysics Physics;
 	GG::FSim Sim;
 	std::vector<GG::FAttractor> Attractors;
-	std::vector<GG::FAttractor> InitialAttractors;
+	TArray<FVector> MachineBases;
+	TArray<FVector> InitialBases;
 	TArray<bool> Movable;
 
 	FString Name;
@@ -94,10 +107,16 @@ private:
 	TObjectPtr<UStaticMeshComponent> BallMesh;
 
 	UPROPERTY()
-	TArray<TObjectPtr<UStaticMeshComponent>> AttractorMeshes;
+	TArray<TObjectPtr<USceneComponent>> Machines;
 
 	UPROPERTY()
-	TArray<TObjectPtr<UPointLightComponent>> AttractorLights;
+	TArray<TObjectPtr<UStaticMeshComponent>> MachineCores;
+
+	UPROPERTY()
+	TObjectPtr<UInstancedStaticMeshComponent> TrailDots;
+
+	UPROPERTY()
+	TObjectPtr<UInstancedStaticMeshComponent> GuideDots;
 
 	UPROPERTY()
 	TObjectPtr<UMaterialInterface> GlowBase;

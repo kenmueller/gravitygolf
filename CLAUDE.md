@@ -13,6 +13,21 @@ A puzzle golf game on tiny solar systems, built in **Unreal Engine 5.9** (previe
 - **Latest and experimental.** Prefer the newest engine features. Research current releases rather than relying on
   memory.
 
+## Critique everything (Ken's rule)
+
+Claude is the only developer, so nobody else will catch a weak decision. After every meaningful step, critique it
+before moving on, and say the critique out loud in the report to Ken:
+
+- **Decisions:** what was chosen, what the alternatives were, and what would make this choice wrong.
+- **The game:** is this fun, clear and new? Would a player understand it without help? Is the puzzle an idea or
+  just an aim? Compare honestly against The Talos Principle and Golf With Your Friends.
+- **The look:** judge every screenshot as a harsh art director would. Name what's ugly, flat, fake or boring, and
+  fix the worst thing first. "Better than before" is not the bar; the reference games are.
+- **Functionality:** play it (PIE), don't assume. List what was verified in-engine and what wasn't.
+- **Process:** note mistakes in how the work was done (for example, launching two editors) and fix the cause.
+
+Never report something as good when it is merely working.
+
 ## Layout
 
 ```
@@ -22,6 +37,7 @@ Source/GravityGolf/
   */Game/GGCourse.*           loads Content/Courses/<level>.json, steps the sim at 240 Hz, ball/attractors/flag
   */Game/GGGolfer.*           first-person character: walk, carry attractors (E), swing (hold click), loft (scroll)
   */Game/GGGameMode.*         starts the course matching the level name; automation flags (-GGView, -GGShot, -GGCapture)
+  */Game/GGAudio.*            runtime-synthesized sounds (footsteps, strike, bounce, cup, machine)
   */Game/GGHUD.*              placeholder HUD
 Content/Courses/*.json        collision boxes + rules, written by Tools/courses/<level>.py (plain Python)
 Tools/levels/<level>.py       builds the level in the editor from the course JSON plus dressing (common.py helpers)
@@ -55,6 +71,9 @@ Work through the Unreal MCP (`mcp__unreal__*`) while the editor is open:
 - Fab installs: `FabToolset.InstallFabListing`, then save dirty packages.
 
 ## Gotchas
+
+- Run exactly one editor. Start it only with `Tools/editor.sh`, never in the background alongside another call.
+  A second editor can't bind the MCP port and silently runs without it.
 
 - A standalone `-game` launch (Tools/capture.sh) hung at startup compiling global shaders after ray tracing was
   enabled. Use PIE captures until that's understood.

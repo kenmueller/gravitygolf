@@ -1,10 +1,53 @@
 {
 	"note": "Fab asset packs the levels depend on. They are not in git. Install each through the editor's Fab MCP toolset (InstallFabListing); glTF packs use the '4k ... high' file.",
 	"assets": [
-		{ "title": "Megaplants: Aleppo Pine", "listingId": "a441387b-c3e0-4982-82c4-5f661ccca6dd", "format": "unreal-engine", "path": "/Game/Megaplant_Library/Tree_Aleppo_Pine" },
-		{ "title": "Ancient Pillars (NANITE)", "listingId": "b5a2973a-90d1-40df-b8dd-0efbb2fd67ff", "format": "unreal-engine", "path": "/Game/Ancient_Pillars" },
-		{ "title": "Grass Lawn", "listingId": "7c3a681a-2833-4d6e-a749-af3264f024cd", "format": "gltf", "path": "/Game/Fab/Grass_Lawn" },
-		{ "title": "Roman Limestone Wall", "listingId": "d8e4cf18-01f7-4e5c-bc6a-be51f317905c", "format": "gltf", "path": "/Game/Fab/Roman_Limestone_Wall" },
-		{ "title": "Quarry Cliff", "listingId": "b12a0295-8ce4-49fd-8d91-09cfc155a4f7", "format": "gltf", "path": "/Game/Fab/Quarry_Cliff" }
+		{
+			"title": "Megaplants: Aleppo Pine",
+			"listingId": "a441387b-c3e0-4982-82c4-5f661ccca6dd",
+			"format": "unreal-engine",
+			"path": "/Game/Megaplant_Library/Tree_Aleppo_Pine"
+		},
+		{
+			"title": "Ancient Pillars (NANITE)",
+			"listingId": "b5a2973a-90d1-40df-b8dd-0efbb2fd67ff",
+			"format": "unreal-engine",
+			"path": "/Game/Ancient_Pillars"
+		},
+		{
+			"title": "Grass Lawn",
+			"listingId": "7c3a681a-2833-4d6e-a749-af3264f024cd",
+			"format": "gltf",
+			"path": "/Game/Fab/Grass_Lawn"
+		},
+		{
+			"title": "Roman Limestone Wall",
+			"listingId": "d8e4cf18-01f7-4e5c-bc6a-be51f317905c",
+			"format": "gltf",
+			"path": "/Game/Fab/Roman_Limestone_Wall"
+		},
+		{
+			"title": "Quarry Cliff",
+			"listingId": "b12a0295-8ce4-49fd-8d91-09cfc155a4f7",
+			"format": "gltf",
+			"path": "/Game/Fab/Quarry_Cliff"
+		},
+		{
+			"title": "Megaplants: Beach Rose",
+			"listingId": "d70e1181-f58e-4e8d-b22a-e6c1864770e8",
+			"format": "unreal-engine",
+			"path": "/Game/Megaplant_Library/Shrub_Beach_Rose"
+		},
+		{
+			"title": "Megaplants: Common Heather",
+			"listingId": "5d88b60a-524c-4774-a9d7-7e1cd4510be6",
+			"format": "unreal-engine",
+			"path": "/Game/Megaplant_Library/Shrub_Heather"
+		},
+		{
+			"title": "Ancient Temple Stones",
+			"listingId": "1a117f26-677e-4ad9-ab4b-f2177b6cda9c",
+			"format": "gltf",
+			"path": "/Game/Fab/Ancient_Temple_Stones"
+		}
 	]
 }
