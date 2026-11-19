@@ -54,13 +54,14 @@ GravityGolf.uproject          plugins: ModelContextProtocol + AllToolsets (MCP),
 Source/GravityGolf/
   */Sim/GGSim.*               deterministic 3D ball physics (boxes, surfaces, machines, cup, safe pads, plates, gates)
   */Game/GGCourse.*           loads Content/Courses/<level>.json, steps the sim at 240 Hz, ball/attractors/flag
-  */Game/GGGolfer.*           first-person character: walk, carry machines (E), swing (hold click), F1 solution, 1-4 holes
+  */Game/GGGolfer.*           first-person character: walk, carry machines (E), swing (hold click), F1 solution, 1-5 holes
   */Game/GGGameMode.*         starts the course matching the level name; console commands (GGDemo, GGHole, GGPerf, GGView...)
   */Game/GGAudio.*            runtime-synthesized sounds (footsteps, strike, bounce, cup, machine)
   */Game/GGHUD.*              placeholder HUD
 Content/Courses/*.json        collision boxes + rules, written by Tools/courses/<level>.py (plain Python)
 Tools/levels/<level>.py       builds the level in the editor from the course JSON plus dressing (common.py helpers)
 Tools/build_materials.py      generates /Game/Materials (custom HLSL: triplanar scans, ocean, ball, glow)
+Tools/build_meshes.py         generates /Game/Meshes with Geometry Script (putter, gravity machine); Tools/py.sh runs it
 Tools/fab_assets.json         Fab/Megascans packs the levels need. They are gitignored; reinstall via the Fab toolset
 Tools/editor.sh               start the editor and wait until its MCP server is idle
 Tools/mcp.py                  shell client for the editor's MCP server
@@ -126,6 +127,12 @@ console and read the pass list in the log before guessing.
   could not start on port 8000", kill it and run `Tools/editor.sh` again.
 - The editor's content-folder monitoring is turned off in config. With it on, a new `Content/Courses/*.json`
   triggers a DataTable import dialog that blocks every MCP call ("slow task") until someone clicks it.
+- An attractor is also a cannon: a ball tapped toward it is drawn in and released along the line through it.
+  Every layout must block the straight line from the ball through any spot a machine can stand to the target, or
+  the hole is trivial. The solver catches it; `Tests/Sim/search.sh` shows it as huge tolerances with one machine
+  parked far away.
+- A level script can serve several holes: `Tools/levels/returning.py` runs `canyon.py` with its own settings.
+- Geometry Script: the lathe (`append_revolve_polygon`) ignores the material in its options; remap it afterwards.
 - Megaplants need `r.Nanite.Foliage` and `r.Nanite.AllowAssemblies`, or the trees render bare.
 - Megaplants are skeletal meshes that sway. Anything that sways redraws its shadow every frame: 26 pines cost 12 ms
   in Lantern Court. Turn shadows off on background plants (`skeletal_mesh_component.set_cast_shadow(False)`).

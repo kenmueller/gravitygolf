@@ -79,8 +79,9 @@ Built, proven by the solver and played end to end in the engine (`Tools/smoke.sh
 | 2 | Salt Mirror | White salt on an endless brine mirror at sunset, floating monoliths | Safe pads; the machine is yours to move between swings | 1 attractor, 1 pad |
 | 3 | The Narrows | Red slot canyon | Pull, then push: two machines, neither enough alone | 1 attractor, 1 repulsor |
 | 4 | Lantern Court | Walled court at night under hundreds of paper lanterns | A plate opens a gate of light; the pad banks the press | 1 attractor, 1 plate, 1 gate, 1 pad |
+| 5 | The Long Way Round | The canyon again, in the evening | Plan the whole trip: the cup is behind you, behind a gate | 1 attractor, 1 repulsor, 1 plate, 1 gate, 1 pad |
 
-These four are the tutorial. None is hard yet. Ideas for the worlds after them (not built):
+Holes 1 to 4 are the tutorial. Hole 5 is the first exam: everything so far, on both swings. None is walkthrough-hard yet. Ideas for the worlds after them (not built):
 
 | Place | Idea |
 | --- | --- |

@@ -13,7 +13,7 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 from coursekit import Course  # noqa: E402
 
-c = Course("lantern", "Lantern Court", "Lantern")
+c = Course("lantern", "Lantern Court", "Lantern", next_level="Returning")
 X0, X1, Y0, Y1 = -2800, 4200, -900, 1900
 WALL_H = 260
 

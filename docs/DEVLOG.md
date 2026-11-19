@@ -7,23 +7,66 @@ Newest first. Each entry says what changed, what was verified, and an honest cri
 **To play.** Open the project (or run `Tools/editor.sh`), press Play. Keys: WASD and mouse, Shift to run, hold
 left click to swing (aim is where you look, longer hold is harder), E picks up and sets down a machine, R returns
 the ball, Backspace resets the hole, B jumps you to the ball, right click watches the ball. **F1 plays the
-solution for the leg you are on. Keys 1 to 4 jump between holes.**
+solution for the leg you are on. Keys 1 to 5 jump between holes.**
+
+**Start with hole 5** (press 5). It is the first one meant to be hard: the cup is behind you, behind a gate.
+Try it without F1 and tell me how long it took and whether the answer felt earned or fiddly.
 
 **What I need from you** (things I cannot judge):
 1. **Swing feel and sound.** I have never heard the game. Footsteps, strike, bounce, cup, machine hum, gate: are
    they good, bad or missing?
-2. **Do the holes make you think?** Try each without F1 first. My honest read is that all four are tutorial
-   difficulty. Tell me which one felt like a puzzle and which felt like aiming.
+2. **Do the holes make you think?** Holes 1 to 4 are a tutorial. Hole 5 is the first exam. Which felt like a
+   puzzle and which felt like aiming?
 3. **The look in motion.** Stills flatter it. Walk each world and tell me the first thing that looks cheap. My own
-   list is under "Critique" below; the club and the lawn are at the top of it.
-4. **Frame rate on your machine.** I measured 48 to 74 fps in the editor at about 2000x1100 (numbers below). Say
-   so if it feels worse than that.
+   list is under "Standing critique of the look" below.
+4. **Frame rate on your machine.** I measured 49 to 75 fps in the editor at about 2000x1100. Say so if it feels
+   worse than that.
+5. **The editor froze once** right after Play was stopped while you were at the keyboard (you force quit it). I
+   could not reproduce it. If it happens again, tell me what you had just done.
 
 **Decisions waiting on you**
 - The name. "Gravity Golf" is used by other games (see VISION, Competition).
-- What to build next. My recommendation: hard holes before anything else (plates, relays and timed gates with
-  fewer machines than you want), then avatars and co-op. Menus, a level editor and bots come after there is a
-  game worth sharing.
+- What to build next. My recommendation: more hard holes first, which needs new tools (relays, splitters, timed
+  gates) because two machines and a plate only stretch so far. Then avatars and co-op. Menus, a level editor and
+  bots come after there is a game worth sharing.
+
+## 2026-11-18, session 1 (autonomous): hole 5, real models
+
+**Changed**
+- **Hole 5, The Long Way Round.** The cup is a few steps behind the tee, behind a gate of light. The plate that
+  opens it is at the far end of the canyon's other gallery. Swing one: round the fin, pulled through the doorway,
+  over the plate, pushed down onto the pad (which banks the open gate). Swing two: pushed back through the
+  doorway, pulled home through the gate. Both machines on both swings, in opposite orders.
+  Proof: no machine 0 of 110,880 swings on either leg; either machine alone 0 of 305 spots on either leg; the
+  answers work with 22 and 16 swings of tolerance. Same canyon as hole 3, in the evening.
+- `Tools/build_meshes.py`: the game's own models, generated with Geometry Script. A putter (tapered steel shaft,
+  rubber grip, blade head with a flange, bronze weights, a sight line) and the gravity machine (turned bronze
+  drum, tapered legs with feet and collars, a cradle of claws, two rings round the core).
+- The machine's light was 260 candelas in scenes exposed for a 10 lux sun; it bleached the ground white. Now 6,
+  tunable live (`gg.Machine.Light`, `gg.Machine.Core`).
+- The plinth under each machine was a solid disc of light that read as a white pancake. Now stone with a ring.
+- Paper lanterns glow from inside (`M_GG_Lantern`) instead of being flat squares.
+- `Tools/levels/canyon.py` takes settings, so a second hole can share a world (`Tools/levels/returning.py`).
+
+**Verified in the engine**
+- `Tools/smoke.sh`: all five holes solve through the real player code (1, 2, 1, 2 and 2 swings).
+- `Tools/perf.sh`: 49, 75, 73, 67 and 68 fps.
+
+**Critique**
+- Hole 5 is harder because it is longer and needs a plan, not because it has a new idea. Its two swings are
+  hole 3's trick forwards and then backwards. I think that is a fair exam; it is not yet a puzzle people will
+  remember.
+- Leg 2 is tight: 16 swings work at the best placement and only half of the nudged placements still do. A
+  player with the right idea may still miss several times. That is the wrong kind of hard.
+- I found the layout by searching, three drafts in: the first two were trivial (the attractor alone "aims" the
+  ball along the line through it) or nearly impossible (a one-swing hairpin). The solver caught both. The lesson
+  is that an attractor is a cannon as well as a bend, and every layout has to block that line.
+- It reuses the canyon. You asked for levels that are very different; this is a second room in a world, like a
+  Talos area with several puzzles. A sixth hole should be a new place.
+- With both machines near the tee the field arrows cover the floor in blue and yellow confetti. It is the ugliest
+  thing in the game now and it hides the information it is supposed to show.
+- The models are a clear step up from boxes and balls, but they are still untextured metal. No scratches, no
+  maker's marks, no hands holding the club.
 
 ## 2026-11-18, session 1 (autonomous): performance, measured for the first time
 
@@ -82,11 +125,12 @@ Editor (Play-In-Editor), M4 Max, 2027x1090 panel, all settings at their highest,
 - The smoke test proves the recorded answers work in the engine. It does not prove a person can find them.
 
 **Standing critique of the look** (worst first, judged against The Talos Principle)
-1. The club is a brown box on a grey stick, in view all the time. There are no hands.
+1. Field arrows from two machines overlap into confetti.
 2. The Terraces lawn is one flat olive plane. Hedges in shadow are black slabs.
-3. Machines are primitive shapes: readable, not beautiful.
+3. There are no hands on the club. Club and machine are clean metal with no wear.
 4. Every course is a rectangle with walls. The worlds differ; the play spaces don't.
 5. The HUD is debug text.
+6. Sunlit sand in the canyon bleaches to flat orange.
 
 ## 2026-11-18, session 1 (autonomous): polish and art pass on hole 1
 

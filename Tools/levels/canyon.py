@@ -18,11 +18,17 @@ import common as c  # noqa: E402
 
 importlib.reload(c)
 
-LEVEL = "/Game/Levels/Canyon"
-COURSE = "/Users/ken/Code/gravitygolf/Content/Courses/canyon.json"
+# Other holes set in this canyon run this script with their own settings (see Tools/levels/returning.py).
+VARIANT = globals().get("GG_VARIANT", {})
+LEVEL = VARIANT.get("level", "/Game/Levels/Canyon")
+COURSE = "/Users/ken/Code/gravitygolf/Content/Courses/%s.json" % VARIANT.get("course", "canyon")
+DOOR = VARIANT.get("door", (2300, 3100))
+# High sun raking across the slot: one wall burns orange, the other glows with its bounce.
+SUN = VARIANT.get("sun", dict(sun_pitch=-64.0, sun_yaw=38.0, fog_density=0.035, sun_kelvin=5600.0, sky_intensity=1.5,
+                              exposure_bias=0.0))
 SURFACE = "/Game/Materials/M_GG_Surface.M_GG_Surface"
 OUTER = {"Wall_South", "Wall_North", "Wall_West", "Wall_East", "Lower_End"}
-rng = random.Random(23)
+rng = random.Random(VARIANT.get("seed", 23))
 
 
 def materials():
@@ -121,13 +127,15 @@ def walls(course, m, cliff, boulder):
 
 def doorway(m):
     """The doorway between the galleries is the one thing here that was built: two piers and a lintel."""
-    for x in (2300 - 45, 3100 + 45):
+    west, east = DOOR
+    middle = (west + east) / 2
+    for x in (west - 45, east + 45):
         c.box((x, 450, 270), (150, 190, 540), m["stone"], "DoorPier", folder="Ruins")
         c.box((x, 450, 20), (190, 230, 40), m["stone"], "DoorPierBase", folder="Ruins")
         c.box((x, 450, 525), (190, 230, 30), m["stone"], "DoorPierCap", folder="Ruins")
-    c.box((2700, 450, 580), (1100, 200, 80), m["stone"], "DoorLintel", folder="Ruins")
+    c.box((middle, 450, 580), (east - west + 300, 200, 80), m["stone"], "DoorLintel", folder="Ruins")
     for side in (-1, 1):
-        c.box((2700, 450 + side * 101, 580), (900, 3, 8), m["glyph"], "DoorGlyph", folder="Ruins")
+        c.box((middle, 450 + side * 101, 580), (east - west + 100, 3, 8), m["glyph"], "DoorGlyph", folder="Ruins")
 
 
 def markers(course, m):
@@ -180,8 +188,7 @@ def sky_ring(m, boulder):
 
 c.fresh_level(LEVEL)
 mats = materials()
-# High sun raking across the slot: one wall burns orange, the other glows with its bounce.
-c.sky_and_sun(sun_pitch=-64.0, sun_yaw=38.0, fog_density=0.035, sun_kelvin=5600.0, sky_intensity=1.5, exposure_bias=0.0)
+c.sky_and_sun(**SUN)
 with open(COURSE) as f:
     course_data = json.load(f)
 cliff_mesh = c.fab_mesh("Desert_Western_Cliff_Layered_XL_14")

@@ -150,7 +150,7 @@ void AGGGameMode::GGView(const FString& XYZPitchYaw)
 
 void AGGGameMode::GGHole(int32 Number)
 {
-	static const TCHAR* Holes[] = {TEXT("Terraces"), TEXT("SaltMirror"), TEXT("Canyon"), TEXT("Lantern")};
+	static const TCHAR* Holes[] = {TEXT("Terraces"), TEXT("SaltMirror"), TEXT("Canyon"), TEXT("Lantern"), TEXT("Returning")};
 	if (Number >= 1 && Number <= UE_ARRAY_COUNT(Holes))
 	{
 		UGameplayStatics::OpenLevel(this, FName(*(FString(TEXT("/Game/Levels/")) + Holes[Number - 1])));

@@ -165,6 +165,7 @@ void AGGGolfer::SetupPlayerInputComponent(UInputComponent* Input)
 	Input->BindKey(EKeys::Two, IE_Pressed, this, &AGGGolfer::Hole2);
 	Input->BindKey(EKeys::Three, IE_Pressed, this, &AGGGolfer::Hole3);
 	Input->BindKey(EKeys::Four, IE_Pressed, this, &AGGGolfer::Hole4);
+	Input->BindKey(EKeys::Five, IE_Pressed, this, &AGGGolfer::Hole5);
 }
 
 AGGCourse* AGGGolfer::Course() const

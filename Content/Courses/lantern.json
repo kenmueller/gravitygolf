@@ -325,5 +325,6 @@
 			"yaw": 35,
 			"power": 0.875
 		}
-	]
+	],
+	"next": "Returning"
 }

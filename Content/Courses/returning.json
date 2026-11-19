@@ -1,0 +1,316 @@
+{
+	"id": "returning",
+	"name": "The Long Way Round",
+	"level": "Returning",
+	"par": 2,
+	"ballRadius": 6,
+	"gravity": [
+		0,
+		0,
+		-980
+	],
+	"killZ": -1400,
+	"tee": {
+		"position": [
+			1250,
+			80,
+			6
+		],
+		"yaw": 0
+	},
+	"cup": {
+		"position": [
+			400,
+			-230,
+			0
+		],
+		"radius": 42,
+		"captureSpeed": 650
+	},
+	"noMachine": [
+		{
+			"position": [
+				4700,
+				1000,
+				0
+			],
+			"radius": 190,
+			"kind": "switch"
+		},
+		{
+			"position": [
+				5650,
+				700,
+				0
+			],
+			"radius": 310,
+			"kind": "pad"
+		},
+		{
+			"position": [
+				400,
+				-230,
+				0
+			],
+			"radius": 380,
+			"kind": "court"
+		}
+	],
+	"safeZones": [
+		{
+			"position": [
+				5650,
+				700,
+				0
+			],
+			"radius": 250,
+			"needsSwitch": 0
+		}
+	],
+	"attractors": [
+		{
+			"position": [
+				1450,
+				-250,
+				0
+			],
+			"strength": 420,
+			"range": 1900,
+			"coreHeight": 45,
+			"movable": true
+		},
+		{
+			"position": [
+				1700,
+				-250,
+				0
+			],
+			"strength": -420,
+			"range": 1500,
+			"coreHeight": 45,
+			"movable": true
+		}
+	],
+	"boxes": [
+		{
+			"name": "Floor",
+			"center": [
+				3000,
+				450,
+				-15
+			],
+			"size": [
+				6400,
+				2300,
+				30
+			],
+			"surface": "green",
+			"look": "floor",
+			"shape": "box"
+		},
+		{
+			"name": "Wall_South",
+			"center": [
+				3000.0,
+				-550.0,
+				200.0
+			],
+			"size": [
+				6400,
+				300,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "Wall_North",
+			"center": [
+				3000.0,
+				1450.0,
+				200.0
+			],
+			"size": [
+				6400,
+				300,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "Wall_West",
+			"center": [
+				-100.0,
+				450.0,
+				200.0
+			],
+			"size": [
+				200,
+				1700,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "Wall_East",
+			"center": [
+				6100.0,
+				450.0,
+				200.0
+			],
+			"size": [
+				200,
+				1700,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "Divide_West",
+			"center": [
+				1550.0,
+				450.0,
+				200.0
+			],
+			"size": [
+				3100,
+				100,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "Divide_East",
+			"center": [
+				4950.0,
+				450.0,
+				200.0
+			],
+			"size": [
+				2100,
+				100,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "Fin",
+			"center": [
+				2160.0,
+				170.0,
+				200.0
+			],
+			"size": [
+				120,
+				460,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "Lower_End",
+			"center": [
+				5200.0,
+				0.0,
+				200.0
+			],
+			"size": [
+				1600,
+				800,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "SafePad1",
+			"center": [
+				5650,
+				700,
+				-10
+			],
+			"size": [
+				425.0,
+				425.0,
+				20
+			],
+			"surface": "sand",
+			"look": "pad",
+			"shape": "box"
+		}
+	],
+	"switches": [
+		{
+			"position": [
+				4700,
+				1000,
+				0
+			],
+			"radius": 150
+		}
+	],
+	"gates": [
+		{
+			"name": "Gate",
+			"center": [
+				850,
+				0,
+				110
+			],
+			"size": [
+				60,
+				800,
+				220
+			],
+			"switch": 0,
+			"openSeconds": 0.0,
+			"surface": "sand"
+		}
+	],
+	"solutions": [
+		{
+			"leg": 0,
+			"machines": [
+				[
+					3200,
+					650
+				],
+				[
+					3100,
+					1150
+				]
+			],
+			"yaw": -18,
+			"power": 0.55
+		},
+		{
+			"leg": 1,
+			"machines": [
+				[
+					1150,
+					-200
+				],
+				[
+					3700,
+					950
+				]
+			],
+			"yaw": -175,
+			"power": 0.675
+		}
+	]
+}

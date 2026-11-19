@@ -73,6 +73,7 @@ private:
 	void Hole2() { JumpToHole(2); }
 	void Hole3() { JumpToHole(3); }
 	void Hole4() { JumpToHole(4); }
+	void Hole5() { JumpToHole(5); }
 
 	FVector SwingDirection() const;
 	FVector HoldPoint() const;
