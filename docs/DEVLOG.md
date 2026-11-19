@@ -93,8 +93,11 @@ between holes.** (Keys 1 to 8 now.)
   stopped ball is never pulled, and sand holds harder than any machine pulls). Eight holes is still a demo.
 - **The coursekit comment said a pad "catches the ball" for the whole project, and it never did.** Every proof was
   run with the real physics, so nothing shipped wrong, but I designed with a false picture of my own simulation.
-- **The Workshop's holes can't be played together or raced yet,** and there is no browsing of other people's
-  holes: sharing is a code in a chat. Honest for a game with no servers, but it is not Mario Maker.
+- **A Workshop hole can be played together** (added at the end of the session: host from the Workshop's menu; the
+  hole's text is sent to whoever joins and again on every change; `Tools/nettest_workshop.sh`, 8 of 8 steps agree).
+  Only the host builds; the others walk the hole while it changes under them. It can't be raced against the rival,
+  and there is no browsing of other people's holes: sharing is a code in a chat. Honest for a game with no servers,
+  but it is not Mario Maker.
 - Gates did not show which plate opens them while playing. Fixed at the end of the session: a plate and its gates
   now glow the same colour (a hole with one plate looks as before). Not yet judged in a hole with several.
 - **The look.** The Workshop is the cleanest screen in the game, and the plainest: flat white and one glow colour.

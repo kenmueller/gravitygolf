@@ -220,6 +220,14 @@ bool AGGCourse::Load(const FString& CourseId)
 
 void AGGCourse::Unload()
 {
+	// Nobody is carrying a machine that is about to stop existing.
+	for (int32 I = 0; I < Carriers.Num(); ++I)
+	{
+		if (AGGGolfer* Carrier = CarrierOf(I))
+		{
+			Carrier->SetCarried(INDEX_NONE);
+		}
+	}
 	TInlineComponentArray<UActorComponent*> Built(this);
 	for (UActorComponent* Component : Built)
 	{
@@ -274,6 +282,10 @@ bool AGGCourse::LoadText(const FString& Text, const FString& CourseId)
 	Name = Json->GetStringField(TEXT("name"));
 	bDrawn = false;
 	Json->TryGetBoolField(TEXT("drawn"), bDrawn);
+	if (HasAuthority())
+	{
+		NetCourseText = bDrawn ? Text : FString();
+	}
 	NextLevel.Reset();
 	Json->TryGetStringField(TEXT("next"), NextLevel);
 	Course.Par = Json->GetIntegerField(TEXT("par"));
@@ -824,14 +836,24 @@ void AGGCourse::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AGGCourse, NetCourseId);
+	DOREPLIFETIME(AGGCourse, NetCourseText);
 }
 
 void AGGCourse::OnRep_CourseId()
 {
 	// A joining player's copy of the hole: load the same course the server did.
-	if (Id.IsEmpty() && !NetCourseId.IsEmpty())
+	if (Id.IsEmpty() && !NetCourseId.IsEmpty() && NetCourseText.IsEmpty())
 	{
 		Load(NetCourseId);
+	}
+}
+
+void AGGCourse::OnRep_CourseText()
+{
+	// The host's Workshop hole, as it stands now. It arrives when a player joins and each time the host changes it.
+	if (!NetCourseText.IsEmpty())
+	{
+		LoadText(NetCourseText, NetCourseId.IsEmpty() ? FString(TEXT("workshop")) : NetCourseId);
 	}
 }
 

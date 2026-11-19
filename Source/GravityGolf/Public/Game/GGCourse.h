@@ -116,6 +116,13 @@ public:
 	UFUNCTION()
 	void OnRep_CourseId();
 
+	/** A hole built in the Workshop has no file. Its text travels to every player who joins, and again whenever its
+	 *  builder changes it. */
+	UPROPERTY(ReplicatedUsing = OnRep_CourseText)
+	FString NetCourseText;
+	UFUNCTION()
+	void OnRep_CourseText();
+
 	/** Samples of the path a swing would take, for the aiming guide. */
 	void PreviewSwing(const FVector& Direction, double Power, double Seconds, TArray<FVector>& OutPoints) const;
 

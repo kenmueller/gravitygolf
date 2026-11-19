@@ -86,6 +86,7 @@ Tools/web.sh [config] [host]  package for the web (Wasm + WebGPU) with the sourc
 Tools/webtest.sh [play|phone|tour]   run the web build in Chrome with screenshots (tour: every hole's solution)
 Tools/nettest.sh              two players in the editor; compares both copies of the hole after every step
 Tools/hosttest.sh [Level]     two standalone copies of the game: one hosts, one joins by address
+Tools/nettest_workshop.sh     two players in the Workshop: the host builds, tests and solves; both copies compared
 Tools/rivaltest.sh [Level ...]   the rival bot plays a hole at each skill, time sped up; reports time and swings
 Tools/workshoptest.sh         works the Workshop without hands: every tool, undo, hole codes, touch, the proof, a test play
 Tests/Sim/cupscan.sh <course> <min x> <ax> <ay> <bx> <by>   design aid: cup spots that a machine at A serves and one at B cannot

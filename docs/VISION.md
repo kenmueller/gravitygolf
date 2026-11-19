@@ -123,8 +123,9 @@ Holes 1 to 4 are the tutorial. Hole 5 is the first exam: everything so far, on b
   internet without opening a port.
 - The Workshop (the level editor): build a hole on a grid with twelve tools, test it, and have the game check it
   against the puzzle law (you solved it; no swing works without the machines). Holes are kept in the save and
-  shared as a short code. Mouse, gamepad and touch; it runs in the browser build. Not built: playing a Workshop hole
-  together or against the rival, a place to browse other people's holes, the solver's stricter checks in-game.
+  shared as a short code. Mouse, gamepad and touch; it runs in the browser build. A Workshop hole can be hosted and
+  played together (the host builds, everyone plays). Not built: racing the rival on one, a place to browse other
+  people's holes, the solver's stricter checks in-game.
 - An ending: the last hole's card closes the course and leads to the Workshop.
 
 ### Beautiful

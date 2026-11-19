@@ -375,6 +375,7 @@ void AGGHUD::BuildMenu()
 #if !PLATFORM_WASM
 		Add(TEXT("Copy this hole's code"), TEXT("CopyCode"));
 		Add(TEXT("Open a hole from a copied code"), TEXT("PasteCode"));
+		Add(TEXT("Play together"), TEXT("Together"));
 #endif
 		Add(TEXT("Settings"), TEXT("Settings"));
 		Add(TEXT("Leave the Workshop"), TEXT("Title"));
