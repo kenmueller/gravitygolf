@@ -70,16 +70,26 @@ Ken's bar: people should need to look up walkthroughs. Hard to figure out, easy 
 - Free retries, and a ghost of the last attempt.
 
 ### Levels (each one different)
-| Level | Place | Idea |
-| --- | --- | --- |
-| The Terraces | Limestone terraces over a sea at sunrise | Learn to swing; one attractor bends a shot around a ruin |
-| Salt Mirror | Endless reflective salt flat with monoliths | Repulsors; the horizon is the fairway |
-| Inverted Cloister | Monastery courtyard where gravity points up | Putt across the vaulted ceiling |
-| Canyon Orrery | Sandstone canyon with rotating stone rings | Moving gravity sources and timing |
-| Drowned Library | A flooded hall of shelves | Buoyancy and currents |
-| Spiral Lighthouse | A tower whose gravity follows its spiral | The ball falls around the stairs |
-| Glass Glacier | Ice caves under an aurora | Frictionless ice and refraction |
-| Floating Gardens | Islands in the sky around a gravity core | Orbits: the 2022 game's soul as the finale |
+
+Built, proven by the solver and played end to end in the engine (`Tools/smoke.sh`):
+
+| # | Level | Place | Idea it teaches | Tools |
+| --- | --- | --- | --- | --- |
+| 1 | The Terraces | Limestone garden over a sea, a stone halo in the sky | A machine bends a shot around a wall | 1 attractor |
+| 2 | Salt Mirror | White salt on an endless brine mirror at sunset, floating monoliths | Safe pads; the machine is yours to move between swings | 1 attractor, 1 pad |
+| 3 | The Narrows | Red slot canyon | Pull, then push: two machines, neither enough alone | 1 attractor, 1 repulsor |
+| 4 | Lantern Court | Walled court at night under hundreds of paper lanterns | A plate opens a gate of light; the pad banks the press | 1 attractor, 1 plate, 1 gate, 1 pad |
+
+These four are the tutorial. None is hard yet. Ideas for the worlds after them (not built):
+
+| Place | Idea |
+| --- | --- |
+| Inverted Cloister: a courtyard where gravity points up | Putt across the vaulted ceiling |
+| Canyon Orrery: rotating stone rings | Moving gravity sources and timing (timed gates exist in the sim, unused) |
+| Drowned Library: a flooded hall of shelves | Buoyancy and currents |
+| Spiral Lighthouse: gravity follows the spiral | The ball falls around the stairs |
+| Glass Glacier: ice caves under an aurora | Frictionless ice (the surface exists in the sim, unused) |
+| Floating Gardens: islands around a gravity core | Orbits: the 2022 game's soul as the finale |
 
 ### Playing together
 - **Co-op, the main multiplayer mode (2 players, later up to 4).** Partners solve the same hole together, like

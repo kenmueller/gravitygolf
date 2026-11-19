@@ -52,10 +52,10 @@ Never report something as good when it is merely working.
 ```
 GravityGolf.uproject          plugins: ModelContextProtocol + AllToolsets (MCP), Python, ProceduralMesh
 Source/GravityGolf/
-  */Sim/GGSim.*               deterministic 3D ball physics (boxes, surfaces, attractors, cup)
+  */Sim/GGSim.*               deterministic 3D ball physics (boxes, surfaces, machines, cup, safe pads, plates, gates)
   */Game/GGCourse.*           loads Content/Courses/<level>.json, steps the sim at 240 Hz, ball/attractors/flag
-  */Game/GGGolfer.*           first-person character: walk, carry attractors (E), swing (hold click), loft (scroll)
-  */Game/GGGameMode.*         starts the course matching the level name; automation flags (-GGView, -GGShot, -GGCapture)
+  */Game/GGGolfer.*           first-person character: walk, carry machines (E), swing (hold click), F1 solution, 1-4 holes
+  */Game/GGGameMode.*         starts the course matching the level name; console commands (GGDemo, GGHole, GGPerf, GGView...)
   */Game/GGAudio.*            runtime-synthesized sounds (footsteps, strike, bounce, cup, machine)
   */Game/GGHUD.*              placeholder HUD
 Content/Courses/*.json        collision boxes + rules, written by Tools/courses/<level>.py (plain Python)
@@ -68,7 +68,12 @@ Tests/Sim/run.sh              standalone sim tests
 Tests/Sim/solve.sh <course>   puzzle-law proof: impossible without the machines, solvable with them
 Tests/Sim/search.sh <course>  design aid: random search for machine placements and a swing that solve a leg
 Tools/courses/coursekit.py    builder used by every Tools/courses/<level>.py
+Tests/Sim/probe.sh            design aid: trace one swing (course, leg, yaw, power, machine spots)
 Tools/regen.sh <level>        rebuild materials and a level in the open editor; Tools/play.sh, Tools/console.sh
+Tools/smoke.sh [Level ...]    in the editor: play each hole's recorded solution through the real player code
+Tools/perf.sh [Level ...]     in the editor: frame rate per hole from the tee (GGPerf)
+Tools/shot.sh <Level> <png> ["x,y,z,pitch,yaw"]   save a picture of the running game
+Tools/py.sh <file.py>         run Python in the open editor; the value of the last expression is returned
 ```
 
 ## Commands
@@ -93,6 +98,20 @@ Work through the Unreal MCP (`mcp__unreal__*`) while the editor is open:
 - Replay a solver result in PIE with console commands (`ConsoleToolset.RunConsoleCommand`): `GGMachine x,y,z`,
   then `GGShot yaw,power`, and read `LogGGCourse` for the outcome.
 - Fab installs: `FabToolset.InstallFabListing`, then save dirty packages.
+- `execute_python` takes `{"script": {"content": "<code>"}}` and returns the last expression's value; `print`
+  goes to the log only.
+
+## Before calling a change done
+
+```bash
+Tests/Sim/run.sh && Tests/Sim/solve.sh <course>   # physics and puzzle law, after any sim or course change
+Tools/smoke.sh                                    # every hole still solves in the engine
+Tools/perf.sh                                     # frame rate, after any art or rendering change
+```
+
+Each course records its answer with `c.solution(leg, machines, yaw, power)`; `GGDemo` (F1 in play) replays it.
+Frame-rate budget: 60 fps in the editor on the M4 Max from the tee. When a hole misses it, run `ProfileGPU` in the
+console and read the pass list in the log before guessing.
 
 ## Gotchas
 
@@ -108,6 +127,13 @@ Work through the Unreal MCP (`mcp__unreal__*`) while the editor is open:
 - The editor's content-folder monitoring is turned off in config. With it on, a new `Content/Courses/*.json`
   triggers a DataTable import dialog that blocks every MCP call ("slow task") until someone clicks it.
 - Megaplants need `r.Nanite.Foliage` and `r.Nanite.AllowAssemblies`, or the trees render bare.
+- Megaplants are skeletal meshes that sway. Anything that sways redraws its shadow every frame: 26 pines cost 12 ms
+  in Lantern Court. Turn shadows off on background plants (`skeletal_mesh_component.set_cast_shadow(False)`).
+- Anything rebuilt or moved every frame (instanced markers, the club) must stay out of Lumen and ray tracing
+  (`bAffectDynamicIndirectLighting`, `bAffectDistanceFieldLighting`, `bVisibleInRayTracing` all false), or Lumen
+  re-captures it every frame (6 to 14 ms).
+- The editor throttles to 3 fps when it is not the front app. `Config/DefaultEditorSettings.ini` turns that off;
+  without it, automated play runs at 3 fps and frame-rate numbers are meaningless.
 - Post-process exposure min/max brightness are luminance values, not EV; setting them high makes the game look
   like night.
 - macOS 27 with Xcode 27.2 works (UE 5.9 allows up to 27.9). The Metal toolchain must be installed

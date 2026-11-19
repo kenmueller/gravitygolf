@@ -2,6 +2,92 @@
 
 Newest first. Each entry says what changed, what was verified, and an honest critique.
 
+## For Ken (read this first)
+
+**To play.** Open the project (or run `Tools/editor.sh`), press Play. Keys: WASD and mouse, Shift to run, hold
+left click to swing (aim is where you look, longer hold is harder), E picks up and sets down a machine, R returns
+the ball, Backspace resets the hole, B jumps you to the ball, right click watches the ball. **F1 plays the
+solution for the leg you are on. Keys 1 to 4 jump between holes.**
+
+**What I need from you** (things I cannot judge):
+1. **Swing feel and sound.** I have never heard the game. Footsteps, strike, bounce, cup, machine hum, gate: are
+   they good, bad or missing?
+2. **Do the holes make you think?** Try each without F1 first. My honest read is that all four are tutorial
+   difficulty. Tell me which one felt like a puzzle and which felt like aiming.
+3. **The look in motion.** Stills flatter it. Walk each world and tell me the first thing that looks cheap. My own
+   list is under "Critique" below; the club and the lawn are at the top of it.
+4. **Frame rate on your machine.** I measured 48 to 74 fps in the editor at about 2000x1100 (numbers below). Say
+   so if it feels worse than that.
+
+**Decisions waiting on you**
+- The name. "Gravity Golf" is used by other games (see VISION, Competition).
+- What to build next. My recommendation: hard holes before anything else (plates, relays and timed gates with
+  fewer machines than you want), then avatars and co-op. Menus, a level editor and bots come after there is a
+  game worth sharing.
+
+## 2026-11-18, session 1 (autonomous): performance, measured for the first time
+
+**Changed**
+- `GGPerf <seconds>` console command and `Tools/perf.sh`: average, slowest 1% and worst frame, per hole.
+- Found the editor throttles to 3 fps when it is not the front app, so every automated run so far was at 3 fps
+  and hid the real numbers. Turned off in `Config/DefaultEditorSettings.ini`.
+- Three fixes, each found with `ProfileGPU` and confirmed by switching it off and measuring:
+  1. The field markers (rebuilt every frame) and the club were re-captured by Lumen every frame: 6 to 14 ms.
+     They no longer take part in bounced light or ray tracing.
+  2. Lantern Court's 26 swaying pines redrew the moon's shadow map every frame: 12 ms. They are background
+     silhouettes; they cast no shadow now.
+  3. Clouds cost 8 ms (the view plus the sky light's capture of them). Sample counts halved.
+
+| Hole | Before | After |
+| --- | --- | --- |
+| The Terraces | 35 fps | 48 fps |
+| Salt Mirror | 48 fps | 74 fps |
+| The Narrows | 52 fps | 74 fps |
+| Lantern Court | 34 fps | 66 fps |
+
+Editor (Play-In-Editor), M4 Max, 2027x1090 panel, all settings at their highest, from the tee.
+
+**Critique**
+- I built four worlds before measuring once. That was a process failure; `Tools/perf.sh` now exists so it can be
+  part of every art pass.
+- The Terraces is still under 60 on the fastest Mac there is. What is left is spread thin: Lumen, shadows for 180
+  swaying plants, the sky capture. It needs a settings tier below "everything on", which a PC or console build
+  needs anyway.
+- These are editor numbers from one spot per hole. A packaged build should be faster; walking around may be
+  slower. Neither is measured. The standalone launch still hangs (see CLAUDE.md), so I cannot measure a real build.
+- Phones and the web are a different renderer entirely and untouched.
+
+## 2026-11-18, session 1 (autonomous): hole 4, solution playback, smoke test
+
+**Changed**
+- **Hole 4, Lantern Court.** A plate in the ground opens a gate of light. Pressing it only counts if the ball then
+  comes to rest on the safe pad, which banks the press for the next leg. Leg 1: bend through the plate onto the
+  pad. Leg 2: carry the machine on and bend through the open gate to the cup. World: a walled court at night,
+  about 750 paper lanterns in the air, a column of them rising from the cup, pines against a star dome.
+- Sim: switches, gates (timed or latched), switches held across legs. The solver proves each leg with them.
+- Every course records its intended answer. `GGDemo` (or F1) plays it through the real player code: carry the
+  machine, set it down, walk to the ball, swing. Keys 1 to 4 jump between holes.
+- `Tools/smoke.sh`: opens each hole in the editor, plays the solution, checks the result. All four pass.
+
+**Verified in the engine**
+- `Tools/smoke.sh`: Terraces 1 swing, Salt Mirror 2, The Narrows 1, Lantern Court 2.
+
+**Critique**
+- The first design for hole 4 (a repulsor used as a mirror, with a timed gate) never got more forgiving than a
+  few swings out of thousands. I shelved it instead of shipping a hole about precision. Timed gates are in the
+  sim and unused.
+- Lantern Court's idea is a rule ("the pad banks the press"), which the level has to teach without words. It
+  doesn't yet: nothing on the gate or the pad shows that connection.
+- Four holes, four ideas, zero hard puzzles. The puzzle law is enforced, the difficulty isn't there.
+- The smoke test proves the recorded answers work in the engine. It does not prove a person can find them.
+
+**Standing critique of the look** (worst first, judged against The Talos Principle)
+1. The club is a brown box on a grey stick, in view all the time. There are no hands.
+2. The Terraces lawn is one flat olive plane. Hedges in shadow are black slabs.
+3. Machines are primitive shapes: readable, not beautiful.
+4. Every course is a rectangle with walls. The worlds differ; the play spaces don't.
+5. The HUD is debug text.
+
 ## 2026-11-18, session 1 (autonomous): polish and art pass on hole 1
 
 **Changed**
@@ -68,8 +154,3 @@ Newest first. Each entry says what changed, what was verified, and an honest cri
 - Salt Mirror and the canyon look striking in stills; neither has been walked through by a person. The canyon's
   sunlit sand blows out to flat orange, and its walls are flat slabs up close.
 - With two machines the field arrows overlap into noise.
-
-## When Ken is back
-
-See the top entry's "For Ken" list.
-
