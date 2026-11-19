@@ -24,6 +24,8 @@ constexpr float DownswingSeconds = 0.13f;
 constexpr float FollowThroughDegrees = 48.f;
 constexpr float RecoverSeconds = 0.55f;
 constexpr double StrideLength = 150.0;
+constexpr float WalkSpeed = 480.f;
+constexpr float SprintSpeed = 950.f;
 /** The club rests angled ahead of the hands so it stays in view, as first-person tools do. */
 constexpr float ClubRestPitch = 64.f;
 } // namespace
@@ -63,7 +65,7 @@ AGGGolfer::AGGGolfer()
 
 	bUseControllerRotationYaw = true;
 	UCharacterMovementComponent* Movement = GetCharacterMovement();
-	Movement->MaxWalkSpeed = 520.f;
+	Movement->MaxWalkSpeed = WalkSpeed;
 	Movement->JumpZVelocity = 480.f;
 	Movement->AirControl = 0.4f;
 	Movement->BrakingDecelerationWalking = 1800.f;
@@ -81,7 +83,8 @@ void AGGGolfer::SetupPlayerInputComponent(UInputComponent* Input)
 	Input->BindKey(EKeys::LeftMouseButton, IE_Pressed, this, &AGGGolfer::SwingPressed);
 	Input->BindKey(EKeys::LeftMouseButton, IE_Released, this, &AGGGolfer::SwingReleased);
 	Input->BindKey(EKeys::E, IE_Pressed, this, &AGGGolfer::Interact);
-	Input->BindKey(EKeys::R, IE_Pressed, this, &AGGGolfer::ResetHole);
+	Input->BindKey(EKeys::R, IE_Pressed, this, &AGGGolfer::ReturnBall);
+	Input->BindKey(EKeys::BackSpace, IE_Pressed, this, &AGGGolfer::ResetHole);
 	Input->BindKey(EKeys::B, IE_Pressed, this, &AGGGolfer::GoToBall);
 	Input->BindKey(EKeys::RightMouseButton, IE_Pressed, this, &AGGGolfer::WatchPressed);
 	Input->BindKey(EKeys::RightMouseButton, IE_Released, this, &AGGGolfer::WatchReleased);
@@ -236,6 +239,17 @@ void AGGGolfer::LoftDown()
 	LoftDegrees = FMath::Max(LoftDegrees - 15.f, 0.f);
 }
 
+void AGGGolfer::ReturnBall()
+{
+	if (AGGCourse* C = Course())
+	{
+		bCharging = false;
+		SwingTime = -1.f;
+		C->ShowGuide({});
+		C->ReturnBall();
+	}
+}
+
 void AGGGolfer::ResetHole()
 {
 	if (AGGCourse* C = Course())
@@ -346,6 +360,11 @@ void AGGGolfer::Tick(float DeltaSeconds)
 	{
 		return;
 	}
+
+	// Hold Shift to run.
+	const APlayerController* Player = Cast<APlayerController>(GetController());
+	const bool bSprint = Player && Player->IsInputKeyDown(EKeys::LeftShift) && !bCharging;
+	GetCharacterMovement()->MaxWalkSpeed = bSprint ? SprintSpeed : WalkSpeed;
 
 	UpdateClub(DeltaSeconds);
 	UpdateFootsteps();

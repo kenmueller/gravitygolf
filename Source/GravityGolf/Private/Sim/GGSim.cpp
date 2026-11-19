@@ -84,24 +84,40 @@ void FSim::Begin(const FCourse& InCourse, const std::vector<FAttractor>& InAttra
 	BallState.Velocity = Launch;
 	BallState.Radius = InCourse.BallRadius;
 	bInCupZone = false;
+	Engaged.assign(Attractors.size(), false);
+	Released.assign(Attractors.size(), false);
 }
 
-FVec3 FSim::Acceleration(FVec3 Position) const
+FVec3 FSim::Acceleration(FVec3 Position, FVec3 Velocity)
 {
 	FVec3 Total = Course->Gravity;
 	const double Soft2 = Physics.AttractorSoftening * Physics.AttractorSoftening;
-	for (const FAttractor& A : Attractors)
+	for (size_t I = 0; I < Attractors.size(); ++I)
 	{
+		const FAttractor& A = Attractors[I];
 		const FVec3 D = A.Position - Position;
 		const double R2 = Dot(D, D);
 		const double Range2 = A.Range * A.Range;
-		if (R2 >= Range2)
+		if (R2 >= Range2 || Released[I])
 		{
 			continue;
 		}
-		// A dome-shaped field: a steady pull toward the machine that eases to zero at the dome's edge and at
-		// its very center. Unlike inverse-square gravity it is neither negligible far away nor violent up
-		// close, so players can plan with it.
+
+		// A machine bends the ball as it passes, then lets go: it pulls only while the ball is approaching.
+		// Once the ball has made its closest pass and starts to move away, the machine releases it for the
+		// rest of the swing. So a machine turns corners; it never traps the ball.
+		const double Closing = Dot(Velocity, D) * A.Strength;
+		if (Closing <= 0.0)
+		{
+			if (Engaged[I])
+			{
+				Released[I] = true;
+			}
+			continue;
+		}
+		Engaged[I] = true;
+
+		// Dome-shaped field: a steady pull that eases to zero at the dome's edge and at its very center.
 		const double Window = 1.0 - R2 / Range2;
 		const double Direction = 1.0 / std::sqrt(R2 + Soft2);
 		Total = Total + D * (A.Strength * Window * Window * Direction);
@@ -134,7 +150,7 @@ void FSim::Step(std::vector<FEvent>* Events)
 void FSim::SubStep(double H, std::vector<FEvent>* Events)
 {
 	FBall& B = BallState;
-	const FVec3 A = Acceleration(B.Position);
+	const FVec3 A = Acceleration(B.Position, B.Velocity);
 	B.Velocity = B.Velocity + A * H;
 	B.Position = B.Position + B.Velocity * H;
 	B.Time += H;

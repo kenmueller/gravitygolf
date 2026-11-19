@@ -45,7 +45,7 @@ struct FBox
 
 /**
  * A gravity machine. Strength is its peak pull in cm/s^2 (negative pushes); the field is a dome of radius Range
- * that fades smoothly to zero at its edge.
+ * that fades smoothly to zero at its edge. It acts only while the ball approaches, then releases it.
  */
 struct FAttractor
 {
@@ -145,7 +145,7 @@ public:
 	EBallState Run(std::vector<FEvent>* Events = nullptr, int MaxSteps = 1 << 20);
 
 	const FBall& Ball() const { return BallState; }
-	FVec3 Acceleration(FVec3 Position) const;
+
 	bool Finished() const { return BallState.State != EBallState::Moving; }
 
 	/** Order-sensitive hash of the full state, for determinism checks. */
@@ -153,11 +153,15 @@ public:
 
 private:
 	void SubStep(double H, std::vector<FEvent>* Events);
+	FVec3 Acceleration(FVec3 Position, FVec3 Velocity);
 
 	const FCourse* Course = nullptr;
 	std::vector<FAttractor> Attractors;
 	FPhysics Physics;
 	FBall BallState;
 	bool bInCupZone = false;
+	/** Per machine: has the ball started approaching it, and has it since been let go? */
+	std::vector<bool> Engaged;
+	std::vector<bool> Released;
 };
 } // namespace GG

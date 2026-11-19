@@ -71,7 +71,8 @@ void AGGHUD::DrawHUD()
 	}
 	else if (Course->Phase() == EGGPhase::Ready)
 	{
-		Prompt = FString::Printf(TEXT("Ball: %d m    B: walk to it"), FMath::RoundToInt32(Golfer->DistanceToBall() / 100.0));
+		Prompt = FString::Printf(TEXT("Ball: %d m    B: go to it    Shift: run    R: return ball    Backspace: reset hole"),
+			FMath::RoundToInt32(Golfer->DistanceToBall() / 100.0));
 	}
 	if (!Prompt.IsEmpty())
 	{

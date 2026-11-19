@@ -54,6 +54,7 @@ private:
 	void LoftUp();
 	void LoftDown();
 	void ResetHole();
+	void ReturnBall();
 	void GoToBall();
 	FVector SwingDirection() const;
 	FVector HoldPoint() const;

@@ -27,8 +27,10 @@ This is a puzzle game. The player must think. Every hole is designed so its comp
    (Free multiple strokes would let players walk the ball around every obstacle.)
    **Safe zones** are optional, per level: pads where a resting ball stays, making long holes a chain of legs.
    The solver proves every leg separately.
-5. **The club is a putter.** The ball rolls. Height, curves and anything else come from the machines.
-6. **One new idea per hole**, taught by the level itself.
+5. **Machines bend, they don't trap.** A gravity machine pulls only while the ball approaches and releases it
+   after the closest pass. (A steady pull plus rolling friction always parks the ball under the machine.)
+6. **The club is a putter.** The ball rolls. Height, curves and anything else come from the machines.
+7. **One new idea per hole**, taught by the level itself.
 
 ## Critique everything (Ken's rule)
 
@@ -99,6 +101,8 @@ Work through the Unreal MCP (`mcp__unreal__*`) while the editor is open:
   enabled. Use PIE captures until that's understood.
 - The first editor start after changing renderer settings recompiles shaders and rebuilds Nanite data for the
   Megaplants trees (several minutes). MCP tools return "slow task" until it finishes.
+- After `ExitEditor`, the MCP port can stay held for a few seconds. If a fresh editor logs "MCP server listener
+  could not start on port 8000", kill it and run `Tools/editor.sh` again.
 - Megaplants need `r.Nanite.Foliage` and `r.Nanite.AllowAssemblies`, or the trees render bare.
 - Post-process exposure min/max brightness are luminance values, not EV; setting them high makes the game look
   like night.

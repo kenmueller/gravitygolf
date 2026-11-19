@@ -42,7 +42,10 @@ public:
 
 	/** Launch along a unit direction with power in [0, 1]. */
 	void Swing(const FVector& Direction, double Power);
+	/** Put everything back: ball, machines and the attempt count. */
 	void ResetHole();
+	/** Bring just the ball back to the last safe spot. */
+	void ReturnBall();
 
 	/** Samples of the path a swing would take, for the aiming guide. */
 	void PreviewSwing(const FVector& Direction, double Power, double Seconds, TArray<FVector>& OutPoints) const;

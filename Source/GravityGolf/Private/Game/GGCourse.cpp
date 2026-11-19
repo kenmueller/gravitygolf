@@ -305,6 +305,19 @@ void AGGCourse::Notify(const FString& Message)
 	NoticeTime = 2.5;
 }
 
+void AGGCourse::ReturnBall()
+{
+	// Call the ball back to the last safe spot, even mid-roll. Machines stay where they are.
+	if (CurrentPhase == EGGPhase::Sunk)
+	{
+		return;
+	}
+	Lie = LastSafe;
+	Trail.Reset();
+	Status.Reset();
+	CurrentPhase = EGGPhase::Ready;
+}
+
 void AGGCourse::ResetHole()
 {
 	Lie = Course.Tee;
