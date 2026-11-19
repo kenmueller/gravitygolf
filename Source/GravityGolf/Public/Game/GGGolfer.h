@@ -108,6 +108,8 @@ public:
 	bool TestCarryTo(const FVector& Ground);
 	/** Carry a particular machine to a ground point and set it down. */
 	bool TestPlaceMachine(int32 Index, const FVector& Ground);
+	/** For automated play: stand at a spot on the ground, as if having walked there. */
+	void TestStandAt(const FVector& Ground);
 	/** Stand at the ball, face a yaw and swing with a power in [0, 1], through the club animation. */
 	void TestSwing(float Yaw, float Power);
 
@@ -183,6 +185,7 @@ private:
 	void Hole9() { JumpToHole(9); }
 	void Hole10() { JumpToHole(10); }
 	void Hole11() { JumpToHole(11); }
+	void Hole12() { JumpToHole(12); }
 
 	void TouchPressed(ETouchIndex::Type Finger, FVector Location) { HandleTouch(static_cast<int32>(Finger), 0, FVector2D(Location)); }
 	void TouchMoved(ETouchIndex::Type Finger, FVector Location) { HandleTouch(static_cast<int32>(Finger), 1, FVector2D(Location)); }

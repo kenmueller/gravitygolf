@@ -1,5 +1,7 @@
 #include "Game/GGGameMode.h"
 
+#include "Sim/GGLogistics.h"
+
 #include "Animation/SkeletalMeshActor.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -419,9 +421,41 @@ void AGGGameMode::TickDemo(float DeltaSeconds)
 		bDemo = false;
 		return;
 	}
+	if (Course->HasGrilles())
+	{
+		// Behind grilles the answer is also an order of carries. The demo makes the carries the planner finds
+		// (Sim/GGLogistics.h), standing at each plinth to set the machine down, and fails if there is no such order.
+		const GG::FSetup Setup = Course->MakeSetup();
+		const GG::FCarryMap Map = GG::MakeCarryMap(Setup);
+		std::vector<int> On, Goal;
+		for (int32 I = 0; I < Course->MachineCount(); ++I)
+		{
+			On.push_back(GG::PlinthAt(Setup, Course->MachineBase(I).X, Course->MachineBase(I).Y));
+			Goal.push_back(Solution->Machines.IsValidIndex(I) ? GG::PlinthAt(Setup, Solution->Machines[I].X, Solution->Machines[I].Y) : On.back());
+		}
+		const GG::FCarryPlans Plans = GG::PlanCarries(Setup, Map, On, Course->Banked());
+		if (!Plans.Can(Goal))
+		{
+			UE_LOG(LogGGMode, Error, TEXT("Demo: FAIL %s: the machines cannot be carried to where leg %d's answer stands them"), *Course->CourseName(), Leg + 1);
+			bDemo = false;
+			return;
+		}
+		for (const GG::FCarry& Move : Plans.To(Goal))
+		{
+			const FVector To(Setup.Plinths[Move.To].X, Setup.Plinths[Move.To].Y, Course->MachineBase(Move.Machine).Z);
+			Golfer->TestStandAt(To);
+			if (!Golfer->TestPlaceMachine(Move.Machine, To))
+			{
+				UE_LOG(LogGGMode, Error, TEXT("Demo: FAIL %s machine %d could not be carried to (%.0f, %.0f)"), *Course->CourseName(), Move.Machine + 1, To.X, To.Y);
+				bDemo = false;
+				return;
+			}
+			UE_LOG(LogGGMode, Display, TEXT("Demo: carried machine %d to (%.0f, %.0f)"), Move.Machine + 1, To.X, To.Y);
+		}
+	}
 	for (int32 I = 0; I < Solution->Machines.Num() && I < Course->MachineCount(); ++I)
 	{
-		if (!Golfer->TestPlaceMachine(I, Solution->Machines[I]))
+		if (!Course->HasGrilles() && !Golfer->TestPlaceMachine(I, Solution->Machines[I]))
 		{
 			UE_LOG(LogGGMode, Error, TEXT("Demo: FAIL %s machine %d could not be placed"), *Course->CourseName(), I + 1);
 			bDemo = false;

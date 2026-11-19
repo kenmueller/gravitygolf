@@ -302,6 +302,7 @@ void AGGGolfer::SetupPlayerInputComponent(UInputComponent* Input)
 	Input->BindKey(EKeys::Nine, IE_Pressed, this, &AGGGolfer::Hole9);
 	Input->BindKey(EKeys::Zero, IE_Pressed, this, &AGGGolfer::Hole10);
 	Input->BindKey(EKeys::Hyphen, IE_Pressed, this, &AGGGolfer::Hole11);
+	Input->BindKey(EKeys::Equals, IE_Pressed, this, &AGGGolfer::Hole12);
 
 	// Gamepad: left stick walks (click it to run), right stick looks, right trigger swings.
 	Input->BindAxisKey(EKeys::Gamepad_LeftY, this, &AGGGolfer::PadForward);
@@ -1225,6 +1226,12 @@ bool AGGGolfer::TestCarryTo(const FVector& Ground)
 		C->CarryMachine(C->FindMachine(GetActorLocation(), 1.0e9), this);
 	}
 	return PlaceCarried(Ground);
+}
+
+void AGGGolfer::TestStandAt(const FVector& Ground)
+{
+	SetActorLocation(Ground + FVector(-70.0, 0.0, 100.0), false, nullptr, ETeleportType::TeleportPhysics);
+	LastCarryStand = GetActorLocation();
 }
 
 bool AGGGolfer::TestPlaceMachine(int32 Index, const FVector& Ground)

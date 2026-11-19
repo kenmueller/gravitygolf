@@ -1,0 +1,454 @@
+{
+ "web": {
+  "ambient": 2.2,
+  "tint": [
+   1.0,
+   1.0,
+   1.0
+  ]
+ },
+ "plants": [
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_A.Tree_Aleppo_Pine_01_A",
+   "kind": "pine",
+   "position": [
+    -4752.6,
+    -105.2,
+    -20
+   ],
+   "yaw": 39.6,
+   "scale": 1.43,
+   "extent": [
+    720,
+    831,
+    724
+   ],
+   "shadow": false
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_D.Tree_Aleppo_Pine_01_D",
+   "kind": "pine",
+   "position": [
+    7423.5,
+    1196.1,
+    -20
+   ],
+   "yaw": 313.9,
+   "scale": 1.083,
+   "extent": [
+    281,
+    234,
+    390
+   ],
+   "shadow": false
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_A.Tree_Aleppo_Pine_01_A",
+   "kind": "pine",
+   "position": [
+    5060.9,
+    2677.6,
+    -20
+   ],
+   "yaw": 17.5,
+   "scale": 1.087,
+   "extent": [
+    720,
+    831,
+    724
+   ],
+   "shadow": false
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_B.Tree_Aleppo_Pine_01_B",
+   "kind": "pine",
+   "position": [
+    -7198.4,
+    3033.8,
+    -20
+   ],
+   "yaw": 341.6,
+   "scale": 1.693,
+   "extent": [
+    427,
+    385,
+    687
+   ],
+   "shadow": false
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_D.Tree_Aleppo_Pine_01_D",
+   "kind": "pine",
+   "position": [
+    4831.4,
+    4685.3,
+    -20
+   ],
+   "yaw": 248.1,
+   "scale": 1.04,
+   "extent": [
+    281,
+    234,
+    390
+   ],
+   "shadow": false
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_D.Tree_Aleppo_Pine_01_D",
+   "kind": "pine",
+   "position": [
+    -2570.7,
+    -4208.9,
+    -20
+   ],
+   "yaw": 345.3,
+   "scale": 1.497,
+   "extent": [
+    281,
+    234,
+    390
+   ],
+   "shadow": false
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_C.Tree_Aleppo_Pine_01_C",
+   "kind": "pine",
+   "position": [
+    -6829.4,
+    605.0,
+    -20
+   ],
+   "yaw": 214.4,
+   "scale": 1.312,
+   "extent": [
+    351,
+    393,
+    498
+   ],
+   "shadow": false
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_B.Tree_Aleppo_Pine_01_B",
+   "kind": "pine",
+   "position": [
+    -2299.1,
+    4524.3,
+    -20
+   ],
+   "yaw": 337.8,
+   "scale": 1.137,
+   "extent": [
+    427,
+    385,
+    687
+   ],
+   "shadow": false
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_C.Tree_Aleppo_Pine_01_C",
+   "kind": "pine",
+   "position": [
+    -4243.7,
+    -2955.2,
+    -20
+   ],
+   "yaw": 198.1,
+   "scale": 1.208,
+   "extent": [
+    351,
+    393,
+    498
+   ],
+   "shadow": false
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_B.Tree_Aleppo_Pine_01_B",
+   "kind": "pine",
+   "position": [
+    777.9,
+    5405.7,
+    -20
+   ],
+   "yaw": 15.1,
+   "scale": 1.443,
+   "extent": [
+    427,
+    385,
+    687
+   ],
+   "shadow": false
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_B.Tree_Aleppo_Pine_01_B",
+   "kind": "pine",
+   "position": [
+    6962.0,
+    1633.7,
+    -20
+   ],
+   "yaw": 194.7,
+   "scale": 1.363,
+   "extent": [
+    427,
+    385,
+    687
+   ],
+   "shadow": false
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_B.Tree_Aleppo_Pine_01_B",
+   "kind": "pine",
+   "position": [
+    6305.4,
+    -3428.8,
+    -20
+   ],
+   "yaw": 152.3,
+   "scale": 1.585,
+   "extent": [
+    427,
+    385,
+    687
+   ],
+   "shadow": false
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_A.Tree_Aleppo_Pine_01_A",
+   "kind": "pine",
+   "position": [
+    -5511.4,
+    730.8,
+    -20
+   ],
+   "yaw": 283.2,
+   "scale": 1.224,
+   "extent": [
+    720,
+    831,
+    724
+   ],
+   "shadow": false
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_A.Tree_Aleppo_Pine_01_A",
+   "kind": "pine",
+   "position": [
+    6301.0,
+    2547.7,
+    -20
+   ],
+   "yaw": 201.6,
+   "scale": 1.51,
+   "extent": [
+    720,
+    831,
+    724
+   ],
+   "shadow": false
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_C.Tree_Aleppo_Pine_01_C",
+   "kind": "pine",
+   "position": [
+    -6002.3,
+    3662.4,
+    -20
+   ],
+   "yaw": 206.2,
+   "scale": 1.227,
+   "extent": [
+    351,
+    393,
+    498
+   ],
+   "shadow": false
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_D.Tree_Aleppo_Pine_01_D",
+   "kind": "pine",
+   "position": [
+    8431.9,
+    1760.2,
+    -20
+   ],
+   "yaw": 38.2,
+   "scale": 1.482,
+   "extent": [
+    281,
+    234,
+    390
+   ],
+   "shadow": false
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_C.Tree_Aleppo_Pine_01_C",
+   "kind": "pine",
+   "position": [
+    5681.5,
+    2971.6,
+    -20
+   ],
+   "yaw": 55.5,
+   "scale": 1.201,
+   "extent": [
+    351,
+    393,
+    498
+   ],
+   "shadow": false
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_C.Tree_Aleppo_Pine_01_C",
+   "kind": "pine",
+   "position": [
+    -2420.0,
+    4137.1,
+    -20
+   ],
+   "yaw": 157.5,
+   "scale": 1.25,
+   "extent": [
+    351,
+    393,
+    498
+   ],
+   "shadow": false
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_D.Tree_Aleppo_Pine_01_D",
+   "kind": "pine",
+   "position": [
+    -321.7,
+    -4419.1,
+    -20
+   ],
+   "yaw": 315.4,
+   "scale": 1.444,
+   "extent": [
+    281,
+    234,
+    390
+   ],
+   "shadow": false
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_D.Tree_Aleppo_Pine_01_D",
+   "kind": "pine",
+   "position": [
+    -5062.3,
+    1497.3,
+    -20
+   ],
+   "yaw": 107.2,
+   "scale": 1.324,
+   "extent": [
+    281,
+    234,
+    390
+   ],
+   "shadow": false
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_A.Tree_Aleppo_Pine_01_A",
+   "kind": "pine",
+   "position": [
+    1036.4,
+    -3333.0,
+    -20
+   ],
+   "yaw": 232.0,
+   "scale": 1.544,
+   "extent": [
+    720,
+    831,
+    724
+   ],
+   "shadow": false
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_B.Tree_Aleppo_Pine_01_B",
+   "kind": "pine",
+   "position": [
+    6175.4,
+    4582.9,
+    -20
+   ],
+   "yaw": 307.8,
+   "scale": 1.294,
+   "extent": [
+    427,
+    385,
+    687
+   ],
+   "shadow": false
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_C.Tree_Aleppo_Pine_01_C",
+   "kind": "pine",
+   "position": [
+    -66.4,
+    4421.5,
+    -20
+   ],
+   "yaw": 227.7,
+   "scale": 1.67,
+   "extent": [
+    351,
+    393,
+    498
+   ],
+   "shadow": false
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_C.Tree_Aleppo_Pine_01_C",
+   "kind": "pine",
+   "position": [
+    -747.3,
+    3672.3,
+    -20
+   ],
+   "yaw": 89.0,
+   "scale": 1.211,
+   "extent": [
+    351,
+    393,
+    498
+   ],
+   "shadow": false
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_D.Tree_Aleppo_Pine_01_D",
+   "kind": "pine",
+   "position": [
+    2896.9,
+    -3934.0,
+    -20
+   ],
+   "yaw": 133.6,
+   "scale": 1.217,
+   "extent": [
+    281,
+    234,
+    390
+   ],
+   "shadow": false
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_A.Tree_Aleppo_Pine_01_A",
+   "kind": "pine",
+   "position": [
+    -5628.4,
+    3400.5,
+    -20
+   ],
+   "yaw": 255.3,
+   "scale": 1.451,
+   "extent": [
+    720,
+    831,
+    724
+   ],
+   "shadow": false
+  }
+ ]
+}

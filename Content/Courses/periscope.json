@@ -283,7 +283,8 @@
 			],
 			"switch": 0,
 			"openSeconds": 0.0,
-			"surface": "sand"
+			"surface": "sand",
+			"grille": false
 		}
 	],
 	"solutions": [
@@ -456,7 +457,7 @@
 			"radius": 65
 		}
 	],
-	"next": "Wires",
+	"next": "Leapfrog",
 	"ambience": "wind",
 	"music": "night"
 }

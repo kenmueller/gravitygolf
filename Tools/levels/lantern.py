@@ -149,9 +149,14 @@ def markers(course, m):
     c.mesh(c.CYLINDER, (x, y, z + 0.9), (cup["radius"] * 2, cup["radius"] * 2, 1), material=m["black"], label="Cup",
            folder="Course/Markers", cast_shadow=False)
     c.mesh(c.CYLINDER, (x, y, z + 130), (2.5, 2.5, 260), material=m["bronze"], label="FlagPole", folder="Course/Markers")
-    for machine in course["attractors"]:
-        mx, my, _ = machine["position"]
-        c.dais((mx, my), 130, m["wall"], m["glyph"])
+    plinths = course.get("plinths", [])
+    for plinth in plinths:
+        # A plinth: a disc of dark bronze in the paving with a ring of light, the only place a machine will stand.
+        c.dais((plinth["position"][0], plinth["position"][1]), plinth["radius"] * 2 + 30, m["bronze"], m["glyph"], label="Plinth")
+    if not plinths:
+        for machine in course["attractors"]:
+            mx, my, _ = machine["position"]
+            c.dais((mx, my), 130, m["wall"], m["glyph"])
 
 
 def surroundings(m):

@@ -372,7 +372,8 @@
 			],
 			"switch": 1,
 			"openSeconds": 0.0,
-			"surface": "sand"
+			"surface": "sand",
+			"grille": false
 		},
 		{
 			"name": "Gate2",
@@ -388,7 +389,8 @@
 			],
 			"switch": 2,
 			"openSeconds": 0.0,
-			"surface": "sand"
+			"surface": "sand",
+			"grille": false
 		},
 		{
 			"name": "Gate3",
@@ -404,7 +406,8 @@
 			],
 			"switch": 0,
 			"openSeconds": 0.0,
-			"surface": "sand"
+			"surface": "sand",
+			"grille": false
 		},
 		{
 			"name": "Gate4",
@@ -420,7 +423,8 @@
 			],
 			"switch": 4,
 			"openSeconds": 0.0,
-			"surface": "sand"
+			"surface": "sand",
+			"grille": false
 		},
 		{
 			"name": "Gate5",
@@ -436,7 +440,8 @@
 			],
 			"switch": 3,
 			"openSeconds": 0.0,
-			"surface": "sand"
+			"surface": "sand",
+			"grille": false
 		}
 	],
 	"solutions": [

@@ -9,14 +9,15 @@ left click to swing (aim is where you look, longer hold is harder), E picks up a
 the ball, Backspace resets the hole, B jumps you to the ball, right click watches the ball, hold Space while the
 ball rolls to run it fast. **F1 plays the
 solution for the leg you are on (a hole solved that way is not recorded). Tab opens the menu. Keys 1 to 9 jump
-between holes, 0 is hole 10 and the minus key is hole 11.** F turns a mirror.
+between holes, 0 is hole 10, minus is hole 11 and equals is hole 12.** F turns a mirror.
 
 **Four things to try, in this order**
-1. **Holes 5, 8, 9, 10 and 11** (press the number; 0 is hole 10, minus is hole 11). Five is the first one meant to
-   be hard: the cup is behind you, behind a gate. Eight: machines stand only on seven plinths. Nine: a new machine,
-   the mirror (F turns it). Ten, Periscope, is the newest and the best looking: two mirrors, the salt at night under
-   an aurora. Eleven is the last hole: a weight, a mirror, and plates whose colours have to be read. Try them
-   without F1.
+1. **Holes 5, 8, 9, 10, 11 and 12** (press the number; 0 is hole 10, minus is 11, equals is 12). Five is the first
+   one meant to be hard: the cup is behind you, behind a gate. Eight: machines stand only on seven plinths. Nine: a
+   new machine, the mirror (F turns it). Ten, Periscope, is the best looking: two mirrors, the salt at night under
+   an aurora. Eleven, Leapfrog, is the newest idea: gates with rails stop a machine in your arms, so the order you
+   carry things in is the puzzle. Twelve is the last hole: a weight, a mirror, and plates whose colours have to be
+   read. Try them without F1.
 2. **The Workshop** (Tab, then Workshop). Build a hole: pick a tool along the bottom, drag on the table. Press T to
    test it, T again to come back. CHECK runs every swing without the machines; solving it yourself in a test is the
    other half of the proof. Tab has Keep, My holes, and a code you can copy to a friend.
@@ -46,17 +47,14 @@ between holes, 0 is hole 10 and the minus key is hole 11.** F turns a mirror.
 **Decisions waiting on you**
 - The name. "Gravity Golf" is used by other games (see VISION, Competition).
 - Publishing the web build. It runs locally; nothing is public, and I will not publish without your word.
-- **How the game gets hard.** You asked for puzzles people look up walkthroughs for. Eleven holes in, none is.
-  Each new hole so far has been a new tool or a new reading of one; with plinths and mirrors the holes became pure
-  deduction, which is fair but quick. What makes The Talos Principle hard is logistics: the thing that opens the
-  door is the thing you need on the other side of it. This game has no logistics, because the player and the
-  machines walk through every gate; gates only stop the ball. **My proposal: gates of light stop a carried machine
-  too.** Then a weight on a plate is what lets the other machine through, and getting both machines and the ball to
-  the far end becomes a problem of order, with the swing as the last step. It needs: the carry rule (and its
-  co-op and touch cases), a reachability check in the proof (a spot only counts if the machine can be walked
-  there), the rival taught to plan a route, and the Workshop's check extended the same way. About as much work as
-  the mirrors were. I have not started it: it changes what every existing gate means, so it is yours to approve.
-- More holes or more polish next. There are eleven holes, and the eleventh is written as the last. I did not wait
+- **How the game gets hard.** You asked for puzzles people look up walkthroughs for. None of these is one yet.
+  With plinths and mirrors the holes became pure deduction, which is fair but quick. What makes The Talos Principle
+  hard is logistics: the thing that opens the door is the thing you need on the other side of it. This game had
+  none, because the player and the machines walked through every gate. **So I built it, as a new kind of gate that
+  changes no existing hole: the grille** (a gate with rails), which stops a machine in your arms while it is shut.
+  Hole 11, Leapfrog, teaches it. What I have not built is the hard hole this makes possible; that is next. If you
+  dislike the idea, it is one hole and one flag to take out.
+- More holes or more polish next. There are twelve holes, and the twelfth is written as the last. I did not wait
   for the answer: I kept doing both (a new hole, then the worst-looking hole made better). Say if you want one or
   the other.
 
@@ -83,8 +81,24 @@ between holes, 0 is hole 10 and the minus key is hole 11.** F turns a mirror.
   the spot, and prints the address and a QR code. `check` proves the Mac's side.
 - `Tools/look.sh`: open a level, play, save pictures from the tee and from any views given.
 
+- **Grilles, and hole 11, Leapfrog** (the finale is now hole 12). A grille is a gate with rails: while shut it
+  stops a machine being carried, as well as the ball. The player alone walks through. Leapfrog has two of them and
+  two machines that both have to end up beyond the first wall: one holds the near plate while the other is carried
+  through; that one, on its plate beyond, holds the second grille for the first to follow. The proof plans the
+  carries (three, in that order) and the demo makes them.
+
 **Verified** (results at the end of this entry are from the runs made after the last change)
-- Sim tests pass, with a new one for the frame's end. All eleven proofs pass.
+- `Tools/testall.sh` after the music, marks and lighting changes: ALL PASSED (sim tests, eleven proofs, every hole in
+  the engine, the Workshop, two players in step, two players in the Workshop, host and join).
+- Frame rates from the tee, same run: Terraces 60, Salt Mirror 80, Narrows 82, Lantern Court 76, Long Way Round 80,
+  Second Wind 88, Dead Weight 76, Stepping Stones 77, Looking Glass 98, Periscope 98, Crossed Wires 74.
+- The web build made after the music: music starts in the browser ("Music: wind (playing)"), the phone-size play
+  test and the two holes re-run pass.
+- Grilles: the planner has a unit test (the leapfrog, a mirror too light to take part, a grille the ball has
+  banked). Leapfrog's proof passes with the carries printed. In the engine, `Tools/grilletest.sh` moves the player
+  in straight steps and the game's own rule decides: five checks pass (stopped when shut, through when open, shut
+  again when the weight is lifted, the ball's grille opened from beyond, empty hands walk through).
+- Sim tests pass, with a new one for the frame's end. All twelve proofs pass.
 - Periscope in the engine: its recorded answer sinks the ball in two swings; the rival finishes it at all three
   skills (50 s, 96 s, 249 s).
 - In Chrome, from the web build made before the music: all eleven holes' answers sink the ball, the Workshop works
@@ -112,6 +126,14 @@ between holes, 0 is hole 10 and the minus key is hole 11.** F turns a mirror.
 - *The field arrows* (blue arrowheads that stream along a machine's pull) look like debug marks in a still
   picture. I looked at replacing them and kept them: they move, and they are how a placement is read. A player
   might still find them ugly.
+- *Grilles.* The decision I am least sure of. For: it is the one mechanic I can find that makes order matter, and
+  it is opt-in. Against: it is a second kind of gate that looks like the first with three rails added, and a player
+  who misses the difference will think the game is broken when they are put back. The message ("A machine won't
+  pass a shut grille") is the only teaching. Leapfrog itself is a tutorial, not a hard hole: one dead end (carry
+  the second machine straight to the far plate and the first can never follow) and then it is done. Its swing has
+  only 18 working swings out of 110,000, which is not the "easy part" its own description claims. Not verified:
+  a human walking it (my test moves the player in straight jumps), two players, touch, the web. The rival ignores
+  grilles entirely.
 - *Process.* I blamed a hung connection on TLS before testing plain HTTP, which showed in one step that it was the
   firewall. And a server I thought I had stopped kept the port, because I had killed a subshell instead of it.
 

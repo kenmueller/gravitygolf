@@ -4,7 +4,7 @@
 #   Tools/smoke.sh [Level ...]      default: every hole
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 LOG="$HOME/Library/Logs/Unreal Engine/GravityGolfEditor/GravityGolf.log"
-LEVELS="${*:-Terraces SaltMirror Canyon Lantern Returning Brief Colonnade Stones Glass Periscope Wires}"
+LEVELS="${*:-Terraces SaltMirror Canyon Lantern Returning Brief Colonnade Stones Glass Periscope Leapfrog Wires}"
 call() {
 	python3 "$ROOT/Tools/mcp.py" call call_tool "$1" 2>&1
 }

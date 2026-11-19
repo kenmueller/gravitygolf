@@ -145,6 +145,8 @@ public:
 	/** Would a carried machine have to cross a shut grille to go in a straight line from From to To? */
 	bool CarryBlocked(const FVector& From, const FVector& To) const;
 	bool HasGrilles() const;
+	/** The switches the ball has banked so far (pressed on a leg that ended on a pad). */
+	const std::vector<bool>& Banked() const { return HeldSwitches; }
 	/** Where a machine set down near Base comes to stand: the middle of the plinth it is on, if the hole has plinths. */
 	FVector MachineSpot(const FVector& Base) const;
 	bool HasPlinths() const { return Plinths.Num() > 0; }

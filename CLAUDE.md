@@ -68,6 +68,8 @@ Source/GravityGolf/
   */Game/GGWorkshop.*         the level editor: a design on a 50 cm grid, its tools, the view from above, the proof
   */Game/GGWorkshopHUD.cpp    the Workshop's building screen (drawn by AGGHUD)
   */Sim/GGProof.h             the proof's building blocks, shared by Tests/Sim and the Workshop
+  */Sim/GGLogistics.h         carrying behind grilles: which plinths a carried machine can reach, and the carries that
+                              take the machines from one standing to another (the proof and the demo use it)
 Content/Courses/*.json        collision boxes + rules, written by Tools/courses/<level>.py (plain Python)
 Tools/levels/<level>.py       builds the level in the editor from the course JSON plus dressing (common.py helpers)
 Tools/build_materials.py      generates /Game/Materials (custom HLSL: triplanar scans, ocean, ball, glow)
@@ -95,6 +97,7 @@ Tools/sounds.sh               writes every sound the game makes to WAV and measu
 Tools/hosttest.sh [Level]     two standalone copies of the game: one hosts, one joins by address
 Tools/nettest_workshop.sh     two players in the Workshop: the host builds, tests and solves; both copies compared
 Tools/rivaltest.sh [Level ...]   the rival bot plays a hole at each skill, time sped up; reports time and swings
+Tools/grilletest.sh           in the editor, on hole 11: a shut grille stops a carried machine, an open one does not
 Tools/workshoptest.sh         works the Workshop without hands: every tool, undo, hole codes, touch, the proof, a test play
 Tests/Sim/cupscan.sh <course> <min x> <ax> <ay> <bx> <by>   design aid: cup spots that a machine at A serves and one at B cannot
 Tests/Sim/design.sh <json> solve|search|probe   the standalone tools on a Workshop design (`GGWorkshop json <file>` writes one)
@@ -220,9 +223,20 @@ console and read the pass list in the log before guessing.
   Python may not, and the connection then opens and hangs. `Tools/phone.sh` uses the system one.
 - A shell function run in the background (`serve &`) is a subshell: `$!` is the subshell, and killing it leaves the
   real program running and holding its port. Start the program itself in the background.
+- Grilles (`c.gate(..., grille=True)`): gates with rails that also stop a machine being carried while shut. The
+  player alone walks through, as through any gate. A hole with grilles needs plinths (carrying is planned plinth to
+  plinth), every machine starting on one, and walls all round (or machines are carried round the outside).
+  `Tests/Sim/solve.sh` prints the carries and counts a way of standing the machines only if it can be carried to;
+  the demo (F1, `Tools/smoke.sh`) makes the same carries in order. In the game the rule is three checks: a step
+  (the golfer is put back), a set-down, and a pick-up through the bars. A lifted machine lets go of its plate at once.
+  The rival does not know about grilles yet: it carries in its own ghost copy in any order.
+- Never edit a shell script while it is running: `sh` reads the file as it goes, and a script changed under it fails
+  with a syntax error at whatever line it had reached (`Tools/webtest.sh` did, after passing).
+- sh: `[ a ] && [ b ] || [ c ] && [ d ]` is `((a && b) || c) && d`. It made a test report three failures the game
+  had not committed.
 - Adding a hole: its course and level scripts, an entry in `UGGSave::Holes()` (GGSave.cpp), the previous course's
   `next_level`, the level lists in `Tools/smoke.sh`, `Tools/perf.sh`, `Tools/regen.sh`, `Tools/web.sh` (MAPS) and
-  `Tools/webtest.sh` (tour), a `hole-<Level>` fixture in `Build/Wasm/fixtures.json`, a number key in GGGolfer, and
+  `Tools/webtest.sh` (tour), a `hole-<Level>` fixture in `Build/Wasm/fixtures.json`, a number key in GGGolfer (1 to 9, 0, minus, equals so far), and
   the table in `docs/VISION.md`. The ending card appears on whichever hole has no `next_level`.
 - Test a hole's stated idea, not only the hole: change what the idea depends on (move the cup, hold the gate open)
   and check the proof changes. Hole 6's timed gate turned out to be decoration this way.

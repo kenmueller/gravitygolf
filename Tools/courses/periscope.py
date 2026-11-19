@@ -20,7 +20,7 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 from coursekit import Course  # noqa: E402
 
-c = Course("periscope", "Periscope", "Periscope", next_level="Wires")
+c = Course("periscope", "Periscope", "Periscope", next_level="Leapfrog")
 X0, X1, Y0, Y1 = 0, 6200, -500, 1900
 c.box("Crust", ((X0 + X1) / 2, (Y0 + Y1) / 2, -15), (X1 - X0, Y1 - Y0, 30), "green", "crust")
 BRINE = 3000
