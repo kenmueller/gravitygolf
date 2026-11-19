@@ -1,0 +1,3115 @@
+{
+ "plants": [
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    86.5,
+    -1160.5,
+    0.0
+   ],
+   "yaw": 234.3,
+   "scale": 1.393,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    432.4,
+    -1137.7,
+    0.0
+   ],
+   "yaw": 77.3,
+   "scale": 1.16,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    951.4,
+    -1140.2,
+    0.0
+   ],
+   "yaw": 44.6,
+   "scale": 1.278,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    1124.3,
+    -1163.1,
+    0.0
+   ],
+   "yaw": 210.8,
+   "scale": 1.486,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    1470.3,
+    -1156.3,
+    0.0
+   ],
+   "yaw": 51.9,
+   "scale": 1.243,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    1643.2,
+    -1144.5,
+    0.0
+   ],
+   "yaw": 37.1,
+   "scale": 1.283,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    1816.2,
+    -1148.6,
+    0.0
+   ],
+   "yaw": 22.6,
+   "scale": 1.271,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
+   "kind": "heather",
+   "position": [
+    1989.2,
+    -1149.0,
+    0.0
+   ],
+   "yaw": 279.8,
+   "scale": 1.251,
+   "extent": [
+    24,
+    25,
+    21
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
+   "kind": "heather",
+   "position": [
+    2162.2,
+    -1156.0,
+    0.0
+   ],
+   "yaw": 286.0,
+   "scale": 1.368,
+   "extent": [
+    28,
+    27,
+    20
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
+   "kind": "heather",
+   "position": [
+    2508.1,
+    -1150.1,
+    0.0
+   ],
+   "yaw": 123.7,
+   "scale": 1.073,
+   "extent": [
+    24,
+    25,
+    21
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_C.Shrub_Heather_01_C",
+   "kind": "heather",
+   "position": [
+    2681.1,
+    -1161.5,
+    0.0
+   ],
+   "yaw": 150.5,
+   "scale": 0.991,
+   "extent": [
+    35,
+    37,
+    25
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    2854.1,
+    -1163.8,
+    0.0
+   ],
+   "yaw": 240.6,
+   "scale": 1.244,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    3027.0,
+    -1155.6,
+    0.0
+   ],
+   "yaw": 250.3,
+   "scale": 1.198,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_C.Shrub_Heather_01_C",
+   "kind": "heather",
+   "position": [
+    3200.0,
+    -1162.9,
+    0.0
+   ],
+   "yaw": 33.7,
+   "scale": 1.184,
+   "extent": [
+    35,
+    37,
+    25
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
+   "kind": "heather",
+   "position": [
+    3373.0,
+    -1163.2,
+    0.0
+   ],
+   "yaw": 252.5,
+   "scale": 1.247,
+   "extent": [
+    28,
+    27,
+    20
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
+   "kind": "heather",
+   "position": [
+    3545.9,
+    -1151.6,
+    0.0
+   ],
+   "yaw": 258.0,
+   "scale": 1.108,
+   "extent": [
+    28,
+    27,
+    20
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
+   "kind": "heather",
+   "position": [
+    3718.9,
+    -1154.3,
+    0.0
+   ],
+   "yaw": 219.9,
+   "scale": 0.935,
+   "extent": [
+    24,
+    25,
+    21
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
+   "kind": "heather",
+   "position": [
+    3891.9,
+    -1161.1,
+    0.0
+   ],
+   "yaw": 89.1,
+   "scale": 1.45,
+   "extent": [
+    24,
+    25,
+    21
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_C.Shrub_Heather_01_C",
+   "kind": "heather",
+   "position": [
+    4064.9,
+    -1160.0,
+    0.0
+   ],
+   "yaw": 144.6,
+   "scale": 1.43,
+   "extent": [
+    35,
+    37,
+    25
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
+   "kind": "heather",
+   "position": [
+    4237.8,
+    -1139.1,
+    0.0
+   ],
+   "yaw": 100.2,
+   "scale": 1.492,
+   "extent": [
+    24,
+    25,
+    21
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    4410.8,
+    -1153.6,
+    0.0
+   ],
+   "yaw": 83.1,
+   "scale": 1.006,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    4929.7,
+    -1147.3,
+    0.0
+   ],
+   "yaw": 94.6,
+   "scale": 0.987,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    5102.7,
+    -1146.7,
+    0.0
+   ],
+   "yaw": 114.7,
+   "scale": 1.314,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    5275.7,
+    -1146.5,
+    0.0
+   ],
+   "yaw": 243.4,
+   "scale": 1.174,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    5448.6,
+    -1136.4,
+    0.0
+   ],
+   "yaw": 245.0,
+   "scale": 1.135,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    5621.6,
+    -1161.9,
+    0.0
+   ],
+   "yaw": 228.3,
+   "scale": 1.014,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    5794.6,
+    -1151.8,
+    0.0
+   ],
+   "yaw": 39.6,
+   "scale": 0.932,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    86.5,
+    1164.2,
+    0.0
+   ],
+   "yaw": 314.8,
+   "scale": 1.126,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
+   "kind": "heather",
+   "position": [
+    259.5,
+    1136.3,
+    0.0
+   ],
+   "yaw": 216.8,
+   "scale": 0.974,
+   "extent": [
+    24,
+    25,
+    21
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
+   "kind": "heather",
+   "position": [
+    432.4,
+    1135.2,
+    0.0
+   ],
+   "yaw": 167.8,
+   "scale": 1.087,
+   "extent": [
+    24,
+    25,
+    21
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
+   "kind": "heather",
+   "position": [
+    778.4,
+    1142.8,
+    0.0
+   ],
+   "yaw": 172.3,
+   "scale": 0.997,
+   "extent": [
+    28,
+    27,
+    20
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    1124.3,
+    1149.2,
+    0.0
+   ],
+   "yaw": 52.8,
+   "scale": 1.448,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    1297.3,
+    1156.1,
+    0.0
+   ],
+   "yaw": 231.5,
+   "scale": 1.318,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    1643.2,
+    1160.0,
+    0.0
+   ],
+   "yaw": 277.9,
+   "scale": 1.225,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    1816.2,
+    1145.9,
+    0.0
+   ],
+   "yaw": 220.8,
+   "scale": 1.384,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    1989.2,
+    1142.8,
+    0.0
+   ],
+   "yaw": 81.6,
+   "scale": 1.196,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
+   "kind": "heather",
+   "position": [
+    2162.2,
+    1135.3,
+    0.0
+   ],
+   "yaw": 284.4,
+   "scale": 1.056,
+   "extent": [
+    24,
+    25,
+    21
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
+   "kind": "heather",
+   "position": [
+    2335.1,
+    1136.3,
+    0.0
+   ],
+   "yaw": 161.0,
+   "scale": 1.493,
+   "extent": [
+    28,
+    27,
+    20
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    2508.1,
+    1154.1,
+    0.0
+   ],
+   "yaw": 79.4,
+   "scale": 1.182,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    2681.1,
+    1150.5,
+    0.0
+   ],
+   "yaw": 354.7,
+   "scale": 1.404,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    2854.1,
+    1145.4,
+    0.0
+   ],
+   "yaw": 287.9,
+   "scale": 1.401,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    3200.0,
+    1143.7,
+    0.0
+   ],
+   "yaw": 71.8,
+   "scale": 1.16,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
+   "kind": "heather",
+   "position": [
+    3373.0,
+    1162.4,
+    0.0
+   ],
+   "yaw": 340.6,
+   "scale": 1.138,
+   "extent": [
+    28,
+    27,
+    20
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    3545.9,
+    1136.6,
+    0.0
+   ],
+   "yaw": 260.9,
+   "scale": 1.496,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    3891.9,
+    1151.0,
+    0.0
+   ],
+   "yaw": 236.1,
+   "scale": 1.396,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    4064.9,
+    1145.3,
+    0.0
+   ],
+   "yaw": 126.1,
+   "scale": 1.229,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
+   "kind": "heather",
+   "position": [
+    4410.8,
+    1143.2,
+    0.0
+   ],
+   "yaw": 37.0,
+   "scale": 1.46,
+   "extent": [
+    28,
+    27,
+    20
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    4583.8,
+    1138.8,
+    0.0
+   ],
+   "yaw": 297.4,
+   "scale": 0.917,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    4929.7,
+    1142.1,
+    0.0
+   ],
+   "yaw": 117.4,
+   "scale": 1.151,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    5275.7,
+    1154.4,
+    0.0
+   ],
+   "yaw": 164.9,
+   "scale": 1.389,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    5448.6,
+    1140.2,
+    0.0
+   ],
+   "yaw": 316.1,
+   "scale": 1.219,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    5621.6,
+    1164.4,
+    0.0
+   ],
+   "yaw": 158.4,
+   "scale": 1.265,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    5794.6,
+    1160.5,
+    0.0
+   ],
+   "yaw": 51.0,
+   "scale": 1.335,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    5967.6,
+    1155.2,
+    0.0
+   ],
+   "yaw": 186.6,
+   "scale": 1.189,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    6140.5,
+    1138.5,
+    0.0
+   ],
+   "yaw": 20.5,
+   "scale": 1.066,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    6313.5,
+    1149.8,
+    0.0
+   ],
+   "yaw": 202.2,
+   "scale": 1.166,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
+   "kind": "heather",
+   "position": [
+    6249.8,
+    -1213.3,
+    0.0
+   ],
+   "yaw": 184.4,
+   "scale": 1.066,
+   "extent": [
+    28,
+    27,
+    20
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    6240.8,
+    -1040.0,
+    0.0
+   ],
+   "yaw": 182.8,
+   "scale": 1.32,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    6236.7,
+    -866.7,
+    0.0
+   ],
+   "yaw": 93.5,
+   "scale": 1.436,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_C.Shrub_Heather_01_C",
+   "kind": "heather",
+   "position": [
+    6252.5,
+    -520.0,
+    0.0
+   ],
+   "yaw": 141.3,
+   "scale": 0.944,
+   "extent": [
+    35,
+    37,
+    25
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    6241.5,
+    0.0,
+    0.0
+   ],
+   "yaw": 322.9,
+   "scale": 1.464,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    6254.0,
+    173.3,
+    0.0
+   ],
+   "yaw": 91.1,
+   "scale": 1.481,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
+   "kind": "heather",
+   "position": [
+    6253.1,
+    520.0,
+    0.0
+   ],
+   "yaw": 175.4,
+   "scale": 1.399,
+   "extent": [
+    28,
+    27,
+    20
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    6249.5,
+    866.7,
+    0.0
+   ],
+   "yaw": 122.1,
+   "scale": 1.114,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
+   "kind": "heather",
+   "position": [
+    6254.9,
+    1213.3,
+    0.0
+   ],
+   "yaw": 165.1,
+   "scale": 0.911,
+   "extent": [
+    28,
+    27,
+    20
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    153.7,
+    -1213.3,
+    0.0
+   ],
+   "yaw": 184.4,
+   "scale": 0.968,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    141.9,
+    -1040.0,
+    0.0
+   ],
+   "yaw": 315.5,
+   "scale": 1.059,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
+   "kind": "heather",
+   "position": [
+    143.1,
+    -693.3,
+    0.0
+   ],
+   "yaw": 46.6,
+   "scale": 1.41,
+   "extent": [
+    24,
+    25,
+    21
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    163.4,
+    -520.0,
+    0.0
+   ],
+   "yaw": 146.1,
+   "scale": 1.452,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    156.0,
+    -346.7,
+    0.0
+   ],
+   "yaw": 32.2,
+   "scale": 1.38,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    143.1,
+    0.0,
+    0.0
+   ],
+   "yaw": 6.1,
+   "scale": 1.381,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
+   "kind": "heather",
+   "position": [
+    137.0,
+    346.7,
+    0.0
+   ],
+   "yaw": 310.6,
+   "scale": 0.907,
+   "extent": [
+    24,
+    25,
+    21
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    147.5,
+    520.0,
+    0.0
+   ],
+   "yaw": 329.6,
+   "scale": 0.978,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    142.2,
+    693.3,
+    0.0
+   ],
+   "yaw": 39.4,
+   "scale": 1.057,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    153.9,
+    1040.0,
+    0.0
+   ],
+   "yaw": 191.2,
+   "scale": 1.074,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    140.3,
+    1213.3,
+    0.0
+   ],
+   "yaw": 124.9,
+   "scale": 1.497,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_D.Tree_Aleppo_Pine_01_D",
+   "kind": "pine",
+   "position": [
+    5290.1,
+    -1924.5,
+    -122
+   ],
+   "yaw": 235.0,
+   "scale": 1.095,
+   "extent": [
+    281,
+    234,
+    390
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_D.Tree_Aleppo_Pine_01_D",
+   "kind": "pine",
+   "position": [
+    554.5,
+    -2229.6,
+    -122
+   ],
+   "yaw": 108.3,
+   "scale": 0.854,
+   "extent": [
+    281,
+    234,
+    390
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_A.Tree_Aleppo_Pine_01_A",
+   "kind": "pine",
+   "position": [
+    3996.3,
+    -1819.1,
+    -122
+   ],
+   "yaw": 231.6,
+   "scale": 0.894,
+   "extent": [
+    720,
+    831,
+    724
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_D.Tree_Aleppo_Pine_01_D",
+   "kind": "pine",
+   "position": [
+    5979.1,
+    -2049.0,
+    -122
+   ],
+   "yaw": 326.1,
+   "scale": 1.048,
+   "extent": [
+    281,
+    234,
+    390
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_C.Tree_Aleppo_Pine_01_C",
+   "kind": "pine",
+   "position": [
+    2112.0,
+    -2318.5,
+    -122
+   ],
+   "yaw": 163.1,
+   "scale": 1.248,
+   "extent": [
+    351,
+    393,
+    498
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_B.Tree_Aleppo_Pine_01_B",
+   "kind": "pine",
+   "position": [
+    4882.3,
+    -2042.2,
+    -122
+   ],
+   "yaw": 162.0,
+   "scale": 1.047,
+   "extent": [
+    427,
+    385,
+    687
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_B.Tree_Aleppo_Pine_01_B",
+   "kind": "pine",
+   "position": [
+    421.2,
+    -2309.3,
+    -122
+   ],
+   "yaw": 87.9,
+   "scale": 0.954,
+   "extent": [
+    427,
+    385,
+    687
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_B.Tree_Aleppo_Pine_01_B",
+   "kind": "pine",
+   "position": [
+    2610.2,
+    -2400.6,
+    -122
+   ],
+   "yaw": 32.8,
+   "scale": 0.966,
+   "extent": [
+    427,
+    385,
+    687
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_B.Tree_Aleppo_Pine_01_B",
+   "kind": "pine",
+   "position": [
+    3519.5,
+    1862.7,
+    -122
+   ],
+   "yaw": 291.4,
+   "scale": 1.199,
+   "extent": [
+    427,
+    385,
+    687
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_D.Tree_Aleppo_Pine_01_D",
+   "kind": "pine",
+   "position": [
+    725.4,
+    2446.8,
+    -122
+   ],
+   "yaw": 269.9,
+   "scale": 0.972,
+   "extent": [
+    281,
+    234,
+    390
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_B.Tree_Aleppo_Pine_01_B",
+   "kind": "pine",
+   "position": [
+    2674.2,
+    2191.9,
+    -122
+   ],
+   "yaw": 268.5,
+   "scale": 0.97,
+   "extent": [
+    427,
+    385,
+    687
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_A.Tree_Aleppo_Pine_01_A",
+   "kind": "pine",
+   "position": [
+    1067.6,
+    2395.6,
+    -122
+   ],
+   "yaw": 121.8,
+   "scale": 1.024,
+   "extent": [
+    720,
+    831,
+    724
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_C.Tree_Aleppo_Pine_01_C",
+   "kind": "pine",
+   "position": [
+    3114.9,
+    2429.5,
+    -122
+   ],
+   "yaw": 206.7,
+   "scale": 0.857,
+   "extent": [
+    351,
+    393,
+    498
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_B.Tree_Aleppo_Pine_01_B",
+   "kind": "pine",
+   "position": [
+    3495.6,
+    1836.6,
+    -122
+   ],
+   "yaw": 181.2,
+   "scale": 0.842,
+   "extent": [
+    427,
+    385,
+    687
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_D.Tree_Aleppo_Pine_01_D",
+   "kind": "pine",
+   "position": [
+    2697.7,
+    1925.4,
+    -122
+   ],
+   "yaw": 322.8,
+   "scale": 0.98,
+   "extent": [
+    281,
+    234,
+    390
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_C.Tree_Aleppo_Pine_01_C",
+   "kind": "pine",
+   "position": [
+    1758.9,
+    2291.0,
+    -122
+   ],
+   "yaw": 160.5,
+   "scale": 1.182,
+   "extent": [
+    351,
+    393,
+    498
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_D.Shrub_Beach_Rose_01_D",
+   "kind": "rose",
+   "position": [
+    5526.8,
+    -1466.4,
+    -122
+   ],
+   "yaw": 255.4,
+   "scale": 1.578,
+   "extent": [
+    75,
+    67,
+    53
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    3136.5,
+    -1528.5,
+    -122
+   ],
+   "yaw": 334.1,
+   "scale": 1.499,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_A.Shrub_Beach_Rose_01_A",
+   "kind": "rose",
+   "position": [
+    6146.8,
+    -1740.6,
+    -122
+   ],
+   "yaw": 55.6,
+   "scale": 1.559,
+   "extent": [
+    93,
+    104,
+    79
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    4583.6,
+    -2223.3,
+    -122
+   ],
+   "yaw": 164.6,
+   "scale": 1.444,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
+   "kind": "heather",
+   "position": [
+    88.5,
+    -1592.0,
+    -122
+   ],
+   "yaw": 13.5,
+   "scale": 1.113,
+   "extent": [
+    28,
+    27,
+    20
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    878.5,
+    -1744.7,
+    -122
+   ],
+   "yaw": 251.5,
+   "scale": 0.97,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_A.Shrub_Beach_Rose_01_A",
+   "kind": "rose",
+   "position": [
+    1954.2,
+    -2581.7,
+    -122
+   ],
+   "yaw": 93.9,
+   "scale": 0.907,
+   "extent": [
+    93,
+    104,
+    79
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    1961.5,
+    -1997.4,
+    -122
+   ],
+   "yaw": 232.0,
+   "scale": 1.233,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_C.Shrub_Heather_01_C",
+   "kind": "heather",
+   "position": [
+    1545.0,
+    -1738.9,
+    -122
+   ],
+   "yaw": 253.7,
+   "scale": 0.939,
+   "extent": [
+    35,
+    37,
+    25
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    1291.3,
+    -2510.7,
+    -122
+   ],
+   "yaw": 29.2,
+   "scale": 1.367,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_D.Shrub_Beach_Rose_01_D",
+   "kind": "rose",
+   "position": [
+    5853.0,
+    -1714.4,
+    -122
+   ],
+   "yaw": 121.7,
+   "scale": 1.154,
+   "extent": [
+    75,
+    67,
+    53
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_A.Shrub_Beach_Rose_01_A",
+   "kind": "rose",
+   "position": [
+    2553.3,
+    -1448.2,
+    -122
+   ],
+   "yaw": 304.3,
+   "scale": 1.044,
+   "extent": [
+    93,
+    104,
+    79
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    6131.9,
+    -1817.2,
+    -122
+   ],
+   "yaw": 83.1,
+   "scale": 1.086,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    5629.4,
+    -1571.9,
+    -122
+   ],
+   "yaw": 219.6,
+   "scale": 1.24,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    5760.9,
+    -1508.3,
+    -122
+   ],
+   "yaw": 331.9,
+   "scale": 1.049,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_D.Shrub_Beach_Rose_01_D",
+   "kind": "rose",
+   "position": [
+    6158.5,
+    -1611.7,
+    -122
+   ],
+   "yaw": 21.6,
+   "scale": 1.215,
+   "extent": [
+    75,
+    67,
+    53
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_B.Shrub_Beach_Rose_01_B",
+   "kind": "rose",
+   "position": [
+    4523.1,
+    -1820.2,
+    -122
+   ],
+   "yaw": 28.6,
+   "scale": 1.13,
+   "extent": [
+    73,
+    78,
+    64
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
+   "kind": "heather",
+   "position": [
+    1237.6,
+    -2572.4,
+    -122
+   ],
+   "yaw": 11.5,
+   "scale": 1.408,
+   "extent": [
+    28,
+    27,
+    20
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    5316.2,
+    -2631.8,
+    -122
+   ],
+   "yaw": 39.2,
+   "scale": 1.096,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_B.Shrub_Beach_Rose_01_B",
+   "kind": "rose",
+   "position": [
+    2273.2,
+    -2596.2,
+    -122
+   ],
+   "yaw": 347.1,
+   "scale": 1.166,
+   "extent": [
+    73,
+    78,
+    64
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
+   "kind": "heather",
+   "position": [
+    4876.9,
+    -1813.5,
+    -122
+   ],
+   "yaw": 31.6,
+   "scale": 1.231,
+   "extent": [
+    28,
+    27,
+    20
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_D.Shrub_Beach_Rose_01_D",
+   "kind": "rose",
+   "position": [
+    2405.7,
+    -2552.6,
+    -122
+   ],
+   "yaw": 131.1,
+   "scale": 0.921,
+   "extent": [
+    75,
+    67,
+    53
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    2643.4,
+    -2422.3,
+    -122
+   ],
+   "yaw": 14.6,
+   "scale": 1.225,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_C.Shrub_Beach_Rose_01_C",
+   "kind": "rose",
+   "position": [
+    5092.8,
+    -1515.0,
+    -122
+   ],
+   "yaw": 22.6,
+   "scale": 1.154,
+   "extent": [
+    64,
+    70,
+    62
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_C.Shrub_Beach_Rose_01_C",
+   "kind": "rose",
+   "position": [
+    2170.2,
+    -2594.1,
+    -122
+   ],
+   "yaw": 268.7,
+   "scale": 1.547,
+   "extent": [
+    64,
+    70,
+    62
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    1935.8,
+    -2313.1,
+    -122
+   ],
+   "yaw": 290.0,
+   "scale": 0.917,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
+   "kind": "heather",
+   "position": [
+    1539.3,
+    -2015.0,
+    -122
+   ],
+   "yaw": 343.4,
+   "scale": 1.453,
+   "extent": [
+    24,
+    25,
+    21
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_A.Shrub_Beach_Rose_01_A",
+   "kind": "rose",
+   "position": [
+    5780.5,
+    -2425.9,
+    -122
+   ],
+   "yaw": 178.8,
+   "scale": 1.462,
+   "extent": [
+    93,
+    104,
+    79
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_C.Shrub_Heather_01_C",
+   "kind": "heather",
+   "position": [
+    4688.2,
+    -2435.5,
+    -122
+   ],
+   "yaw": 218.6,
+   "scale": 1.503,
+   "extent": [
+    35,
+    37,
+    25
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
+   "kind": "heather",
+   "position": [
+    2955.3,
+    -2388.4,
+    -122
+   ],
+   "yaw": 184.3,
+   "scale": 1.427,
+   "extent": [
+    24,
+    25,
+    21
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_C.Shrub_Beach_Rose_01_C",
+   "kind": "rose",
+   "position": [
+    1623.2,
+    -1518.3,
+    -122
+   ],
+   "yaw": 198.9,
+   "scale": 1.012,
+   "extent": [
+    64,
+    70,
+    62
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_B.Shrub_Beach_Rose_01_B",
+   "kind": "rose",
+   "position": [
+    2741.7,
+    -1567.3,
+    -122
+   ],
+   "yaw": 224.9,
+   "scale": 0.967,
+   "extent": [
+    73,
+    78,
+    64
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
+   "kind": "heather",
+   "position": [
+    3190.5,
+    -2298.8,
+    -122
+   ],
+   "yaw": 84.3,
+   "scale": 1.223,
+   "extent": [
+    24,
+    25,
+    21
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    5641.5,
+    -1724.3,
+    -122
+   ],
+   "yaw": 278.6,
+   "scale": 1.446,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_C.Shrub_Beach_Rose_01_C",
+   "kind": "rose",
+   "position": [
+    1914.1,
+    -1778.1,
+    -122
+   ],
+   "yaw": 91.5,
+   "scale": 1.039,
+   "extent": [
+    64,
+    70,
+    62
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_B.Shrub_Beach_Rose_01_B",
+   "kind": "rose",
+   "position": [
+    1624.0,
+    -1736.9,
+    -122
+   ],
+   "yaw": 318.3,
+   "scale": 1.128,
+   "extent": [
+    73,
+    78,
+    64
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    2551.5,
+    -2640.9,
+    -122
+   ],
+   "yaw": 83.3,
+   "scale": 1.357,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
+   "kind": "heather",
+   "position": [
+    6263.6,
+    -1563.8,
+    -122
+   ],
+   "yaw": 294.9,
+   "scale": 1.54,
+   "extent": [
+    24,
+    25,
+    21
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_B.Shrub_Beach_Rose_01_B",
+   "kind": "rose",
+   "position": [
+    331.9,
+    -1795.3,
+    -122
+   ],
+   "yaw": 68.2,
+   "scale": 1.551,
+   "extent": [
+    73,
+    78,
+    64
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
+   "kind": "heather",
+   "position": [
+    2402.8,
+    -2488.0,
+    -122
+   ],
+   "yaw": 93.6,
+   "scale": 1.562,
+   "extent": [
+    28,
+    27,
+    20
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_C.Shrub_Heather_01_C",
+   "kind": "heather",
+   "position": [
+    740.1,
+    -2161.3,
+    -122
+   ],
+   "yaw": 78.4,
+   "scale": 1.138,
+   "extent": [
+    35,
+    37,
+    25
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_B.Shrub_Beach_Rose_01_B",
+   "kind": "rose",
+   "position": [
+    355.6,
+    -2649.8,
+    -122
+   ],
+   "yaw": 263.6,
+   "scale": 1.47,
+   "extent": [
+    73,
+    78,
+    64
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    5189.5,
+    -1934.9,
+    -122
+   ],
+   "yaw": 223.6,
+   "scale": 1.042,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_D.Shrub_Beach_Rose_01_D",
+   "kind": "rose",
+   "position": [
+    5042.6,
+    -2103.1,
+    -122
+   ],
+   "yaw": 36.5,
+   "scale": 1.365,
+   "extent": [
+    75,
+    67,
+    53
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_C.Shrub_Heather_01_C",
+   "kind": "heather",
+   "position": [
+    1044.4,
+    2086.1,
+    -122
+   ],
+   "yaw": 143.2,
+   "scale": 1.187,
+   "extent": [
+    35,
+    37,
+    25
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    1847.8,
+    1812.2,
+    -122
+   ],
+   "yaw": 112.5,
+   "scale": 1.519,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
+   "kind": "heather",
+   "position": [
+    2663.9,
+    1462.0,
+    -122
+   ],
+   "yaw": 288.8,
+   "scale": 1.038,
+   "extent": [
+    28,
+    27,
+    20
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_D.Shrub_Beach_Rose_01_D",
+   "kind": "rose",
+   "position": [
+    4622.9,
+    1686.4,
+    -122
+   ],
+   "yaw": 324.6,
+   "scale": 0.979,
+   "extent": [
+    75,
+    67,
+    53
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    644.6,
+    2139.1,
+    -122
+   ],
+   "yaw": 278.3,
+   "scale": 0.91,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    3521.7,
+    2215.2,
+    -122
+   ],
+   "yaw": 32.1,
+   "scale": 1.549,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_B.Shrub_Beach_Rose_01_B",
+   "kind": "rose",
+   "position": [
+    4680.4,
+    1647.7,
+    -122
+   ],
+   "yaw": 58.3,
+   "scale": 1.548,
+   "extent": [
+    73,
+    78,
+    64
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    758.9,
+    2033.5,
+    -122
+   ],
+   "yaw": 348.1,
+   "scale": 1.111,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    5304.7,
+    1492.6,
+    -122
+   ],
+   "yaw": 113.2,
+   "scale": 1.548,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    2500.5,
+    2534.1,
+    -122
+   ],
+   "yaw": 296.8,
+   "scale": 1.348,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
+   "kind": "heather",
+   "position": [
+    5425.1,
+    2191.5,
+    -122
+   ],
+   "yaw": 70.6,
+   "scale": 1.028,
+   "extent": [
+    24,
+    25,
+    21
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    1441.2,
+    1923.7,
+    -122
+   ],
+   "yaw": 138.1,
+   "scale": 1.005,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_A.Shrub_Beach_Rose_01_A",
+   "kind": "rose",
+   "position": [
+    6137.1,
+    2426.9,
+    -122
+   ],
+   "yaw": 318.2,
+   "scale": 1.368,
+   "extent": [
+    93,
+    104,
+    79
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_C.Shrub_Heather_01_C",
+   "kind": "heather",
+   "position": [
+    2103.0,
+    1911.7,
+    -122
+   ],
+   "yaw": 305.6,
+   "scale": 1.354,
+   "extent": [
+    35,
+    37,
+    25
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    2003.2,
+    1741.6,
+    -122
+   ],
+   "yaw": 132.3,
+   "scale": 1.207,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    225.9,
+    2188.9,
+    -122
+   ],
+   "yaw": 84.7,
+   "scale": 1.446,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    2939.7,
+    1657.3,
+    -122
+   ],
+   "yaw": 38.5,
+   "scale": 1.151,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    2359.7,
+    2410.8,
+    -122
+   ],
+   "yaw": 236.6,
+   "scale": 1.346,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    593.2,
+    2327.5,
+    -122
+   ],
+   "yaw": 184.1,
+   "scale": 1.426,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    5664.0,
+    2229.8,
+    -122
+   ],
+   "yaw": 9.3,
+   "scale": 1.597,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_D.Shrub_Beach_Rose_01_D",
+   "kind": "rose",
+   "position": [
+    4648.2,
+    2426.1,
+    -122
+   ],
+   "yaw": 353.4,
+   "scale": 1.102,
+   "extent": [
+    75,
+    67,
+    53
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    5140.6,
+    2401.9,
+    -122
+   ],
+   "yaw": 259.6,
+   "scale": 0.946,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_C.Shrub_Beach_Rose_01_C",
+   "kind": "rose",
+   "position": [
+    2269.6,
+    2355.0,
+    -122
+   ],
+   "yaw": 322.8,
+   "scale": 1.534,
+   "extent": [
+    64,
+    70,
+    62
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    2928.0,
+    1747.5,
+    -122
+   ],
+   "yaw": 172.8,
+   "scale": 1.084,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_B.Shrub_Beach_Rose_01_B",
+   "kind": "rose",
+   "position": [
+    3237.5,
+    1826.1,
+    -122
+   ],
+   "yaw": 65.6,
+   "scale": 1.346,
+   "extent": [
+    73,
+    78,
+    64
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_C.Shrub_Heather_01_C",
+   "kind": "heather",
+   "position": [
+    1816.0,
+    1836.7,
+    -122
+   ],
+   "yaw": 285.2,
+   "scale": 0.981,
+   "extent": [
+    35,
+    37,
+    25
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    3391.7,
+    2209.9,
+    -122
+   ],
+   "yaw": 314.3,
+   "scale": 1.265,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_D.Shrub_Beach_Rose_01_D",
+   "kind": "rose",
+   "position": [
+    4377.7,
+    2524.3,
+    -122
+   ],
+   "yaw": 192.9,
+   "scale": 1.417,
+   "extent": [
+    75,
+    67,
+    53
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_C.Shrub_Heather_01_C",
+   "kind": "heather",
+   "position": [
+    2397.9,
+    1894.6,
+    -122
+   ],
+   "yaw": 52.6,
+   "scale": 1.435,
+   "extent": [
+    35,
+    37,
+    25
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_E.Shrub_Heather_01_E",
+   "kind": "heather",
+   "position": [
+    2839.8,
+    1653.9,
+    -122
+   ],
+   "yaw": 17.4,
+   "scale": 1.078,
+   "extent": [
+    38,
+    36,
+    26
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_C.Shrub_Heather_01_C",
+   "kind": "heather",
+   "position": [
+    4068.8,
+    2630.7,
+    -122
+   ],
+   "yaw": 238.9,
+   "scale": 1.413,
+   "extent": [
+    35,
+    37,
+    25
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_D.Shrub_Beach_Rose_01_D",
+   "kind": "rose",
+   "position": [
+    4742.0,
+    1708.2,
+    -122
+   ],
+   "yaw": 225.2,
+   "scale": 1.259,
+   "extent": [
+    75,
+    67,
+    53
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_A.Shrub_Beach_Rose_01_A",
+   "kind": "rose",
+   "position": [
+    5668.2,
+    1599.7,
+    -122
+   ],
+   "yaw": 235.1,
+   "scale": 0.938,
+   "extent": [
+    93,
+    104,
+    79
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
+   "kind": "heather",
+   "position": [
+    3618.8,
+    1807.5,
+    -122
+   ],
+   "yaw": 192.3,
+   "scale": 1.309,
+   "extent": [
+    24,
+    25,
+    21
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    3755.9,
+    1687.1,
+    -122
+   ],
+   "yaw": 171.0,
+   "scale": 0.91,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    5081.4,
+    2296.0,
+    -122
+   ],
+   "yaw": 22.9,
+   "scale": 1.51,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_C.Shrub_Beach_Rose_01_C",
+   "kind": "rose",
+   "position": [
+    4960.7,
+    1926.4,
+    -122
+   ],
+   "yaw": 4.1,
+   "scale": 1.316,
+   "extent": [
+    64,
+    70,
+    62
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    3689.7,
+    2168.3,
+    -122
+   ],
+   "yaw": 177.4,
+   "scale": 1.532,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_A.Shrub_Heather_01_A",
+   "kind": "heather",
+   "position": [
+    354.6,
+    2083.1,
+    -122
+   ],
+   "yaw": 85.6,
+   "scale": 1.538,
+   "extent": [
+    47,
+    46,
+    30
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
+   "kind": "heather",
+   "position": [
+    734.7,
+    2181.3,
+    -122
+   ],
+   "yaw": 71.0,
+   "scale": 1.04,
+   "extent": [
+    24,
+    25,
+    21
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_B.Shrub_Heather_01_B",
+   "kind": "heather",
+   "position": [
+    3874.4,
+    2053.4,
+    -122
+   ],
+   "yaw": 292.8,
+   "scale": 1.256,
+   "extent": [
+    54,
+    50,
+    27
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_D.Shrub_Heather_01_D",
+   "kind": "heather",
+   "position": [
+    477.9,
+    2197.4,
+    -122
+   ],
+   "yaw": 260.8,
+   "scale": 1.401,
+   "extent": [
+    24,
+    25,
+    21
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Heather/Shrub_Heather_01/Shrub_Heather_01_F.Shrub_Heather_01_F",
+   "kind": "heather",
+   "position": [
+    119.6,
+    2461.8,
+    -122
+   ],
+   "yaw": 167.5,
+   "scale": 1.359,
+   "extent": [
+    28,
+    27,
+    20
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Shrub_Beach_Rose/Shrub_Beach_Rose_01/Shrub_Beach_Rose_01_A.Shrub_Beach_Rose_01_A",
+   "kind": "rose",
+   "position": [
+    1174.4,
+    2645.9,
+    -122
+   ],
+   "yaw": 231.8,
+   "scale": 1.135,
+   "extent": [
+    93,
+    104,
+    79
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_B.Tree_Aleppo_Pine_01_B",
+   "kind": "pine",
+   "position": [
+    5251.5,
+    2281.4,
+    870.0
+   ],
+   "yaw": 51.1,
+   "scale": 0.8,
+   "extent": [
+    427,
+    385,
+    687
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_B.Tree_Aleppo_Pine_01_B",
+   "kind": "pine",
+   "position": [
+    2717.2,
+    -2554.9,
+    1180.0
+   ],
+   "yaw": 24.4,
+   "scale": 0.64,
+   "extent": [
+    427,
+    385,
+    687
+   ],
+   "shadow": true
+  },
+  {
+   "asset": "/Game/Megaplant_Library/Tree_Aleppo_Pine/Tree_Aleppo_Pine_01/Tree_Aleppo_Pine_01_D.Tree_Aleppo_Pine_01_D",
+   "kind": "pine",
+   "position": [
+    7383.6,
+    -861.9,
+    1825.0
+   ],
+   "yaw": 295.0,
+   "scale": 1.04,
+   "extent": [
+    281,
+    234,
+    390
+   ],
+   "shadow": true
+  }
+ ]
+}

@@ -78,6 +78,8 @@ public:
 
 private:
 	void PlacePlayer();
+	/** Plants are spawned from the level's list: the scans where the renderer can draw them, stand-ins elsewhere. */
+	void SpawnPlants(const FString& LevelName);
 	void TickDemo(float DeltaSeconds);
 
 	TArray<float> PerfFrames;

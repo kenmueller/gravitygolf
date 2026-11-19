@@ -161,4 +161,38 @@ def machine():
     return [bake(mesh, "SM_Machine", 3)]
 
 
-"\n".join(putter() + machine() + NOTES)
+def blob(target, center, radii, material):
+    """An ellipsoid: a ball of leaves."""
+    transform = unreal.Transform(location=unreal.Vector(*center), rotation=unreal.Rotator(0, 0, 0),
+                                 scale=unreal.Vector(radii[0] / 50.0, radii[1] / 50.0, radii[2] / 50.0))
+    P.append_sphere_lat_long(target, options(material), transform, 50.0, 9, 14, CENTER)
+
+
+def web_plants():
+    """Stand-ins for the scanned plants, for renderers that can't draw them (the web, phones). Each is built in a
+    box 200 across and 200 tall with its foot at the origin; the game stretches it to the real plant's size.
+    Slot 0 bark, slot 1 leaves."""
+    report = []
+
+    # An umbrella pine: a leaning trunk, two boughs, and a wide flat crown of five clumps.
+    pine = unreal.DynamicMesh()
+    bar(pine, (0, 0, 0), (8, 4, 98), 9.0, 5.0, sides=10, material=0)
+    bar(pine, (8, 4, 96), (34, -14, 140), 4.5, 2.5, sides=8, material=0)
+    bar(pine, (8, 4, 96), (-28, 18, 144), 4.5, 2.5, sides=8, material=0)
+    for center, radii in [((2, 0, 164), (78, 74, 32)), ((42, -26, 146), (54, 48, 26)), ((-44, 30, 152), (52, 50, 25)),
+                          ((12, 46, 174), (46, 42, 22)), ((-16, -46, 170), (44, 46, 21))]:
+        blob(pine, center, radii, 1)
+    report.append(bake(pine, "SM_Web_Pine", 2))
+
+    # A shrub: a low mound of clumps on a few stems.
+    shrub = unreal.DynamicMesh()
+    for tip in [(30, 10, 90), (-35, 20, 80), (5, -40, 85)]:
+        bar(shrub, (0, 0, 0), tip, 5.0, 2.5, sides=6, material=0)
+    for center, radii in [((0, 0, 118), (72, 70, 62)), ((48, 18, 92), (50, 46, 46)), ((-52, 24, 86), (46, 48, 44)),
+                          ((8, -54, 90), (48, 44, 46)), ((-20, 40, 140), (40, 40, 40))]:
+        blob(shrub, center, radii, 1)
+    report.append(bake(shrub, "SM_Web_Shrub", 2))
+    return report
+
+
+"\n".join(putter() + machine() + web_plants() + NOTES)

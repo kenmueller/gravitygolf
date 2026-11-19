@@ -28,8 +28,11 @@ fi
 # The copy: everything but build output and history. The MCP toolset plugins are editor tools and break a web cook
 # ("Asset manager settings do not include a rule for assets of type GameFeatureData"), so the copy leaves them out.
 mkdir -p "$WEB"
-rsync -a --delete --exclude .git --exclude Saved --exclude Intermediate --exclude Binaries --exclude DerivedDataCache \
-	--exclude legacy "$ROOT/" "$WEB/"
+# Config/Mac holds the rule that makes desktop builds cook the scanned plants. The cooker reads the host's settings,
+# so on a Mac that rule would pull the scans into the web build as well: the web copy goes without it.
+rsync -a --delete --exclude .git --exclude Saved --exclude Intermediate --exclude Binaries \
+	--exclude DerivedDataCache --exclude legacy --exclude Config/Mac "$ROOT/" "$WEB/"
+rm -rf "$WEB/Config/Mac"
 # The copy keeps file times, and the build tool compares times: a build rule edited before the last build would look
 # unchanged and the link would go stale. Touch the rules so they are always re-read.
 find "$WEB/Source" \( -name "*.Build.cs" -o -name "*.Target.cs" \) -exec touch {} +

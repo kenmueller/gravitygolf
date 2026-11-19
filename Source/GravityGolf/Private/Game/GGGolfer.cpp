@@ -911,7 +911,24 @@ void AGGGolfer::Tick(float DeltaSeconds)
 	}
 
 	// The field shows strongly while it matters: carrying a machine, standing over the ball, or watching a shot.
-	C->SetFieldEmphasis(IsCarrying() || CanSwing() || bCharging || SwingTime >= 0.f || C->Phase() == EGGPhase::Flying);
+	const AGGHUD* Screen = Hud();
+	const bool bMenu = Screen && Screen->MenuOpen();
+	C->SetFieldEmphasis(!bMenu && (IsCarrying() || CanSwing() || bCharging || SwingTime >= 0.f || C->Phase() == EGGPhase::Flying));
+	if (bMenu)
+	{
+		// Behind a menu the place is the picture: no club in frame, and on the title screen the view drifts.
+		ClubPivot->SetVisibility(false, true);
+		if (Screen->TitleOpen())
+		{
+			if (AController* PC = GetController())
+			{
+				FRotator Look = PC->GetControlRotation();
+				Look.Yaw += 2.5f * DeltaSeconds;
+				Look.Pitch = FMath::FInterpTo(FRotator::NormalizeAxis(Look.Pitch), 4.f, DeltaSeconds, 0.6f);
+				PC->SetControlRotation(Look);
+			}
+		}
+	}
 
 	// Hold right mouse to watch the ball through a long lens.
 	const bool bZoom = bWatching && C->Phase() == EGGPhase::Flying;

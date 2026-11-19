@@ -415,7 +415,9 @@ void AGGHUD::RunAction(const FItem& Item, int32 Direction)
 		const int32 Next = Save.NextUnsolved();
 		if (Course && UGGSave::HoleIndex(Course->CourseId()) == Next)
 		{
+			// Already there: put the player back behind the ball (the title screen let the view drift).
 			CloseMenu();
+			Golfer->GoToBall();
 		}
 		else
 		{

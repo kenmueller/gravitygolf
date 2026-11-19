@@ -79,11 +79,10 @@ def hedge_row(box, shrubs, m):
         offset = inward * ((sy if along_x else sx) / 2 + rng.uniform(15, 45))
         x = cx + (t * length if along_x else offset)
         y = cy + (offset if along_x else t * length)
-        actor = c.spawn(unreal.SkeletalMeshActor, (x, y, cz - sz / 2), (0, rng.uniform(0, 360), 0), f"{box['name']}_{i}",
-                        "Course/Hedges")
-        actor.skeletal_mesh_component.set_skinned_asset_and_update(rng.choice(shrubs))
+        yaw = rng.uniform(0, 360)
+        asset = rng.choice(shrubs)
         size = rng.uniform(0.9, 1.5)
-        actor.set_actor_scale3d(unreal.Vector(size, size, size))
+        c.plant(asset, (x, y, cz - sz / 2), yaw, size, "heather")
 
 
 def great_wall(box, m):
@@ -173,10 +172,10 @@ def pines():
         for _ in range(8):
             spots.append((rng.uniform(250, LENGTH - 250), side * rng.uniform(1700, 2500), -122))
     for i, spot in enumerate(spots):
-        actor = c.spawn(unreal.SkeletalMeshActor, spot, (0, rng.uniform(0, 360), 0), f"Pine{i}", "Landscape/Pines")
-        actor.skeletal_mesh_component.set_skinned_asset_and_update(rng.choice(trees))
+        yaw = rng.uniform(0, 360)
+        asset = rng.choice(trees)
         size = rng.uniform(0.8, 1.25)
-        actor.set_actor_scale3d(unreal.Vector(size, size, size))
+        c.plant(asset, spot, yaw, size, "pine")
 
 
 def halo(m, course):
@@ -231,10 +230,9 @@ def floating_islands(m):
         top = z + 250 * size
         c.mesh(c.CYLINDER, (x, y, top - 10), (520 * size, 520 * size, 40), material=m["grass"], label=f"Island{i}_Turf",
                folder="Fantastical/Islands")
-        tree = c.spawn(unreal.SkeletalMeshActor, (x + rng.uniform(-60, 60), y + rng.uniform(-60, 60), top),
-                       (0, rng.uniform(0, 360), 0), f"Island{i}_Pine", "Fantastical/Islands")
-        tree.skeletal_mesh_component.set_skinned_asset_and_update(rng.choice(trees))
-        tree.set_actor_scale3d(unreal.Vector(0.8 * size, 0.8 * size, 0.8 * size))
+        spot = (x + rng.uniform(-60, 60), y + rng.uniform(-60, 60), top)
+        yaw = rng.uniform(0, 360)
+        c.plant(rng.choice(trees), spot, yaw, 0.8 * size, "pine")
 
 
 def shrubs():
@@ -247,11 +245,10 @@ def shrubs():
             x = rng.uniform(80, LENGTH - 80)
             y = side * rng.uniform(1440, 2650)
             kind = rose if rng.random() < 0.35 else heather
-            actor = c.spawn(unreal.SkeletalMeshActor, (x, y, -122), (0, rng.uniform(0, 360), 0), f"Shrub{count}",
-                            "Landscape/Shrubs")
-            actor.skeletal_mesh_component.set_skinned_asset_and_update(rng.choice(kind))
+            yaw = rng.uniform(0, 360)
+            asset = rng.choice(kind)
             size = rng.uniform(0.9, 1.6)
-            actor.set_actor_scale3d(unreal.Vector(size, size, size))
+            c.plant(asset, (x, y, -122), yaw, size, "rose" if kind is rose else "heather")
             count += 1
 
 
@@ -314,4 +311,5 @@ floating_islands(mats)
 sea_and_horizon(mats)
 markers(course_data, mats)
 c.player_start(course_data)
+c.write_plants(LEVEL)
 c.LES.save_current_level()

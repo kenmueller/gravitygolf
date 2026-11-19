@@ -14,6 +14,7 @@ SPHERE = "/Engine/BasicShapes/Sphere.Sphere"
 
 def fresh_level(path):
     """Open the level empty so the script fully defines it."""
+    PLANTS.clear()
     discard = unreal.LevelEditorUnsavedChangesPolicy.DISCARD
     if ASSETS.does_asset_exist(path):
         LES.load_level(path, unsaved_changes_policy=discard)
@@ -121,6 +122,33 @@ def material_instance(parent_path, name, scalars=None, vectors=None, folder="/Ga
     return instance
 
 
+# Scanned plants (Megaplants) are not placed in the level. Each level script lists them here and writes the list next
+# to its course; the game spawns them at start: the scanned, swaying plants where the renderer can draw them, simple
+# stand-ins everywhere else (the web and phones, which have no Nanite). So a web build never loads the scans at all.
+PLANTS = []
+
+
+def plant(asset, location, yaw, scale, kind, cast_shadow=True):
+    """Record one plant. asset is a loaded Megaplant skeletal mesh; kind is "pine", "heather" or "rose"."""
+    extent = asset.get_bounds().box_extent
+    PLANTS.append({
+        "asset": asset.get_path_name(), "kind": kind, "position": [round(v, 1) for v in location], "yaw": round(yaw, 1),
+        "scale": round(scale, 3), "extent": [round(extent.x), round(extent.y), round(extent.z)], "shadow": cast_shadow,
+    })
+
+
+def write_plants(level_path):
+    """Write the plants recorded since the level was started to Content/Courses/<level>.plants.json."""
+    import json
+    name = level_path.rsplit("/", 1)[-1].lower()
+    path = f"/Users/ken/Code/gravitygolf/Content/Courses/{name}.plants.json"
+    with open(path, "w") as f:
+        json.dump({"plants": PLANTS}, f, indent=1)
+    count = len(PLANTS)
+    PLANTS.clear()
+    return count
+
+
 def dais(location, size, top, light, label="MachineDais", folder="Course/Markers"):
     """The plinth a machine waits on: a flat disc of the level's stone with a thin ring of light at its edge.
     (A whole disc of light reads as a blown-out white pancake up close.)"""
@@ -207,6 +235,11 @@ def sky_and_sun(sun_pitch=-8.0, sun_yaw=135.0, sun_lux=10.0, fog_density=0.015, 
     light.set_editor_property("cast_cloud_shadows", False)
 
     spawn(unreal.SkyAtmosphere, (0, 0, 0), label="SkyAtmosphere", folder="Lighting")
+    # The same sky as a dome, for renderers that need one (see M_GG_Sky). Clouds still draw in front of it.
+    sky = unreal.load_asset("/Game/Materials/M_GG_Sky.M_GG_Sky")
+    if sky:
+        mesh(SPHERE, (0, 0, 0), (80000000, 80000000, 80000000), material=sky, label="SkyDome", folder="Lighting",
+             cast_shadow=False, solid=False)
 
     clouds = spawn(unreal.VolumetricCloud, (0, 0, 0), label="Clouds", folder="Lighting")
     cloud_component = clouds.get_component_by_class(unreal.VolumetricCloudComponent)

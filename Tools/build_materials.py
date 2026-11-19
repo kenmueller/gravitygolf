@@ -172,6 +172,22 @@ def build_lantern():
     finish(material, path)
 
 
+def build_sky():
+    """The day sky as a dome. On desktop the engine can draw the atmosphere without one, but the mobile renderer (the
+    web, phones) needs a mesh whose material is marked as the sky, or the sky is black and so is all the sky's light."""
+    material, path = fresh("M_GG_Sky")
+    material.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_UNLIT)
+    material.set_editor_property("two_sided", True)
+    material.set_editor_property("is_sky", True)
+    air = node(material, unreal.MaterialExpressionSkyAtmosphereViewLuminance, -500, 0)
+    disk = node(material, unreal.MaterialExpressionSkyAtmosphereLightDiskLuminance, -500, 200)
+    total = node(material, unreal.MaterialExpressionAdd, -250, 100)
+    MEL.connect_material_expressions(air, "", total, "A")
+    MEL.connect_material_expressions(disk, "", total, "B")
+    MEL.connect_material_property(total, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    finish(material, path)
+
+
 def build_ball():
     material, path = fresh("M_GG_Ball")
     local = node(material, unreal.MaterialExpressionLocalPosition, -900, 0)
@@ -476,6 +492,6 @@ def build_night_sky():
     finish(material, path)
 
 
-for build in (build_surface, build_glow, build_lantern, build_ball, build_ocean, build_scan, build_salt, build_mirror, build_night_sky):
+for build in (build_surface, build_glow, build_lantern, build_sky, build_ball, build_ocean, build_scan, build_salt, build_mirror, build_night_sky):
     build()
 unreal.log("GG: materials done")

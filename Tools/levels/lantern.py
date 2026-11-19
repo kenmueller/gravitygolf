@@ -164,12 +164,11 @@ def surroundings(m):
         x, y = 700 + math.cos(angle) * distance * 1.25, 500 + math.sin(angle) * distance * 0.75
         if -3000 < x < 4400 and -1100 < y < 2100:
             continue
-        actor = c.spawn(unreal.SkeletalMeshActor, (x, y, -20), (0, rng.uniform(0, 360), 0), f"Pine{i}", "Landscape/Pines")
-        actor.skeletal_mesh_component.set_skinned_asset_and_update(rng.choice(trees))
-        # Silhouettes against the stars. They sway, so their moon shadows would be redrawn every frame (12 ms).
-        actor.skeletal_mesh_component.set_cast_shadow(False)
+        yaw = rng.uniform(0, 360)
+        asset = rng.choice(trees)
         size = rng.uniform(1.0, 1.7)
-        actor.set_actor_scale3d(unreal.Vector(size, size, size))
+        # Silhouettes against the stars. They sway, so their moon shadows would be redrawn every frame (12 ms).
+        c.plant(asset, (x, y, -20), yaw, size, "pine", cast_shadow=False)
     c.mesh(c.SPHERE, (-900000, -700000, 620000), (150000, 150000, 150000), material=m["moon"], label="Moon",
            folder="Lighting", cast_shadow=False, solid=False)
 
@@ -185,4 +184,5 @@ markers(course_data, mats)
 c.player_start(course_data)
 lanterns(course_data, mats)
 surroundings(mats)
+c.write_plants(LEVEL)
 c.LES.save_current_level()

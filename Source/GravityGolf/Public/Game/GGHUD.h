@@ -32,6 +32,7 @@ public:
 	virtual void DrawHUD() override;
 
 	bool MenuOpen() const { return Menu != EGGMenu::None; }
+	bool TitleOpen() const { return Menu == EGGMenu::Title; }
 	void OpenMenu(EGGMenu Which);
 	void CloseMenu();
 	/** Move the highlight by rows, or change the highlighted value by columns. */

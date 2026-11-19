@@ -1,6 +1,20 @@
 #include "Game/GGGameMode.h"
 
+#include "Animation/SkeletalMeshActor.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Dom/JsonObject.h"
 #include "Engine/Engine.h"
+#include "Engine/SkeletalMesh.h"
+#include "Engine/StaticMesh.h"
+#include "Engine/StaticMeshActor.h"
+#include "HAL/IConsoleManager.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+#include "RHIGlobals.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/World.h"
 #include "Game/GGCourse.h"
@@ -37,6 +51,89 @@ TArray<double> ParseNumbers(const TCHAR* Key)
 }
 } // namespace
 
+namespace
+{
+TAutoConsoleVariable<int32> CVarPlantStandIns(TEXT("gg.Plants.StandIns"), 0,
+	TEXT("1 spawns the simple stand-in plants even where the scanned ones could be drawn (to preview the web look)"));
+}
+
+void AGGGameMode::SpawnPlants(const FString& LevelName)
+{
+	FString Text;
+	TSharedPtr<FJsonObject> Json;
+	const FString Path = FPaths::ProjectContentDir() / TEXT("Courses") / (LevelName.ToLower() + TEXT(".plants.json"));
+	if (!FFileHelper::LoadFileToString(Text, *Path) || !FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text), Json) || !Json.IsValid())
+	{
+		return;
+	}
+	// The scans are Nanite foliage on swaying skeletons: desktop renderers only.
+	const bool bScans = GMaxRHIFeatureLevel >= ERHIFeatureLevel::SM5 && CVarPlantStandIns.GetValueOnGameThread() == 0;
+	UStaticMesh* Pine = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Meshes/SM_Web_Pine.SM_Web_Pine"));
+	UStaticMesh* Shrub = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Meshes/SM_Web_Shrub.SM_Web_Shrub"));
+	UMaterialInterface* Surface = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/M_GG_Surface.M_GG_Surface"));
+	auto Paint = [&](const FLinearColor& Color) -> UMaterialInstanceDynamic* {
+		UMaterialInstanceDynamic* Material = Surface ? UMaterialInstanceDynamic::Create(Surface, this) : nullptr;
+		if (Material)
+		{
+			Material->SetVectorParameterValue(TEXT("BaseColor"), Color);
+			Material->SetScalarParameterValue(TEXT("Roughness"), 0.9f);
+			Material->SetScalarParameterValue(TEXT("Metallic"), 0.f);
+		}
+		return Material;
+	};
+	UMaterialInstanceDynamic* Bark = Paint(FLinearColor(0.07f, 0.05f, 0.035f));
+	UMaterialInstanceDynamic* Needles = Paint(FLinearColor(0.035f, 0.085f, 0.03f));
+	UMaterialInstanceDynamic* Heather = Paint(FLinearColor(0.2f, 0.1f, 0.17f));
+	UMaterialInstanceDynamic* Rose = Paint(FLinearColor(0.05f, 0.11f, 0.04f));
+
+	int32 Scans = 0;
+	int32 StandIns = 0;
+	const TArray<TSharedPtr<FJsonValue>>* Plants = nullptr;
+	if (!Json->TryGetArrayField(TEXT("plants"), Plants))
+	{
+		return;
+	}
+	for (const TSharedPtr<FJsonValue>& Value : *Plants)
+	{
+		const TSharedPtr<FJsonObject> Plant = Value->AsObject();
+		const TArray<TSharedPtr<FJsonValue>>& At = Plant->GetArrayField(TEXT("position"));
+		const TArray<TSharedPtr<FJsonValue>>& Extent = Plant->GetArrayField(TEXT("extent"));
+		const FVector Location(At[0]->AsNumber(), At[1]->AsNumber(), At[2]->AsNumber());
+		const FRotator Rotation(0.0, Plant->GetNumberField(TEXT("yaw")), 0.0);
+		const double Scale = Plant->GetNumberField(TEXT("scale"));
+		const FString Kind = Plant->GetStringField(TEXT("kind"));
+		const bool bShadow = Plant->GetBoolField(TEXT("shadow"));
+
+		USkeletalMesh* Scan = bScans ? LoadObject<USkeletalMesh>(nullptr, *Plant->GetStringField(TEXT("asset"))) : nullptr;
+		if (Scan)
+		{
+			ASkeletalMeshActor* Actor = GetWorld()->SpawnActor<ASkeletalMeshActor>(Location, Rotation);
+			Actor->GetSkeletalMeshComponent()->SetSkeletalMeshAsset(Scan);
+			Actor->GetSkeletalMeshComponent()->SetCastShadow(bShadow);
+			Actor->SetActorScale3D(FVector(Scale));
+			++Scans;
+			continue;
+		}
+		UStaticMesh* Mesh = Kind == TEXT("pine") ? Pine : Shrub;
+		if (!Mesh)
+		{
+			continue;
+		}
+		// The stand-in is built 200 across and 200 tall; stretch it to this plant's real size.
+		AStaticMeshActor* Actor = GetWorld()->SpawnActor<AStaticMeshActor>(Location, Rotation);
+		UStaticMeshComponent* Component = Actor->GetStaticMeshComponent();
+		Component->SetMobility(EComponentMobility::Movable);
+		Component->SetStaticMesh(Mesh);
+		Component->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		Component->SetCastShadow(bShadow);
+		Component->SetMaterial(0, Bark);
+		Component->SetMaterial(1, Kind == TEXT("pine") ? Needles : Kind == TEXT("heather") ? Heather : Rose);
+		Actor->SetActorScale3D(FVector(Extent[0]->AsNumber(), Extent[1]->AsNumber(), Extent[2]->AsNumber()) * (Scale / 100.0));
+		++StandIns;
+	}
+	UE_LOG(LogGGMode, Log, TEXT("Plants: %d scanned, %d stand-ins"), Scans, StandIns);
+}
+
 AGGGameMode::AGGGameMode()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -47,6 +144,8 @@ AGGGameMode::AGGGameMode()
 void AGGGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+
+	SpawnPlants(UGameplayStatics::GetCurrentLevelName(this, true));
 
 	const FString CourseId = UGameplayStatics::GetCurrentLevelName(this, true).ToLower();
 	if (!AGGCourse::Exists(CourseId))
