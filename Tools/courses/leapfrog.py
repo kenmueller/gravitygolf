@@ -36,7 +36,9 @@ wall("Outer_N", X0 - 200, HALF, X1 + 200, HALF + 200)
 wall("Outer_W", X0 - 200, -HALF, X0, HALF)
 wall("Outer_E", X1, -HALF, X1 + 200, HALF)
 
-c.set_tee(300, 0)
+# The tee stands close to the first wall: the swing is meant to be the easy part, and from 12 m back only 18 swings
+# in 110,000 sank it (the ball had to arrive slowly enough to drop after two handings-on). From here 50 do.
+c.set_tee(1050, 0)
 
 # ---- The plates. Near: holds the side grille. Middle yard: one holds the ball's grille, one the ball's gate.
 NEAR = (900, -400)
@@ -62,7 +64,8 @@ c.gate("BallGate", (W2, 0, 110), (60, 180, 220), second)
 
 c.set_cup(3700, 0, court=200)
 
-STARTS = [(550, 400), (550, -150)]
+# The machines wait ahead of the tee, one each side, in plain view; the near plate lies behind.
+STARTS = [(1330, 300), (1330, -300)]
 SPARE = [(1100, 350), (2300, -450), (2300, 450), (3500, 450)]
 for spot in STARTS + [NEAR, FIRST, SECOND] + SPARE:
     c.plinth(*spot, radius=65)

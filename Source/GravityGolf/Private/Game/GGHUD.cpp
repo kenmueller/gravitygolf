@@ -356,12 +356,11 @@ void AGGHUD::BuildMenu()
 		Add(Save.BestSwings.Num() > 0 ? TEXT("Continue") : TEXT("Play"), TEXT("Play"));
 		Add(TEXT("Holes"), TEXT("Holes"));
 		Add(TEXT("Workshop"), TEXT("Workshop"));
-#if !PLATFORM_WASM
+		// (In a browser too: it can join a host, though it cannot be one. See the Together menu.)
 		if (!AGGWorkshop::Get(this))
 		{
 			Add(TEXT("Play together"), TEXT("Together"));
 		}
-#endif
 		Add(TEXT("Settings"), TEXT("Settings"));
 		Add(TEXT("Credits"), TEXT("Credits"));
 #if !PLATFORM_WASM
@@ -414,9 +413,7 @@ void AGGHUD::BuildMenu()
 		Add(TEXT("Show the solution"), TEXT("Hint"));
 		Add(TEXT("Holes"), TEXT("Holes"));
 		Add(TEXT("Workshop"), TEXT("Workshop"));
-#if !PLATFORM_WASM
 		Add(TEXT("Play together"), TEXT("Together"));
-#endif
 		Add(TEXT("Settings"), TEXT("Settings"));
 		Add(TEXT("Title screen"), TEXT("Title"));
 		break;
@@ -441,7 +438,13 @@ void AGGHUD::BuildMenu()
 		const ENetMode Mode = GetNetMode();
 		if (Mode == NM_Standalone)
 		{
+#if PLATFORM_WASM
+			// A browser cannot host: it has no way to listen. It joins a host on a computer, through the relay that
+			// runs beside that host (the host's link normally does this without any typing).
+			Add(TEXT("A browser joins a host; it cannot be one"), TEXT("None"), FString(), 0, false);
+#else
 			Add(TEXT("Host this hole"), TEXT("Host"));
+#endif
 			Add(TEXT("Join a host at"), TEXT("Join"), Address.IsEmpty() ? FString(TEXT("type an address")) : Address);
 		}
 		else
@@ -981,7 +984,11 @@ void AGGHUD::DrawMenu()
 	if (!bTouch)
 	{
 		const TCHAR* Hint = Menu == EGGMenu::Workshop ? TEXT("Type to name the hole        Arrows or mouse to choose        Enter to select        Tab to go back")
+#if PLATFORM_WASM
+			: Menu == EGGMenu::Together ? TEXT("Type the host's address as its own relay sees it (often 127.0.0.1), then Enter        The host's link does this for you")
+#else
 			: Menu == EGGMenu::Together ? TEXT("Type the host's address, then Enter to join        A host's friends need its address and port 7777 open")
+#endif
 			: Menu == EGGMenu::Settings ? TEXT("Arrows or mouse to choose        Left and right to change        Tab to go back")
 			: Menu == EGGMenu::Title ? TEXT("Arrows or mouse to choose        Enter to select")
 			: TEXT("Arrows or mouse to choose        Enter to select        Tab to go back");

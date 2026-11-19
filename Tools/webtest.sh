@@ -7,6 +7,8 @@
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 UE="${UE_ROOT:-$HOME/UE59}"
 WEB="${GG_WEB_COPY:-$ROOT/../gravitygolf-web}"
+# GG_WEB_OUT names another finished build to test (as for Tools/web.sh), instead of the one in Saved/Web.
+STAGE="${GG_WEB_OUT:-$WEB/Saved/Web}/Wasm"
 PY="$UE/Engine/Binaries/ThirdParty/Python3/Mac/bin/python3"
 STATUS=0
 # "tour" stands for every hole: open it, picture from the tee, play its solution. A web smoke test.
@@ -19,9 +21,9 @@ for NAME in $NAMES; do
 	OUT="$WEB/Saved/WebTest/$NAME"
 	rm -rf "$OUT"
 	if [ "$NAME" = "boot" ]; then
-		"$PY" "$UE/Engine/Platforms/Wasm/Build/Tools/web/webrun.py" run --stage "$WEB/Saved/Web/Wasm" --fixture boot --out "$OUT" 2>&1 | tail -1
+		"$PY" "$UE/Engine/Platforms/Wasm/Build/Tools/web/webrun.py" run --stage "$STAGE" --fixture boot --out "$OUT" 2>&1 | tail -1
 	else
-		"$PY" "$UE/Engine/Platforms/Wasm/Build/Tools/web/webrun.py" run --stage "$WEB/Saved/Web/Wasm" \
+		"$PY" "$UE/Engine/Platforms/Wasm/Build/Tools/web/webrun.py" run --stage "$STAGE" \
 			--fixtures "$ROOT/Build/Wasm/fixtures.json" --fixture "$NAME" --out "$OUT" 2>&1 | tail -1
 	fi
 	[ $? -eq 0 ] || STATUS=1
