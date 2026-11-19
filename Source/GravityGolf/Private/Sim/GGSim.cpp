@@ -88,6 +88,12 @@ void HoldWeightPlates(const FCourse& Course, const std::vector<FAttractor>& Mach
 		}
 		for (const FAttractor& Machine : Machines)
 		{
+			if (Machine.Turn >= 0)
+			{
+				// A mirror is a sheet of glass in a frame: too light to hold a plate down. (Otherwise a mirror can be
+				// spent as the weight and the field machine used as the turn, and the two jobs stop being two.)
+				continue;
+			}
 			const double Dx = Machine.Position.X - Switch.Center.X;
 			const double Dy = Machine.Position.Y - Switch.Center.Y;
 			if (Dx * Dx + Dy * Dy <= Switch.Radius * Switch.Radius)

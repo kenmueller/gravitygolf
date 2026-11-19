@@ -196,6 +196,8 @@ console and read the pass list in the log before guessing.
   pad with a backstop, and the cup comes a short way after the last mirror. A backstop must start close behind the
   pad's middle (about 90 cm): a hard-hit ball runs nearly a metre into sand before it stops.
   In the tools: `GG_TURNS=0,1 Tests/Sim/probe.sh ...` turns mirrors; solve and search try both turns.
+  A mirror is too light to hold a weight plate (`HoldWeightPlates` skips it): otherwise a mirror gets spent as the
+  weight and the field machine used as the turn, and a hole built on two jobs for two machines has other answers.
 - The forgiving move in this physics is a straight reel: ball, machine and target in one line (hundreds of working
   swings). But a straight reel from where the ball lies never needs the machine for direction: if the line is open
   a plain putt does it. A machine is necessary only where the ball must turn (fiddly: a dozen swings) or where it

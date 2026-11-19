@@ -1,4 +1,4 @@
-"""Hole 9, Crossed Wires: the hall of columns again, at night. The moon on the water, and six gates of light in six
+"""Hole 10, Crossed Wires: the hall of columns again, at night. The moon on the water, and five gates of light in five
 colours, each mirrored in the floor.
 
 It is the Colonnade's level script (Tools/levels/colonnade.py) with its own course, sky and colours.

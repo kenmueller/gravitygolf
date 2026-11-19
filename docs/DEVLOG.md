@@ -9,12 +9,12 @@ left click to swing (aim is where you look, longer hold is harder), E picks up a
 the ball, Backspace resets the hole, B jumps you to the ball, right click watches the ball, hold Space while the
 ball rolls to run it fast. **F1 plays the
 solution for the leg you are on (a hole solved that way is not recorded). Tab opens the menu. Keys 1 to 7 jump
-between holes.** (Keys 1 to 9 now.)
+between holes.** (Keys 1 to 9, and 0 for hole 10.)
 
 **Three things to try, in this order**
-1. **Holes 5, 8 and 9** (press the number). Five is the first one meant to be hard: the cup is behind you, behind
-   a gate. Eight is new: machines stand only on seven plinths, and each swing has exactly one that works. Nine is
-   the last hole: coloured plates and gates with the wiring crossed. Try them without F1.
+1. **Holes 5, 8, 9 and 10** (press the number; 0 is hole 10). Five is the first one meant to be hard: the cup is
+   behind you, behind a gate. Eight: machines stand only on seven plinths. Nine: a new machine, the mirror (F turns
+   it). Ten is the last hole: a weight, a mirror, and plates whose colours have to be read. Try them without F1.
 2. **The Workshop** (Tab, then Workshop). Build a hole: pick a tool along the bottom, drag on the table. Press T to
    test it, T again to come back. CHECK runs every swing without the machines; solving it yourself in a test is the
    other half of the proof. Tab has Keep, My holes, and a code you can copy to a friend.
@@ -39,8 +39,8 @@ between holes.** (Keys 1 to 9 now.)
 **Decisions waiting on you**
 - The name. "Gravity Golf" is used by other games (see VISION, Competition).
 - Publishing the web build. It runs locally; nothing is public, and I will not publish without your word.
-- More holes or more polish next. There are nine holes, and the ninth is written as the last. Holes 8 and 9 took
-  five designs between them (three thrown away; the reasons are in the entry below). My recommendation: holes are
+- More holes or more polish next. There are ten holes, and the tenth is written as the last. Holes 8 to 10 took
+  eight designs between them (five thrown away; the reasons are in the entry below). My recommendation: holes are
   the game, so that is where the next long stretch should go, with the Workshop as the place to prototype them.
 
 ## 2026-11-19, session 2 (autonomous): the Workshop, a rival, an ending, real host and join
@@ -66,7 +66,13 @@ between holes.** (Keys 1 to 9 now.)
 - **Hole 8, Stepping Stones**, on the salt at noon. New rule: plinths. A machine stands only on a plinth (it snaps
   to the middle), and there are seven. Two swings: out round the end of a long wall to a pad, then all the way back
   to a cup behind two walls. Each swing has exactly one plinth that works; the proof checks the other six fail.
-- **Hole 9, Crossed Wires, the last hole**, in the hall of columns at night. Two walls, each with three gates of
+- **Mirrors: a third machine.** A glass standing at 45 degrees; the ball leaves it at the angle it came in at with
+  four fifths of its speed. Carried like any machine; F turns it to its other diagonal (right shoulder on a gamepad,
+  TURN on touch). In the deterministic simulation it is an ordinary box seen from its own frame, so nothing else
+  changed (the old determinism hash is identical). The solver, the search, the rival, co-op and the Workshop all
+  know it.
+- **Hole 9, The Looking Glass**, in the canyon at noon: one mirror, two corners, a pad between.
+- **Hole 10, Crossed Wires, the last hole** (first written as hole 9), in the hall of columns at night. Two walls, each with three gates of
   light; in front of each, three weight plates. A plate holds open the gate of its own colour, and the machine
   standing on it draws the ball in and lets it go along the line through itself. The wiring is crossed, so only one
   plate's line runs through its own gate. This is the hole that hole 7 was meant to be ("the weight is also the
@@ -116,22 +122,24 @@ between holes.** (Keys 1 to 9 now.)
 - **Hole 8 is a choice more than a deduction.** Seven plinths, one right: a player can try them in turn. The lines
   can be reasoned out, but nothing forces it. And its second answer is not pretty: the ball skims the long wall,
   nearly dies, and is reeled through the gap. It passes every check and I would not call it elegant.
-- **Hole 9 is clear rather than hard, and its name oversells it.** Three plates, see which one points at the pad,
-  done: most players will have it in a few minutes, and a careless one can try all three. I tested the stated idea
-  by uncrossing the wires: the answer did not change, because the pad's position alone picks the plate. So the
-  crossing is decoration, which is exactly what my own rule exists to catch. I then tried twice to make it
-  necessary with a second machine (one as the weight on a far plate of the gate's colour, one as the engine) and
-  both failed for the same reason: once the right gate is open the target is either in a straight line, so the
-  engine is not needed, or it needs a turn at speed, which gives a handful of working swings. The hole that ships
-  is the proven single-machine one, described truthfully in its course file. As a last hole it gathers what the
-  course taught; it is not the stumper the course still lacks. Its first draft also had a second answer (kill the
-  ball on the south wall and it is reeled through a different plate and gate); moving the plates back closed it.
-- **The deeper finding, after five failed designs this session:** in this physics the forgiving move is a straight
-  reel (ball, machine, target in a line), and a straight reel from where the ball lies never needs the machine for
-  direction. Turning the ball is what makes a machine necessary, and turning is fiddly unless walls funnel it or the
-  ball is first killed against a wall. Harder holes need either a new tool that turns the ball reliably (a deflector,
-  a rail, a one-way gate) or holes built around the kill-and-collect move, taught on purpose. That is a design
-  decision worth a conversation.
+- **The finale went through four versions, and the third was a lie I caught.** Version 3 (one machine, three
+  coloured plates before each wall) passed every check, and its stated idea was crossed wiring. By my own rule I
+  tested the idea by uncrossing the wires: the answer did not change, so the crossing was decoration. Two attempts to
+  make it necessary with a second field machine failed: once the right gate is open the target is either in a
+  straight line (so nothing more is needed) or needs a turn at speed (a handful of working swings).
+- **What fixed it was a new tool, the mirror** (see below). With a machine that turns the ball exactly, the finale
+  became what it claimed: the attractor is the weight on the plate of the gate's colour, the mirror turns the ball
+  into the wall's shadow. Of 264 ways to stand the two machines, one works on each swing; neither machine can do
+  it alone; and uncrossing the wires now moves the answer to a different plate. A mirror is too light to hold a
+  plate down: without that rule the mirror could be spent as the weight and the roles collapsed.
+- **The deeper finding, after five failed designs:** in this physics the forgiving move is a straight reel (ball,
+  machine, target in a line), and a straight reel from where the ball lies never needs the machine for direction.
+  Turning the ball is what makes a machine necessary, and with fields alone turning is fiddly. The mirror is the
+  answer to that: exact, readable, and it makes right-angle geometry something to think with.
+- **Still true of holes 9 and 10: they are logic more than struggle.** A careful player reads the lines and the
+  colours and has each in a few minutes. They are the first holes where the reasoning is the whole of it, which is
+  the right direction, but nobody will need a walkthrough yet. Harder ones want two mirrors in a chain, or a mirror
+  with a field bending the ball onto it.
 - **Three other designs failed first.** A machine pinned to a weight plate that must also bend the ball is too
   fiddly (no cup position gets twelve working swings). Sand cannot pass a ball from one machine to another (a
   stopped ball is never pulled, and sand holds harder than any machine pulls). A three-swing finale passed the

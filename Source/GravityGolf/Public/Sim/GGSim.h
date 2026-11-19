@@ -177,7 +177,7 @@ struct FEvent
 };
 
 /**
- * Marks every weight plate that has a machine standing on it as held. Held is one flag per switch, the same list
+ * Marks every weight plate that has a machine standing on it as held. (A field machine: a mirror is too light.) Held is one flag per switch, the same list
  * FSim::Begin takes; flags already set (presses banked on earlier legs) are left alone.
  */
 void HoldWeightPlates(const FCourse& Course, const std::vector<FAttractor>& Machines, std::vector<bool>& Held);
