@@ -26,7 +26,7 @@ check "two players in the Workshop" "$ROOT/Tools/nettest_workshop.sh"
 check "two players and the grilles" "$ROOT/Tools/nettest_grille.sh"
 check "host and join, two copies of the game" "$ROOT/Tools/hosttest.sh"
 if [ "$1" = "web" ]; then
-	check "browser: every hole, the Workshop, play, phone" "$ROOT/Tools/webtest.sh" tour workshop workshop-phone play phone
+	check "browser: every hole, the Workshop, play, phone" "$ROOT/Tools/webtest.sh" tour workshop workshop-phone play phone phone-menus phone-machines
 fi
 [ -z "$FAILED" ] && echo "ALL PASSED" || echo "FAILED:$FAILED"
 [ -z "$FAILED" ]

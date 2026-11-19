@@ -27,6 +27,15 @@ What is different from the desktop game on the web:
 - Scanned plants are replaced by simple generated ones (`SM_Web_Pine`, `SM_Web_Shrub`).
 - World textures are capped at 1K.
 
+At phone size in Chrome (852x393, touch), checked on 2026-11-19: the title and play (stick, BALL, SWING), the
+Workshop (tools, paint, pinch, TEST), the menus (the list of thirteen holes is in two columns since its rows became
+too thin to tap), and the machine buttons on hole 12: GRAB picks the mirror up, PLACE sets it on a plinth, TURN turns
+it, and a carried mirror is stopped at a shut grille with its message. The player is moved between spots by the test;
+every button press is a touch.
+
+Safari 27 on the Mac runs it too (`Tools/webplay.sh`): WebGPU on, engine started, first frame presented, by its own
+log. Nobody has confirmed the picture.
+
 Not done: a real phone in a real hand (see below: one command serves it; nobody has held it yet), Safari and Firefox,
 frame-rate measurement, a Shipping build, saved progress across page reloads (untested).
 

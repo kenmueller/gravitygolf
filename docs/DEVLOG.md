@@ -177,6 +177,35 @@ between holes, 0 is hole 10, minus is 11, equals is 12 and the left bracket is 1
   while the full suite, which runs it, was running. It happened not to have reached it. I also blamed a hung connection on TLS before testing plain HTTP, which showed in one step that it was the
   firewall. And a server I thought I had stopped kept the port, because I had killed a subshell instead of it.
 
+## 2026-11-19, session 3 continued: after Ken came back
+
+**Changed**
+- **The editor is closed when the work stops.** Left open and unthrottled it held three cores and ran his fans for
+  three and a half hours. `Tools/rebuild.sh only` compiles without bringing it back.
+- **`Tools/webplay.sh`** serves the web build on this Mac and opens it in Safari (or the browser named).
+- **`Tools/phone.sh` warns** when the Mac can see no other device on its network. Ken scanned the code on a public
+  Wi-Fi that keeps devices apart; the server was fine and no phone could ever have reached it.
+- **Long menus go in two columns.** With thirteen holes the list's rows were 17 pixels tall at phone size, under
+  three millimetres on a real phone. They are 31 now, with Back centred beneath; left and right step across.
+- **A mirror's glass is a pale sheet on the web.** The phone renderer has nothing for a perfect mirror to reflect
+  and drew it black.
+
+**Verified**
+- In Chrome at phone size, from a fresh web build: the hole list in two columns, the settings, the pause menu; and on
+  hole 12 by touch: GRAB, PLACE, TURN, GRAB again (the game's own state after each press), and a carried mirror
+  stopped at a shut grille with its message on screen.
+- Safari 27 on the Mac: by the page's log, WebGPU on, engine started, first frame presented. Not seen by anyone.
+- Desktop: the same code compiles; the menus were not looked at on the desktop after the change (the editor stayed
+  closed). The two-column rule only applies to lists of eight or more whose rows would be under 40 units.
+
+**Critique**
+- *The phone goal is still unmet where it counts.* Everything about touch that can be checked without a phone is
+  now checked, and it is all emulation. One real phone on one real network would be worth more than all of it.
+- *Three waits of mine sat in the background for hours*, two of them unable ever to finish (a `pgrep -f` that
+  matched its own command line). They cost nothing but they were noise, and one of them was in the way.
+- *I told Ken to scan a code I had only tested from the Mac itself.* A server answering its own machine says
+  nothing about whether another device can reach it. The check now looks for neighbours first.
+
 ## 2026-11-19, session 2 (autonomous): the Workshop, a rival, an ending, real host and join
 
 **Changed**

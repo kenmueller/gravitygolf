@@ -1,6 +1,8 @@
 #!/bin/sh
 # Runs the packaged web build in Chrome with the engine's harness and saves screenshots:
-#   Tools/webtest.sh [boot|play|phone|workshop|workshop-phone|tour|hole-<Level> ...]     default: play phone; tour runs every hole
+#   Tools/webtest.sh [boot|play|phone|phone-menus|phone-machines|workshop|workshop-phone|tour|hole-<Level> ...]
+#   default: play phone; tour runs every hole; phone-menus shows the menus at phone size; phone-machines works the
+#   GRAB, PLACE and TURN buttons by touch on hole 12 and walks a carried mirror into a shut grille
 # Needs a packaged build (Tools/web.sh) and Google Chrome. Results land in ../gravitygolf-web/Saved/WebTest/<name>.
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 UE="${UE_ROOT:-$HOME/UE59}"
