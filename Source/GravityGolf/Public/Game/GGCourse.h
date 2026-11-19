@@ -132,6 +132,8 @@ public:
 	/** What the ground is made of under a point. */
 	GG::ESurface SurfaceAt(const FVector& Location) const;
 
+	/** The colour a plate and the gates it opens share, by the plate's number. */
+	static FLinearColor SwitchColor(int32 Index);
 	/** Show the machines' fields boldly (true) or as faint rings only (false). */
 	void SetFieldEmphasis(bool bEmphasize);
 	/** Draw no fields at all (the Workshop's table, where the rings of a few machines cover the whole design). */

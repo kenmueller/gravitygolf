@@ -77,7 +77,8 @@ between holes.**
   stopped ball is never pulled, and sand holds harder than any machine pulls). Seven holes is a demo, not a game.
 - **The Workshop's holes can't be played together or raced yet,** and there is no browsing of other people's
   holes: sharing is a code in a chat. Honest for a game with no servers, but it is not Mario Maker.
-- **Gates don't show which plate opens them** while playing (only on the building screen, by number and a line).
+- Gates did not show which plate opens them while playing. Fixed at the end of the session: a plate and its gates
+  now glow the same colour (a hole with one plate looks as before). Not yet judged in a hole with several.
 - **The look.** The Workshop is the cleanest screen in the game, and the plainest: flat white and one glow colour.
   Fine for a tool. The test view's daytime sky fights the glowing table; dusk would suit it better.
 - **The rival is slow to watch** (easy takes 19 minutes on hole 5) and only ever replays the recorded answer with

@@ -172,15 +172,17 @@ void AGGHUD::DrawWorkshop(AGGWorkshop* Workshop)
 		}
 		const FVector2D Middle((Gate.Rect.Min.X + Gate.Rect.Max.X) * 0.5, (Gate.Rect.Min.Y + Gate.Rect.Max.Y) * 0.5);
 		const FIntPoint Plate = Design.Plates[Gate.Plate].At;
-		GroundLine(Middle, FVector2D(Plate.X, Plate.Y), FLinearColor(1.f, 0.6f, 0.15f, 0.55f), Thin);
+		FLinearColor Tie = AGGCourse::SwitchColor(Gate.Plate);
 		const FVector At = Project(FVector(Middle.X, Middle.Y, 160.0), false);
-		Label(FString::FromInt(Gate.Plate + 1), At.X, At.Y - 14.f * S, 20.f * S, ShopPush, true, true);
+		Label(FString::FromInt(Gate.Plate + 1), At.X, At.Y - 14.f * S, 20.f * T, Tie, true, true);
+		Tie.A = 0.55f;
+		GroundLine(Middle, FVector2D(Plate.X, Plate.Y), Tie, Thin);
 	}
 	for (int32 I = 0; I < Design.Plates.Num(); ++I)
 	{
 		const FVector At = Project(FVector(Design.Plates[I].At.X, Design.Plates[I].At.Y, 10.0), false);
 		// Dark on a light plate's bright disc, bright on a weight plate's iron.
-		Label(FString::FromInt(I + 1), At.X, At.Y - 14.f * S, 20.f * S, Design.Plates[I].bWeight ? ShopPush : FLinearColor(0.1f, 0.05f, 0.f), true, true);
+		Label(FString::FromInt(I + 1), At.X, At.Y - 14.f * S, 20.f * T, Design.Plates[I].bWeight ? AGGCourse::SwitchColor(I) : FLinearColor(0.1f, 0.05f, 0.f), true, true);
 	}
 	const FVector TeeAt = Project(FVector(Design.Tee.X, Design.Tee.Y, 0.0), false);
 	Label(TEXT("TEE"), TeeAt.X, TeeAt.Y + 16.f * S, 15.f * T, ShopDim, true, true);

@@ -562,6 +562,16 @@ UStaticMeshComponent* AGGCourse::AddMesh(UStaticMesh* Mesh, UMaterialInterface* 
 	return Component;
 }
 
+FLinearColor AGGCourse::SwitchColor(int32 Index)
+{
+	// The first is the warm orange every hole so far has used; a hole with several plates gives each its own.
+	static const FLinearColor Colors[] = {
+		FLinearColor(1.f, 0.52f, 0.13f), FLinearColor(1.f, 0.22f, 0.75f), FLinearColor(1.f, 0.92f, 0.45f),
+		FLinearColor(0.62f, 0.42f, 1.f), FLinearColor(1.f, 0.2f, 0.2f), FLinearColor(0.3f, 0.7f, 1.f)};
+	// (No green: a pressed plate turns green.)
+	return Colors[FMath::Abs(Index) % UE_ARRAY_COUNT(Colors)];
+}
+
 UMaterialInstanceDynamic* AGGCourse::Glow(const FLinearColor& Color, float Strength)
 {
 	UMaterialInstanceDynamic* Material = UMaterialInstanceDynamic::Create(GlowBase, this);
@@ -605,7 +615,8 @@ void AGGCourse::BuildActors()
 	for (const GG::FSwitch& Switch : Course.Switches)
 	{
 		const double Scale = Switch.Radius / 50.0;
-		UMaterialInstanceDynamic* Material = Glow(FLinearColor(1.f, 0.6f, 0.15f), 1.5f);
+		// A plate and the gates it opens glow the same colour.
+		UMaterialInstanceDynamic* Material = Glow(SwitchColor(SwitchMaterials.Num()), 1.5f);
 		SwitchMaterials.Add(Material);
 		if (Switch.bWeight)
 		{
@@ -638,7 +649,7 @@ void AGGCourse::BuildActors()
 		const double Height = Max.Z - Min.Z;
 		const FVector Center = (Min + Max) * 0.5;
 		Bars->SetWorldLocation(FVector(Center.X, Center.Y, Min.Z));
-		UMaterialInstanceDynamic* Light = Glow(FLinearColor(1.f, 0.5f, 0.12f), 14.f);
+		UMaterialInstanceDynamic* Light = Glow(SwitchColor(Gate.Switch), 14.f);
 		const int32 Count = FMath::Max(3, FMath::RoundToInt32(Length / 42.0));
 		for (int32 Bar = 0; Bar < Count; ++Bar)
 		{
@@ -1378,7 +1389,7 @@ void AGGCourse::UpdateFieldPreview(float DeltaSeconds)
 	for (int32 I = 0; I < SwitchMaterials.Num(); ++I)
 	{
 		const bool bPressed = Down[I] || (bLive && Sim.SwitchPressed(I));
-		SwitchMaterials[I]->SetVectorParameterValue(TEXT("Color"), bPressed ? FLinearColor(0.25f, 1.f, 0.45f) : FLinearColor(1.f, 0.6f, 0.15f));
+		SwitchMaterials[I]->SetVectorParameterValue(TEXT("Color"), bPressed ? FLinearColor(0.25f, 1.f, 0.45f) : SwitchColor(I));
 		SwitchMaterials[I]->SetScalarParameterValue(TEXT("Strength"), bPressed ? 6.f : 1.5f);
 	}
 	for (int32 I = 0; I < GateBars.Num(); ++I)
