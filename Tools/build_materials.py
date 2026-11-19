@@ -303,6 +303,44 @@ def build_ball():
     finish(material, path)
 
 
-for build in (build_surface, build_glow, build_planet, build_sky, build_ball):
+OCEAN = r"""
+// Sum of directional waves (world-space slopes in meters) plus fine noise ripples, as a world-space normal.
+float2 P = WorldPos.xy / 100.0;
+float2 Slope = 0;
+const float2 Dirs[6] = { float2(1, 0.2), float2(0.7, 0.7), float2(0.3, -0.95), float2(-0.6, 0.8), float2(0.95, -0.3), float2(-0.2, -1) };
+const float Lens[6] = { 23.0, 11.0, 7.3, 4.1, 2.3, 1.1 };
+const float Amps[6] = { 0.22, 0.12, 0.07, 0.04, 0.02, 0.01 };
+for (int I = 0; I < 6; I++)
+{
+    float2 D = normalize(Dirs[I]);
+    float K = 6.2831853 / Lens[I];
+    float Speed = sqrt(9.81 / K);
+    float Phase = dot(D, P) * K - Time * Speed * K;
+    Slope += D * K * Amps[I] * cos(Phase);
+}
+return normalize(float3(-Slope.x * Choppiness, -Slope.y * Choppiness, 1.0));
+"""
+
+
+def build_ocean():
+    material, path = fresh("M_GG_Ocean")
+    material.set_editor_property("tangent_space_normal", False)
+    world = node(material, unreal.MaterialExpressionWorldPosition, -900, 0)
+    time = node(material, unreal.MaterialExpressionTime, -900, 150)
+    chop = scalar_param(material, "Choppiness", 0.6, -900, 300)
+    waves = custom(material, OCEAN, ["WorldPos", "Time", "Choppiness"], -500, 100)
+    for source, pin in [(world, "WorldPos"), (time, "Time"), (chop, "Choppiness")]:
+        MEL.connect_material_expressions(source, "", waves, pin)
+    MEL.connect_material_property(waves, "", unreal.MaterialProperty.MP_NORMAL)
+    color = vector_param(material, "WaterColor", (0.004, 0.03, 0.045, 1), -500, -200)
+    MEL.connect_material_property(color, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    MEL.connect_material_property(scalar_param(material, "Roughness", 0.035, -500, 300), "",
+                                  unreal.MaterialProperty.MP_ROUGHNESS)
+    MEL.connect_material_property(scalar_param(material, "Specular", 0.6, -500, 400), "",
+                                  unreal.MaterialProperty.MP_SPECULAR)
+    finish(material, path)
+
+
+for build in (build_surface, build_glow, build_planet, build_sky, build_ball, build_ocean):
     build()
 unreal.log("GG: materials done")

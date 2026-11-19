@@ -1,0 +1,121 @@
+"""Shared helpers for level-generation scripts. Levels are build output; these scripts are the source."""
+
+import unreal
+
+EAS = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
+LES = unreal.get_editor_subsystem(unreal.LevelEditorSubsystem)
+ASSETS = unreal.EditorAssetLibrary
+
+CUBE = "/Engine/BasicShapes/Cube.Cube"
+CYLINDER = "/Engine/BasicShapes/Cylinder.Cylinder"
+PLANE = "/Engine/BasicShapes/Plane.Plane"
+SPHERE = "/Engine/BasicShapes/Sphere.Sphere"
+
+
+def fresh_level(path):
+    """Recreate a level from scratch so the script fully defines it."""
+    LES.load_level("/Engine/Maps/Entry", unsaved_changes_policy=unreal.LevelEditorUnsavedChangesPolicy.DISCARD)
+    if ASSETS.does_asset_exist(path):
+        ASSETS.delete_asset(path)
+    if not LES.new_level(path, False):
+        raise RuntimeError(f"could not create {path}")
+
+
+def rotator(pitch=0.0, yaw=0.0, roll=0.0):
+    return unreal.Rotator(roll=roll, pitch=pitch, yaw=yaw)
+
+
+def spawn(cls, location=(0, 0, 0), rotation=(0, 0, 0), label=None, folder=None):
+    actor = EAS.spawn_actor_from_class(cls, unreal.Vector(*location), rotator(*rotation))
+    if label:
+        actor.set_actor_label(label)
+    if folder:
+        actor.set_folder_path(folder)
+    return actor
+
+
+def mesh(asset, location, size, rotation=(0, 0, 0), material=None, label=None, folder=None, cast_shadow=True):
+    """A static mesh actor. Size is in centimeters for the engine's 100 cm basic shapes."""
+    actor = spawn(unreal.StaticMeshActor, location, rotation, label, folder)
+    component = actor.static_mesh_component
+    component.set_static_mesh(unreal.load_asset(asset))
+    actor.set_actor_scale3d(unreal.Vector(size[0] / 100.0, size[1] / 100.0, size[2] / 100.0))
+    if material:
+        component.set_material(0, material)
+    component.set_editor_property("cast_shadow", cast_shadow)
+    return actor
+
+
+def box(center, size, material, label=None, folder="Course", rotation=(0, 0, 0)):
+    return mesh(CUBE, center, size, rotation, material, label, folder)
+
+
+def material_instance(parent_path, name, scalars=None, vectors=None, folder="/Game/Materials/Instances"):
+    """Create (or recreate) a material instance constant with parameter overrides."""
+    path = f"{folder}/{name}"
+    if ASSETS.does_asset_exist(path):
+        ASSETS.delete_asset(path)
+    tools = unreal.AssetToolsHelpers.get_asset_tools()
+    instance = tools.create_asset(name, folder, unreal.MaterialInstanceConstant, unreal.MaterialInstanceConstantFactoryNew())
+    mel = unreal.MaterialEditingLibrary
+    mel.set_material_instance_parent(instance, unreal.load_asset(parent_path))
+    for key, value in (scalars or {}).items():
+        mel.set_material_instance_scalar_parameter_value(instance, key, value)
+    for key, value in (vectors or {}).items():
+        mel.set_material_instance_vector_parameter_value(instance, key, unreal.LinearColor(*value))
+    ASSETS.save_asset(path)
+    return instance
+
+
+def sky_and_sun(sun_pitch=-8.0, sun_yaw=135.0, sun_lux=10.0, fog_density=0.015, exposure_bias=0.0):
+    """Physically based sky: atmosphere, volumetric clouds, height fog, real-time sky light and the sun."""
+    sun = spawn(unreal.DirectionalLight, (0, 0, 5000), (sun_pitch, sun_yaw, 0), "Sun", "Lighting")
+    light = sun.get_component_by_class(unreal.DirectionalLightComponent)
+    light.set_mobility(unreal.ComponentMobility.MOVABLE)
+    light.set_intensity(sun_lux)
+    light.set_atmosphere_sun_light(True)
+    light.set_editor_property("light_source_angle", 0.6)
+    light.set_editor_property("forward_shading_priority", 1)
+    light.set_editor_property("cast_shadows_on_atmosphere", True)
+    light.set_editor_property("cast_cloud_shadows", True)
+
+    spawn(unreal.SkyAtmosphere, (0, 0, 0), label="SkyAtmosphere", folder="Lighting")
+
+    clouds = spawn(unreal.VolumetricCloud, (0, 0, 0), label="Clouds", folder="Lighting")
+    cloud_component = clouds.get_component_by_class(unreal.VolumetricCloudComponent)
+    cloud_component.set_editor_property("layer_bottom_altitude", 3.0)
+    cloud_component.set_editor_property("layer_height", 6.0)
+
+    fog = spawn(unreal.ExponentialHeightFog, (0, 0, -2500), label="Fog", folder="Lighting")
+    fog_component = fog.get_component_by_class(unreal.ExponentialHeightFogComponent)
+    fog_component.set_fog_density(fog_density)
+    fog_component.set_editor_property("fog_height_falloff", 0.12)
+    fog_component.set_volumetric_fog(True)
+    fog_component.set_editor_property("volumetric_fog_scattering_distribution", 0.6)
+
+    sky = spawn(unreal.SkyLight, (0, 0, 1000), label="SkyLight", folder="Lighting")
+    sky_component = sky.get_component_by_class(unreal.SkyLightComponent)
+    sky_component.set_mobility(unreal.ComponentMobility.MOVABLE)
+    sky_component.set_editor_property("real_time_capture", True)
+
+    post = spawn(unreal.PostProcessVolume, (0, 0, 0), label="Post", folder="Lighting")
+    post.set_editor_property("unbound", True)
+    settings = post.settings
+    settings.set_editor_property("override_auto_exposure_method", True)
+    settings.set_editor_property("auto_exposure_method", unreal.AutoExposureMethod.AEM_HISTOGRAM)
+    settings.set_editor_property("override_auto_exposure_bias", True)
+    settings.set_editor_property("auto_exposure_bias", exposure_bias)
+    settings.set_editor_property("override_auto_exposure_min_brightness", True)
+    settings.set_editor_property("auto_exposure_min_brightness", 7.0)
+    settings.set_editor_property("override_auto_exposure_max_brightness", True)
+    settings.set_editor_property("auto_exposure_max_brightness", 13.0)
+    settings.set_editor_property("override_bloom_intensity", True)
+    settings.set_editor_property("bloom_intensity", 0.45)
+    settings.set_editor_property("override_lens_flare_intensity", True)
+    settings.set_editor_property("lens_flare_intensity", 0.15)
+    settings.set_editor_property("override_vignette_intensity", True)
+    settings.set_editor_property("vignette_intensity", 0.28)
+    settings.set_editor_property("override_film_grain_intensity", True)
+    settings.set_editor_property("film_grain_intensity", 0.08)
+    post.set_editor_property("settings", settings)
+    return sun
