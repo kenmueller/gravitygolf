@@ -223,6 +223,7 @@ void AGGCourse::BuildActors()
 	};
 	TrailDots = MakeDots(FLinearColor(0.55f, 0.85f, 1.f), 6.f);
 	GuideDots = MakeDots(FLinearColor(1.f, 0.92f, 0.7f), 8.f);
+	FieldDots = MakeDots(FLinearColor(0.25f, 0.6f, 1.f), 16.f);
 }
 
 void AGGCourse::BuildMachine(int32 Index)
@@ -528,12 +529,68 @@ void AGGCourse::Tick(float DeltaSeconds)
 		Core->SetRelativeScale3D(FVector(0.14f * Pulse));
 	}
 
+	UpdateFieldPreview();
+
 	// The ball draws its path in light, fading behind it.
 	TrailDots->ClearInstances();
 	for (int32 I = 0; I < Trail.Num(); I += 2)
 	{
 		const float Fade = static_cast<float>(I) / Trail.Num();
 		TrailDots->AddInstance(FTransform(FRotator::ZeroRotator, Trail[I], FVector(0.012f + 0.035f * Fade)), true);
+	}
+}
+
+void AGGCourse::UpdateFieldPreview()
+{
+	// Each machine shows its field on the ground: a ring at the dome's edge, and motes that stream inward along
+	// the pull. Faster, larger motes mean a stronger pull, so the player can read a placement before swinging.
+	FieldDots->ClearInstances();
+	const double Time = GetWorld()->GetTimeSeconds();
+	constexpr int32 RingDots = 96;
+	constexpr int32 Spokes = 30;
+	constexpr int32 MotesPerSpoke = 5;
+	for (int32 Index = 0; Index < MachineBases.Num(); ++Index)
+	{
+		const FVector Base = MachineBases[Index];
+		const double Range = Attractors[Index].Range;
+		const bool bPull = Attractors[Index].Strength > 0.0;
+
+		for (int32 I = 0; I < RingDots; ++I)
+		{
+			const double Angle = 2.0 * PI * I / RingDots;
+			// Dashes laid along the circle, slowly turning, so the dome's edge reads as a boundary.
+			const double Turn = Angle + Time * 0.05;
+			const FVector Out(FMath::Cos(Turn), FMath::Sin(Turn), 0.0);
+			const FVector Along(-Out.Y, Out.X, 0.0);
+			FieldDots->AddInstance(FTransform(Along.Rotation(), Base + Out * Range + FVector(0, 0, 4.0),
+				FVector(0.75, 0.1, 0.05)), true);
+		}
+
+		for (int32 Spoke = 0; Spoke < Spokes; ++Spoke)
+		{
+			const double Angle = 2.0 * PI * (Spoke + 0.5 * (Index % 2)) / Spokes;
+			const FVector Radial(FMath::Cos(Angle), FMath::Sin(Angle), 0.0);
+			for (int32 Mote = 0; Mote < MotesPerSpoke; ++Mote)
+			{
+				// Travel from the edge to the center (or outward for a repulsor), staggered per spoke.
+				double Phase = FMath::Frac(Time * 0.22 + static_cast<double>(Mote) / MotesPerSpoke + Spoke * 0.381);
+				if (!bPull)
+				{
+					Phase = 1.0 - Phase;
+				}
+				// Ease in, so motes speed up as the pull strengthens.
+				const double R = Range * (1.0 - Phase * Phase);
+				if (R < 90.0)
+				{
+					continue;
+				}
+				const double Window = 1.0 - (R * R) / (Range * Range);
+				const double Size = 0.1 + 0.34 * Window;
+				// Stretch each mote along the pull so it reads as a direction.
+				FieldDots->AddInstance(FTransform(Radial.Rotation(), Base + Radial * R + FVector(0, 0, 4.0),
+					FVector(Size * 3.0, Size * 0.45, 0.05)), true);
+			}
+		}
 	}
 }
 

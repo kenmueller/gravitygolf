@@ -74,8 +74,8 @@ Tests/Sim/solve.sh <course>   puzzle-law proof: impossible without the machine, 
 UE="/Users/Shared/Epic Games/UE_5.9"
 Tests/Sim/run.sh                                             # sim tests, no Unreal needed
 python3 Tools/courses/terraces.py                            # regenerate a course JSON
-"$UE/Engine/Build/BatchFiles/Mac/Build.sh" GravityGolfEditor Mac Development -project="$PWD/GravityGolf.uproject"
-Tools/editor.sh                                              # start the editor, wait for MCP
+Tools/rebuild.sh                                             # close editor, compile C++, restart editor with MCP
+Tools/editor.sh                                              # start one editor, wait for MCP (retries if the port is held)
 ```
 
 Work through the Unreal MCP (`mcp__unreal__*`) while the editor is open:
@@ -83,8 +83,7 @@ Work through the Unreal MCP (`mcp__unreal__*`) while the editor is open:
 - Run repo scripts with `editor_toolset.toolsets.python_scripting.PythonScriptingTools.execute_python` and
   `runpy.run_path('<abs path>', run_name='__main__')`. Long scripts can time out on the client yet still finish;
   check the log.
-- C++ changes that touch class layouts need the editor closed: `EditorAppToolset.ExitEditor`, Build.sh, then
-  `Tools/editor.sh`.
+- After any C++ change run `Tools/rebuild.sh` (about 2 to 3 minutes).
 - Play and look: `EditorAppToolset.StartPIE` (warmupSeconds 10+), `SceneCaptureToolset.CaptureGameViewport` with
   the PIE world from `ListWorlds`, then `StopPIE`.
 - Read the log with `ConsoleToolset.LogsToolset.GetLogEntries`.

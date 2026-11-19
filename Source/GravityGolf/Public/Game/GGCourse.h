@@ -84,6 +84,7 @@ private:
 	void BuildActors();
 	void FinishStroke(GG::EBallState State);
 	void BuildMachine(int32 Index);
+	void UpdateFieldPreview();
 	UStaticMeshComponent* AddMesh(UStaticMesh* Mesh, UMaterialInterface* Material, const FTransform& Transform,
 		USceneComponent* Parent = nullptr);
 	UMaterialInstanceDynamic* Glow(const FLinearColor& Color, float Strength);
@@ -129,6 +130,9 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UInstancedStaticMeshComponent> GuideDots;
+
+	UPROPERTY()
+	TObjectPtr<UInstancedStaticMeshComponent> FieldDots;
 
 	UPROPERTY()
 	TObjectPtr<UMaterialInterface> GlowBase;
