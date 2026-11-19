@@ -7,11 +7,12 @@ UE="${UE_ROOT:-$HOME/UE59}"
 WEB="${GG_WEB_COPY:-$ROOT/../gravitygolf-web}"
 PY="$UE/Engine/Binaries/ThirdParty/Python3/Mac/bin/python3"
 STATUS=0
-NAMES="${*:-play phone}"
-if [ "$NAMES" = "tour" ]; then
-	# Every hole: open it, picture from the tee, play its solution. A web smoke test.
-	NAMES="hole-Terraces hole-SaltMirror hole-Canyon hole-Lantern hole-Returning hole-Brief hole-Colonnade hole-Stones hole-Wires"
-fi
+# "tour" stands for every hole: open it, picture from the tee, play its solution. A web smoke test.
+TOUR="hole-Terraces hole-SaltMirror hole-Canyon hole-Lantern hole-Returning hole-Brief hole-Colonnade hole-Stones hole-Wires"
+NAMES=""
+for NAME in ${*:-play phone}; do
+	[ "$NAME" = "tour" ] && NAMES="$NAMES $TOUR" || NAMES="$NAMES $NAME"
+done
 for NAME in $NAMES; do
 	OUT="$WEB/Saved/WebTest/$NAME"
 	rm -rf "$OUT"

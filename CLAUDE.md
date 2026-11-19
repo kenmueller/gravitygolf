@@ -130,6 +130,7 @@ Work through the Unreal MCP (`mcp__unreal__*`) while the editor is open:
 Tests/Sim/run.sh && Tests/Sim/solve.sh <course>   # physics and puzzle law, after any sim or course change
 Tools/smoke.sh                                    # every hole still solves in the engine
 Tools/perf.sh                                     # frame rate, after any art or rendering change
+Tools/testall.sh                                  # all of the above and the Workshop, co-op and host/join tests (20 min)
 ```
 
 Each course records its answer with `c.solution(leg, machines, yaw, power)`; `GGDemo` (F1 in play) replays it.
@@ -218,6 +219,8 @@ console and read the pass list in the log before guessing.
   thing owns it: clouds 2.7 ms, the 19 pines 4.3 (half of it their shadows), 164 shrubs 2.2 (their ray-tracing
   skinning), bounced light 2.9. Metal's ProfileGPU reports most passes as 0 ms, so measure by switching things off
   from Python in play (`set_cast_shadow`, `set_visible_in_ray_tracing`, `set_actor_hidden_in_game`) and `GGPerf`.
+- Frame rates measured while `Tools/web.sh` is running are about 10 fps low (it has twice sent me looking for a
+  regression that was not there).
 - `r.ScreenPercentage` set from the console stays set for the editor session. Play defaults to about two thirds on
   this display; setting 100 "to restore it" made every later measurement 30% worse until the editor restarted.
 - Megaplants are skeletal meshes that sway. Anything that sways redraws its shadow every frame: 26 pines cost 12 ms

@@ -1697,7 +1697,15 @@ void AGGWorkshop::StartRating()
 	}
 	// The same hole is always rated from the same placements.
 	RateGround.Sort([](const FIntPoint& A, const FIntPoint& B) { return A.Y != B.Y ? A.Y < B.Y : A.X < B.X; });
-	RateRandom.Initialize(static_cast<int32>(FCrc::StrCrc32(*ShareCode())));
+	// (Seeded from the hole's code without its name, so renaming a hole does not change its rating.)
+	FString Shape = ShareCode();
+	int32 NameAt = INDEX_NONE;
+	int32 NameEnd = INDEX_NONE;
+	if (Shape.FindChar(TEXT(';'), NameAt) && Shape.Mid(NameAt + 1).FindChar(TEXT(';'), NameEnd))
+	{
+		Shape.RemoveAt(NameAt, NameEnd + 1);
+	}
+	RateRandom.Initialize(static_cast<int32>(FCrc::StrCrc32(*Shape)));
 	if (RateGround.Num() == 0)
 	{
 		Say(TEXT("No swing does it without the machines."));
