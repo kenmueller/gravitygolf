@@ -10,26 +10,81 @@ the ball, Backspace resets the hole, B jumps you to the ball, right click watche
 solution for the leg you are on (a hole solved that way is not recorded). Tab opens the menu. Keys 1 to 7 jump
 between holes.**
 
-**Start with hole 5** (press 5). It is the first one meant to be hard: the cup is behind you, behind a gate.
-Try it without F1 and tell me how long it took and whether the answer felt earned or fiddly.
+**Three things to try, in this order**
+1. **Hole 5** (press 5). The first one meant to be hard: the cup is behind you, behind a gate. Try it without F1.
+2. **The Workshop** (Tab, then Workshop). Build a hole: pick a tool along the bottom, drag on the table. Press T to
+   test it, T again to come back. CHECK runs every swing without the machines; solving it yourself in a test is the
+   other half of the proof. Tab has Keep, My holes, and a code you can copy to a friend.
+3. **Playing together.** Tab, Play together, Host this hole. A second copy of the game on your network joins by
+   typing this machine's address there. (I tested it with two copies on this Mac: `Tools/hosttest.sh`.)
 
-**What I need from you** (things I cannot judge):
+**What I need from you** (things I cannot judge)
 1. **Swing feel and sound.** I have never heard the game. Footsteps, strike, bounce, cup, machine hum, gate: are
    they good, bad or missing?
-2. **Do the holes make you think?** Holes 1 to 4 are a tutorial. Hole 5 is the first exam. Which felt like a
-   puzzle and which felt like aiming?
-3. **The look in motion.** Stills flatter it. Walk each world and tell me the first thing that looks cheap. My own
-   list is under "Standing critique of the look" below.
-4. **Frame rate on your machine.** I measured 49 to 75 fps in the editor at about 2000x1100. Say so if it feels
-   worse than that.
-5. **The editor froze once** right after Play was stopped while you were at the keyboard (you force quit it). I
-   could not reproduce it. If it happens again, tell me what you had just done.
+2. **Do the holes make you think?** Holes 1 to 4 teach, 5 to 7 examine. Which felt like a puzzle and which felt
+   like aiming?
+3. **The Workshop with real hands.** I drove every tool through the game's own input code (console strokes, fake
+   touches, and real mouse clicks in Chrome), but nobody has dragged a wall with a mouse for ten minutes. Tell me
+   the first thing that annoys you.
+4. **The look in motion.** Stills flatter it. Walk each world and tell me the first thing that looks cheap.
+5. **A real phone.** The browser build passes in Chrome's phone emulation. A real phone needs it served over HTTPS
+   on your network, which is a decision for you (see `docs/WEB.md`).
 
 **Decisions waiting on you**
 - The name. "Gravity Golf" is used by other games (see VISION, Competition).
-- What to build next. My recommendation: more hard holes first, which needs new tools (relays, splitters, timed
-  gates) because two machines and a plate only stretch so far. Then avatars and co-op. Menus, a level editor and
-  bots come after there is a game worth sharing.
+- Publishing the web build. It runs locally; nothing is public, and I will not publish without your word.
+- More holes or more polish next. There are seven holes. I tried an eighth twice this session and threw both away
+  (the reasons are in the entry below). My recommendation: holes are the game, so that is where the next long
+  stretch should go, with the Workshop as the place to prototype them.
+
+## 2026-11-19, session 2 (autonomous): the Workshop, a rival, an ending, real host and join
+
+**Changed**
+- **The Workshop: a level editor inside the game.** Ground, sand, stone walls and soft walls are painted on a 50 cm
+  grid; safe pads, light plates, weight plates, gates, attractors and repulsors stand on it. Twelve tools, undo,
+  and a view from above that slides and zooms. It works with a mouse, a gamepad (the view slides under a fixed
+  pointer) and touch (one finger works the tool, two move the view).
+- **A hole made there is held to the puzzle law.** Solving it in a test play records your answer. CHECK plays every
+  swing with no machine, with the real physics, a slice per frame (about five seconds). Both done and the hole is
+  marked proven. If a plain shot works, the Workshop draws that shot on the table.
+- **Holes are kept in the save and travel as a short code** (60 to 150 characters), copied and pasted.
+- **Its own look:** a white architect's model standing on a dark drafting table ruled with light, under a sky full
+  of the outlines of blocks not built yet.
+- **A rival to race** (Settings, Rival): a bot that walks, carries the machines and swings in a ghost copy of the
+  hole, at three skills. It finished every kind of hole in testing (hard: 2 to 3 minutes; easy: 8 to 19).
+- **An ending.** The last hole's card says the course is complete, with your record, and leads to the Workshop.
+- **Play together has a screen**: host this hole, or join a host by address.
+- The course can load from text, take itself down, and draw a hole with no level around it. The proof's building
+  blocks moved into the game (`Sim/GGProof.h`) and the standalone solver now uses the same file.
+
+**Verified**
+- `Tools/workshoptest.sh`: 25 checks pass (every tool, undo, the code there and back, keep and reopen, touch,
+  the proof both ways, a test play that records the answer).
+- The standalone solver agrees with the in-game check on the starter hole (0 of 110,880 swings without the machine).
+- In Chrome: the Workshop with real mouse clicks, and at phone size with touch (tap a tool, drag, pinch, TEST).
+- `Tools/hosttest.sh`: two standalone copies of the game; the joiner connects by address and loads the host's hole.
+- `Tools/smoke.sh` (seven holes), `Tools/nettest.sh` (13 of 13), sim tests: all pass after the changes.
+- Frame rate from the tee: Workshop 80 fps, Colonnade 63 fps (it read 44 last time only because a web build was
+  running).
+
+**Critique**
+- **The in-game proof is weaker than the solver's.** It proves "impossible without the machines" and "the designer
+  solved it". It does not check that placement matters or that one machine alone fails. The starter hole itself
+  fails the full solver (43% of machine spots work: placement barely matters). A player can ship an easy hole and
+  see PROVEN.
+- **No eighth hole.** Two designs failed. A machine pinned to a weight plate that must also bend the ball is too
+  fiddly (no cup position gets twelve working swings). Sand cannot pass a ball from one machine to another (a
+  stopped ball is never pulled, and sand holds harder than any machine pulls). Seven holes is a demo, not a game.
+- **The Workshop's holes can't be played together or raced yet,** and there is no browsing of other people's
+  holes: sharing is a code in a chat. Honest for a game with no servers, but it is not Mario Maker.
+- **Gates don't show which plate opens them** while playing (only on the building screen, by number and a line).
+- **The look.** The Workshop is the cleanest screen in the game, and the plainest: flat white and one glow colour.
+  Fine for a tool. The test view's daytime sky fights the glowing table; dusk would suit it better.
+- **The rival is slow to watch** (easy takes 19 minutes on hole 5) and only ever replays the recorded answer with
+  errors; it does not think.
+- **Process.** My tests had been writing solves and test holes into your save file. They now use a scratch save
+  (`GGTestSave`), and I deleted the file they had made. Also: one 90 km slab drew over everything standing on it,
+  which cost an hour; big ground is tiled now.
 
 ## 2026-11-19, session 1 (autonomous): it runs in a browser; hole 7; playing together
 

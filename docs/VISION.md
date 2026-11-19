@@ -117,6 +117,14 @@ Holes 1 to 4 are the tutorial. Hole 5 is the first exam: everything so far, on b
 - A rival bot (Settings, "Rival to race": easy, medium, hard): another caddie works the same hole in a ghost copy
   of its own, starting from the verified answer with error that shrinks on every miss. On hole 3 it takes about
   2, 3 and 10 minutes. Not built: bots as co-op partners, bots in a shared hole.
+- Joining a friend: Play together in the menu hosts the hole you are on, or joins a host by address. Verified with
+  two standalone copies on one machine (`Tools/hosttest.sh`). Not built: invites, a lobby, anything across the
+  internet without opening a port.
+- The Workshop (the level editor): build a hole on a grid with twelve tools, test it, and have the game check it
+  against the puzzle law (you solved it; no swing works without the machines). Holes are kept in the save and
+  shared as a short code. Mouse, gamepad and touch; it runs in the browser build. Not built: playing a Workshop hole
+  together or against the rival, a place to browse other people's holes, the solver's stricter checks in-game.
+- An ending: the last hole's card closes the course and leads to the Workshop.
 
 ### Beautiful
 - **Look:** monumental and serene. Sunlit natural landscapes inhabited by vast, weathered structures of an unknown
