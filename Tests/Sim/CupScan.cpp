@@ -17,13 +17,16 @@ using namespace GG;
 
 // One machine, tried at spot A and at spot B: squares that many swings cross with it at A and none cross with it at B.
 // That is where a cup makes A the answer and B a dead end.
+/** The leg to scan (0 from the tee, 1 from the first pad...): environment variable GG_LEG. */
+static int GLeg = 0;
+
 static std::map<std::pair<int, int>, int> Scan(FSetup S, double X, double Y, double MinX)
 {
 	const std::vector<FAttractor> Machines = {{{X, Y, S.Machines[0].CoreHeight}, S.Machines[0].Strength, S.Machines[0].Range}};
 	const double Capture = S.Course.CupCaptureSpeed;
 	// The real cup is taken out of the way so it can't catch anything during the scan.
 	S.Course.Cup = {1e7, 1e7, 0};
-	const FLeg Leg = MakeLeg(S, 0);
+	const FLeg Leg = MakeLeg(S, GLeg);
 	std::map<std::pair<int, int>, int> Count;
 	for (double Yaw = -180.0; Yaw < 180.0; Yaw += 1.0)
 	{
@@ -61,6 +64,7 @@ int main(int Argc, char** Argv)
 		return 2;
 	}
 	const double MinX = std::atof(Argv[2]);
+	GLeg = std::getenv("GG_LEG") ? std::atoi(std::getenv("GG_LEG")) : 0;
 	// How many spots to list for each (an optional last argument).
 	const size_t Limit = Argc > 7 ? static_cast<size_t>(std::atoi(Argv[7])) : 14;
 	const auto A = Scan(S, std::atof(Argv[3]), std::atof(Argv[4]), MinX);

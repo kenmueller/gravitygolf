@@ -89,7 +89,8 @@ static std::vector<FSpot> SweepSpots(const FSetup& S, const FLeg& Leg, const FMa
 	// A machine can also stand on a weight plate, which the grid may step over.
 	for (const FSwitch& Switch : S.Course.Switches)
 	{
-		if (Switch.bWeight && MachineAllowed(S, Switch.Center.X, Switch.Center.Y))
+		// (Where a hole has plinths, a plate a machine can stand on has a plinth of its own, already listed.)
+		if (Switch.bWeight && S.Plinths.empty() && MachineAllowed(S, Switch.Center.X, Switch.Center.Y))
 		{
 			Spots.push_back({Switch.Center.X, Switch.Center.Y, 0, 0, 0});
 		}

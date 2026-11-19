@@ -1,0 +1,552 @@
+{
+	"id": "wires",
+	"name": "Crossed Wires",
+	"level": "Wires",
+	"par": 2,
+	"ballRadius": 6,
+	"gravity": [
+		0,
+		0,
+		-980
+	],
+	"killZ": -1400,
+	"tee": {
+		"position": [
+			400,
+			0,
+			6
+		],
+		"yaw": 0
+	},
+	"cup": {
+		"position": [
+			4550,
+			-455,
+			0
+		],
+		"radius": 42,
+		"captureSpeed": 650
+	},
+	"noMachine": [
+		{
+			"position": [
+				2200,
+				540,
+				0
+			],
+			"radius": 230,
+			"kind": "pad"
+		},
+		{
+			"position": [
+				4550,
+				-455,
+				0
+			],
+			"radius": 300,
+			"kind": "court"
+		}
+	],
+	"safeZones": [
+		{
+			"position": [
+				2200,
+				540,
+				0
+			],
+			"radius": 170,
+			"needsSwitch": -1
+		}
+	],
+	"attractors": [
+		{
+			"position": [
+				500,
+				520,
+				0
+			],
+			"strength": 420,
+			"range": 1900,
+			"coreHeight": 45,
+			"movable": true
+		}
+	],
+	"boxes": [
+		{
+			"name": "Backstop",
+			"center": [
+				2425,
+				625,
+				-15
+			],
+			"size": [
+				190,
+				150,
+				30
+			],
+			"surface": "sand",
+			"look": "sand",
+			"shape": "box"
+		},
+		{
+			"name": "Floor",
+			"center": [
+				2700.0,
+				0,
+				-15
+			],
+			"size": [
+				5800,
+				2000,
+				30
+			],
+			"surface": "green",
+			"look": "floor",
+			"shape": "box"
+		},
+		{
+			"name": "Wall_South",
+			"center": [
+				2700.0,
+				-800.0,
+				55.0
+			],
+			"size": [
+				5800,
+				200,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Wall_North",
+			"center": [
+				2700.0,
+				800.0,
+				55.0
+			],
+			"size": [
+				5800,
+				200,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Wall_West",
+			"center": [
+				-100.0,
+				0.0,
+				55.0
+			],
+			"size": [
+				200,
+				1400,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Wall_East",
+			"center": [
+				5500.0,
+				0.0,
+				55.0
+			],
+			"size": [
+				200,
+				1400,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "First0",
+			"center": [
+				1700.0,
+				-590.0,
+				55.0
+			],
+			"size": [
+				120,
+				220,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "First1",
+			"center": [
+				1700.0,
+				-195.0,
+				55.0
+			],
+			"size": [
+				120,
+				210,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "First2",
+			"center": [
+				1700.0,
+				195.0,
+				55.0
+			],
+			"size": [
+				120,
+				210,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "First3",
+			"center": [
+				1700.0,
+				590.0,
+				55.0
+			],
+			"size": [
+				120,
+				220,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "SafePad1",
+			"center": [
+				2200,
+				540,
+				-10
+			],
+			"size": [
+				289.0,
+				289.0,
+				20
+			],
+			"surface": "sand",
+			"look": "pad",
+			"shape": "box"
+		},
+		{
+			"name": "Second0",
+			"center": [
+				3900.0,
+				-660.0,
+				55.0
+			],
+			"size": [
+				120,
+				80,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Second1",
+			"center": [
+				3900.0,
+				-350.0,
+				55.0
+			],
+			"size": [
+				120,
+				140,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Second2",
+			"center": [
+				3900.0,
+				75.0,
+				55.0
+			],
+			"size": [
+				120,
+				310,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Second3",
+			"center": [
+				3900.0,
+				565.0,
+				55.0
+			],
+			"size": [
+				120,
+				270,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		}
+	],
+	"switches": [
+		{
+			"position": [
+				900,
+				-150,
+				0
+			],
+			"radius": 70,
+			"weight": true
+		},
+		{
+			"position": [
+				900,
+				0,
+				0
+			],
+			"radius": 70,
+			"weight": true
+		},
+		{
+			"position": [
+				900,
+				150,
+				0
+			],
+			"radius": 70,
+			"weight": true
+		},
+		{
+			"position": [
+				3200,
+				-84,
+				0
+			],
+			"radius": 70,
+			"weight": true
+		},
+		{
+			"position": [
+				3200,
+				116,
+				0
+			],
+			"radius": 70,
+			"weight": true
+		},
+		{
+			"position": [
+				3200,
+				416,
+				0
+			],
+			"radius": 70,
+			"weight": true
+		}
+	],
+	"gates": [
+		{
+			"name": "Gate1",
+			"center": [
+				1700,
+				-390.0,
+				110
+			],
+			"size": [
+				60,
+				180,
+				220
+			],
+			"switch": 1,
+			"openSeconds": 0.0,
+			"surface": "sand"
+		},
+		{
+			"name": "Gate2",
+			"center": [
+				1700,
+				0.0,
+				110
+			],
+			"size": [
+				60,
+				180,
+				220
+			],
+			"switch": 0,
+			"openSeconds": 0.0,
+			"surface": "sand"
+		},
+		{
+			"name": "Gate3",
+			"center": [
+				1700,
+				390.0,
+				110
+			],
+			"size": [
+				60,
+				180,
+				220
+			],
+			"switch": 2,
+			"openSeconds": 0.0,
+			"surface": "sand"
+		},
+		{
+			"name": "Gate4",
+			"center": [
+				3900,
+				-520.0,
+				110
+			],
+			"size": [
+				60,
+				200,
+				220
+			],
+			"switch": 5,
+			"openSeconds": 0.0,
+			"surface": "sand"
+		},
+		{
+			"name": "Gate5",
+			"center": [
+				3900,
+				-180.0,
+				110
+			],
+			"size": [
+				60,
+				200,
+				220
+			],
+			"switch": 4,
+			"openSeconds": 0.0,
+			"surface": "sand"
+		},
+		{
+			"name": "Gate6",
+			"center": [
+				3900,
+				330.0,
+				110
+			],
+			"size": [
+				60,
+				200,
+				220
+			],
+			"switch": 3,
+			"openSeconds": 0.0,
+			"surface": "sand"
+		}
+	],
+	"solutions": [
+		{
+			"leg": 0,
+			"machines": [
+				[
+					900,
+					150
+				]
+			],
+			"yaw": 16,
+			"power": 0.1
+		},
+		{
+			"leg": 1,
+			"machines": [
+				[
+					3200,
+					116
+				]
+			],
+			"yaw": -24,
+			"power": 0.175
+		}
+	],
+	"plinths": [
+		{
+			"position": [
+				500,
+				520,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				900,
+				-150,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				900,
+				0,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				900,
+				150,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				3200,
+				-84,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				3200,
+				116,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				3200,
+				416,
+				0
+			],
+			"radius": 65
+		}
+	]
+}

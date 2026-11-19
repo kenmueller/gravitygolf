@@ -8,12 +8,12 @@ Newest first. Each entry says what changed, what was verified, and an honest cri
 left click to swing (aim is where you look, longer hold is harder), E picks up and sets down a machine, R returns
 the ball, Backspace resets the hole, B jumps you to the ball, right click watches the ball. **F1 plays the
 solution for the leg you are on (a hole solved that way is not recorded). Tab opens the menu. Keys 1 to 7 jump
-between holes.** (Keys 1 to 8 now.)
+between holes.** (Keys 1 to 9 now.)
 
 **Three things to try, in this order**
-1. **Hole 5** (press 5) and **hole 8** (press 8). Five is the first one meant to be hard: the cup is behind you,
-   behind a gate. Eight is new: machines stand only on seven plinths, and each swing has exactly one that works.
-   Try them without F1.
+1. **Holes 5, 8 and 9** (press the number). Five is the first one meant to be hard: the cup is behind you, behind
+   a gate. Eight is new: machines stand only on seven plinths, and each swing has exactly one that works. Nine is
+   the last hole: coloured plates and gates with the wiring crossed. Try them without F1.
 2. **The Workshop** (Tab, then Workshop). Build a hole: pick a tool along the bottom, drag on the table. Press T to
    test it, T again to come back. CHECK runs every swing without the machines; solving it yourself in a test is the
    other half of the proof. Tab has Keep, My holes, and a code you can copy to a friend.
@@ -35,9 +35,9 @@ between holes.** (Keys 1 to 8 now.)
 **Decisions waiting on you**
 - The name. "Gravity Golf" is used by other games (see VISION, Competition).
 - Publishing the web build. It runs locally; nothing is public, and I will not publish without your word.
-- More holes or more polish next. There are eight holes. The eighth took three designs (two thrown away; the
-  reasons are in the entry below). My recommendation: holes are the game, so that is where the next long stretch
-  should go, with the Workshop as the place to prototype them.
+- More holes or more polish next. There are nine holes, and the ninth is written as the last. Holes 8 and 9 took
+  five designs between them (three thrown away; the reasons are in the entry below). My recommendation: holes are
+  the game, so that is where the next long stretch should go, with the Workshop as the place to prototype them.
 
 ## 2026-11-19, session 2 (autonomous): the Workshop, a rival, an ending, real host and join
 
@@ -62,6 +62,11 @@ between holes.** (Keys 1 to 8 now.)
 - **Hole 8, Stepping Stones**, on the salt at noon. New rule: plinths. A machine stands only on a plinth (it snaps
   to the middle), and there are seven. Two swings: out round the end of a long wall to a pad, then all the way back
   to a cup behind two walls. Each swing has exactly one plinth that works; the proof checks the other six fail.
+- **Hole 9, Crossed Wires, the last hole**, in the hall of columns at night. Two walls, each with three gates of
+  light; in front of each, three weight plates. A plate holds open the gate of its own colour, and the machine
+  standing on it draws the ball in and lets it go along the line through itself. The wiring is crossed, so only one
+  plate's line runs through its own gate. This is the hole that hole 7 was meant to be ("the weight is also the
+  engine"). Any soft swing toward the right plate goes in: nothing in it is a matter of aim.
 - **Found and fixed: sand in the floor did nothing.** Where two boxes share the ground under the ball, only the
   first one listed touches it. So no safe pad has ever slowed a ball (which the holes rely on: the next swing starts
   on the pad), and the Workshop's Sand tool was decoration. The Workshop now gives sand its own ground, and courses
@@ -69,6 +74,8 @@ between holes.** (Keys 1 to 8 now.)
 - A plate and the gates it opens now glow the same colour.
 
 **Verified**
+- Hole 9: `Tests/Sim/solve.sh wires` passes (one working plate of seven plinths on each swing; 375 and 115
+  working swings), and the recorded answers play through in the engine.
 - Hole 8: `Tests/Sim/solve.sh stones` passes (one working plinth of seven on each swing; 46 and 84 working swings),
   and the recorded answers play through in the engine. A machine is refused off a plinth and snaps onto one.
 - `Tools/workshoptest.sh`: 25 checks pass (every tool, undo, the code there and back, keep and reopen, touch,
@@ -78,7 +85,7 @@ between holes.** (Keys 1 to 8 now.)
   All eight holes boot and their recorded answers sink the ball there, with the same swing counts as on the desktop.
 - `Tools/hosttest.sh`: two standalone copies of the game; the joiner connects by address and loads the host's hole.
 - `Tools/smoke.sh` (seven holes), `Tools/nettest.sh` (13 of 13), sim tests: all pass after the changes.
-- Frame rate from the tee, all eight holes, after a performance pass: 58, 83, 84, 75, 79, 85, 73 and 78 fps
+- Frame rate from the tee, the first eight holes, after a performance pass: 58, 83, 84, 75, 79, 85, 73 and 78 fps
   (they were 48, 75, 73, 67, 68, about 70, 63 and 68). Workshop 80 fps. What did it: bounced light one notch below
   the engine's maximum (a split-screen comparison showed no visible seam; about 2 ms everywhere); shrubs taken out of
   the ray-traced scene; on hole 1, no shadows from the pines whose shadows fall off the terrace, and heather that
@@ -95,9 +102,14 @@ between holes.** (Keys 1 to 8 now.)
 - **Hole 8 is a choice more than a deduction.** Seven plinths, one right: a player can try them in turn. The lines
   can be reasoned out, but nothing forces it. And its second answer is not pretty: the ball skims the long wall,
   nearly dies, and is reeled through the gap. It passes every check and I would not call it elegant.
-- **Two other designs for it failed first.** A machine pinned to a weight plate that must also bend the ball is too
+- **Hole 9 is clear rather than hard.** Three plates, read the colours, see the line: most players will have it in
+  a few minutes, and a careless one can try all three. As a last hole it gathers what the course taught; it is
+  not the stumper the course still lacks. Its first draft had a second answer (kill the ball on the south wall and
+  it is reeled through a different plate and gate); moving the plates back from the wall closed it.
+- **Three other designs failed first.** A machine pinned to a weight plate that must also bend the ball is too
   fiddly (no cup position gets twelve working swings). Sand cannot pass a ball from one machine to another (a
-  stopped ball is never pulled, and sand holds harder than any machine pulls). Eight holes is still a demo.
+  stopped ball is never pulled, and sand holds harder than any machine pulls). A three-swing finale passed the
+  proof, but two of its swings only worked by killing the ball on a wall. Nine holes is still a short game.
 - **The coursekit comment said a pad "catches the ball" for the whole project, and it never did.** Every proof was
   run with the real physics, so nothing shipped wrong, but I designed with a false picture of my own simulation.
 - **A Workshop hole can be played together** (added at the end of the session: host from the Workshop's menu; the

@@ -21,22 +21,28 @@ import common as c  # noqa: E402
 
 importlib.reload(c)
 
-LEVEL = "/Game/Levels/Colonnade"
-COURSE = "/Users/ken/Code/gravitygolf/Content/Courses/colonnade.json"
+# Other holes in this hall run this script with their own settings (see Tools/levels/wires.py).
+VARIANT = globals().get("GG_VARIANT", {})
+LEVEL = VARIANT.get("level", "/Game/Levels/Colonnade")
+COURSE = "/Users/ken/Code/gravitygolf/Content/Courses/%s.json" % VARIANT.get("course", "colonnade")
+# Material instances are named per hole, so one hole's colours never change another's.
+PREFIX = VARIANT.get("prefix", "Colonnade")
+GLYPH = VARIANT.get("glyph", (1.0, 0.72, 0.42))
 SURFACE = "/Game/Materials/M_GG_Surface.M_GG_Surface"
 GLOW = "/Game/Materials/M_GG_Glow.M_GG_Glow"
 PILLARS = "/Game/Ancient_Pillars/Meshes/"
 WATER_Z = -9.0
-rng = random.Random(53)
+rng = random.Random(VARIANT.get("seed", 53))
 
 
 def materials():
     return {
-        "floor": c.scan_material("MI_Colonnade_Floor", "Beige_Marble_Tiles", 300, (0.92, 0.88, 0.84, 1), roughness=0.5),
-        "wall": c.scan_material("MI_Colonnade_Wall", "Roman_Limestone_Wall", 320, (0.98, 0.93, 0.88, 1)),
+        "floor": c.scan_material(f"MI_{PREFIX}_Floor", "Beige_Marble_Tiles", 300, (0.92, 0.88, 0.84, 1), roughness=0.5),
+        "wall": c.scan_material(f"MI_{PREFIX}_Wall", "Roman_Limestone_Wall", 320, (0.98, 0.93, 0.88, 1)),
+        "sand": c.scan_material(f"MI_{PREFIX}_Sand", "Red_Desert_Sand", 120, (0.5, 0.42, 0.36, 1)),
         "mirror": unreal.load_asset("/Game/Materials/M_GG_Mirror.M_GG_Mirror"),
-        "glyph": c.material_instance(GLOW, "MI_Colonnade_Glyph", {"Strength": 9.0}, {"Color": (1.0, 0.72, 0.42, 1)}),
-        "bronze": c.material_instance(SURFACE, "MI_Colonnade_Bronze", {"Roughness": 0.4, "Metallic": 1.0},
+        "glyph": c.material_instance(GLOW, f"MI_{PREFIX}_Glyph", {"Strength": 9.0}, {"Color": (*GLYPH, 1)}),
+        "bronze": c.material_instance(SURFACE, f"MI_{PREFIX}_Bronze", {"Roughness": 0.4, "Metallic": 1.0},
                                       {"BaseColor": (0.25, 0.15, 0.06, 1)}),
         "black": c.material_instance(SURFACE, "MI_Cup", {"Roughness": 1.0}, {"BaseColor": (0.004, 0.004, 0.004, 1)}),
     }
@@ -64,6 +70,15 @@ def course_geometry(course, m):
     for b in course["boxes"]:
         if b["look"] == "wall":
             dressed_wall(b, m)
+        elif b["look"] == "pad":
+            # A safe pad: a disc of dark bronze inside the ring of light the game lays under it.
+            side = max(b["size"][0], b["size"][1])
+            c.mesh(c.CYLINDER, (b["center"][0], b["center"][1], 0.5), (side * 1.1, side * 1.1, 1.0), material=m["bronze"],
+                   label=b["name"], folder="Course/Markers", cast_shadow=False)
+        elif b["look"] == "sand":
+            # Soft ground lying in the floor (a backstop behind a pad): a slab of dark sand, a hair proud of the paving.
+            c.box((b["center"][0], b["center"][1], 0.4), (b["size"][0], b["size"][1], 0.8), m["sand"], b["name"],
+                  folder="Course/Markers", solid=False)
         else:
             c.box(b["center"], b["size"], m["floor"], b["name"])
 
@@ -79,9 +94,15 @@ def markers(course, m):
     c.mesh(c.CYLINDER, (x, y, z + 0.9), (cup["radius"] * 2, cup["radius"] * 2, 1), material=m["black"], label="Cup",
            folder="Course/Markers", cast_shadow=False)
     c.mesh(c.CYLINDER, (x, y, z + 130), (2.5, 2.5, 260), material=m["bronze"], label="FlagPole", folder="Course/Markers")
-    for machine in course["attractors"]:
-        mx, my, _ = machine["position"]
-        c.dais((mx, my), 130, m["wall"], m["glyph"])
+    plinths = course.get("plinths", [])
+    for plinth in plinths:
+        # A plinth: a disc of the hall's stone ringed with light, the only place a machine will stand.
+        px, py, _ = plinth["position"]
+        c.dais((px, py), plinth["radius"] * 2 + 12, m["wall"], m["glyph"], label="Plinth")
+    if not plinths:
+        for machine in course["attractors"]:
+            mx, my, _ = machine["position"]
+            c.dais((mx, my), 130, m["wall"], m["glyph"])
 
 
 def inside_course(course, x, y, margin):
@@ -137,7 +158,11 @@ c.fresh_level(LEVEL)
 mats = materials()
 # Dawn: the sun is just up at the far end of the hall and a little to the right, so every column lays a long shadow
 # across the floor toward the tee and the water is a sheet of light.
-c.sky_and_sun(sun_pitch=-7.0, sun_yaw=168.0, fog_density=0.03, sun_kelvin=3900.0, sky_intensity=1.5, exposure_bias=0.3)
+if "night" in VARIANT:
+    c.night_sky(**VARIANT["night"])
+else:
+    c.sky_and_sun(**VARIANT.get("sun", dict(sun_pitch=-7.0, sun_yaw=168.0, fog_density=0.03, sun_kelvin=3900.0, sky_intensity=1.5,
+                                            exposure_bias=0.3)))
 with open(COURSE) as f:
     course_data = json.load(f)
 course_geometry(course_data, mats)
@@ -147,5 +172,5 @@ c.mesh(c.PLANE, (3000, 250, WATER_Z), (4000000, 4000000, 1), material=mats["mirr
        cast_shadow=False)
 placed = columns(course_data)
 unreal.log(f"GG: colonnade built with {placed} columns")
-c.write_plants(LEVEL, web_ambient=2.6, web_tint=(1.0, 0.86, 0.72))
+c.write_plants(LEVEL, web_ambient=VARIANT.get("web_ambient", 2.6), web_tint=VARIANT.get("web_tint", (1.0, 0.86, 0.72)))
 c.LES.save_current_level()

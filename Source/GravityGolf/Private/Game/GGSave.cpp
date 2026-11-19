@@ -23,6 +23,7 @@ const TArray<FGGHoleInfo>& UGGSave::Holes()
 		{TEXT("Brief"), TEXT("brief"), TEXT("Second Wind"), TEXT("The court, later that night"), 1},
 		{TEXT("Colonnade"), TEXT("colonnade"), TEXT("Dead Weight"), TEXT("A hall of columns at dawn"), 1},
 		{TEXT("Stones"), TEXT("stones"), TEXT("Stepping Stones"), TEXT("The salt at noon"), 2},
+		{TEXT("Wires"), TEXT("wires"), TEXT("Crossed Wires"), TEXT("The hall of columns at night"), 2},
 	};
 	return All;
 }
@@ -135,6 +136,14 @@ void UGGSave::ApplyQuality() const
 {
 	if (UGameUserSettings* Settings = GEngine ? GEngine->GetGameUserSettings() : nullptr)
 	{
+#if PLATFORM_WASM || PLATFORM_IOS || PLATFORM_ANDROID
+		// On the web and on phones the device's own profile sets the quality. Applying the engine's stored levels over
+		// it could only raise them, so nothing is touched until the player asks.
+		if (!bQualityChosen)
+		{
+			return;
+		}
+#endif
 		// Until the player picks a quality, the platform's own defaults stand (a phone's are not a desktop's).
 		if (bQualityChosen)
 		{
