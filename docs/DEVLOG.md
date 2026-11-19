@@ -162,10 +162,12 @@ between holes, 0 is hole 10, minus is 11, equals is 12 and the left bracket is 1
   noon: a beige floor under a plain blue sky, the gates washed out), so it was relit as evening: a low amber sun
   from the side, long shadows, the gates the brightest things in the picture. Better, but the near half of the
   first yard now lies in the south wall's shadow.
-- *Frame rates* for the two newest holes read exactly 60.0 with every frame at 16.7 ms: the session had become
-  capped at 60 (the GPU time was 12 ms, and Lantern Court, re-measured beside them, read 60.0 too, an hour after
-  reading 76). I could not find what capped it; the screen may have gone to sleep. They are not slower than their
-  sister holes, but I have no uncapped number for them.
+- *Frame rates* for the two newest holes cannot be read as frames a second: since mid-session every hole measures
+  exactly 60.0 with every frame at 16.7 ms, across editor restarts (Lantern Court, 76 an hour earlier, reads 60.0
+  beside them). Something outside the game is pacing it at 60; my guess is the display went to sleep while Ken was
+  away. The GPU time is what can be compared: Leapfrog 12.5 ms and After You 13.9 ms, against Lantern Court's
+  12.4 ms in the same run. When the frame time was the GPU time (the morning's runs), those would be about 80 and
+  72 frames a second. Not confirmed uncapped.
 - *Process.* An hour after writing down "never edit a shell script while it is running", I edited the grille test
   while the full suite, which runs it, was running. It happened not to have reached it. I also blamed a hung connection on TLS before testing plain HTTP, which showed in one step that it was the
   firewall. And a server I thought I had stopped kept the port, because I had killed a subshell instead of it.
