@@ -107,8 +107,14 @@ between holes, 0 is hole 10, minus is 11, equals is 12 and the left bracket is 1
   in straight steps and the game's own rule decides: five checks pass (stopped when shut, through when open, shut
   again when the weight is lifted, the ball's grille opened from beyond, empty hands walk through).
 - After You: its proof passes (leg one 50 working swings, leg two 15), its answer plays in the engine in two swings
-  with the four carries in order. Leapfrog also plays in Chrome from the web build, carries and all. After You has
-  not been in a web build yet.
+  with the four carries in order.
+- **The last full run, after every change in this entry:** `Tools/testall.sh` ALL PASSED with thirteen holes (sim
+  tests, thirteen proofs, every hole in the engine, grilles, the Workshop, two players in step, two players in the
+  Workshop, host and join). Then a fresh web build, and in Chrome: all thirteen holes' answers sink the ball (the
+  two grille holes with their carries), the Workshop at phone size with touch, the phone-size play test, and
+  `Tools/phone.sh check`. After that run two things changed and were tested on their own: the rule against reaching
+  from inside a shut grille (`Tools/grilletest.sh`, seven checks) and the rival's order of carries (it finishes
+  both grille holes at all three skills).
 - Sim tests pass, with a new one for the frame's end. All thirteen proofs pass.
 - Periscope in the engine: its recorded answer sinks the ball in two swings; the rival finishes it at all three
   skills (50 s, 96 s, 249 s).
@@ -143,8 +149,8 @@ between holes, 0 is hole 10, minus is 11, equals is 12 and the left bracket is 1
   pass a shut grille") is the only teaching. Leapfrog itself is a tutorial, not a hard hole: one dead end (carry
   the second machine straight to the far plate and the first can never follow) and then it is done. Its swing has
   only 18 working swings out of 110,000, which is not the "easy part" its own description claims. Not verified:
-  a human walking it (my test moves the player in straight jumps), two players, touch. The rival now makes its
-  carries in an order the grilles allow.
+  a human walking it (my test moves the player in straight jumps), two players carrying at once, touch on a real
+  screen. The rival now makes its carries in an order the grilles allow.
 - *I found a hole in the grille rule by rereading it, not by testing it.* Empty hands walk into a shut grille, and
   my first rule let someone standing inside the bars pick a machine up and walk out the far side with it. The test
   I had written could not have caught it; it has that case now, with a control beside it.
