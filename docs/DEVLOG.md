@@ -9,7 +9,8 @@ left click to swing (aim is where you look, longer hold is harder), E picks up a
 the ball, Backspace resets the hole, B jumps you to the ball, right click watches the ball, hold Space while the
 ball rolls to run it fast. **F1 plays the
 solution for the leg you are on (a hole solved that way is not recorded). Tab opens the menu. Keys 1 to 9 jump
-between holes, 0 is hole 10, minus is 11, equals is 12 and the left bracket is 13.** F turns a mirror.
+between holes, 0 is hole 10, minus is 11, equals is 12, and the left and right brackets are 13 and 14.** F turns a
+mirror.
 
 **Four things to try, in this order**
 1. **Holes 5, 10, 11 and 12** (press the number; 0 is hole 10, minus is 11, equals is 12). Five is the first one
@@ -53,9 +54,11 @@ between holes, 0 is hole 10, minus is 11, equals is 12 and the left bracket is 1
   none, because the player and the machines walked through every gate. **So I built it, as a new kind of gate that
   changes no existing hole: the grille** (a gate with rails), which stops a machine in your arms while it is shut.
   Hole 11, Leapfrog, teaches it; hole 12, After You, uses it with a mirror that cannot be the weight, so the ball
-  has to open the door for the machine. These are closer to what you asked for, not yet there. If you dislike the
-  idea, it is two holes and one flag to take out.
-- More holes or more polish next. There are thirteen holes, and the thirteenth is written as the last. I did not wait
+  has to open the door for the machine; hole 13, Wait Here, makes you leave a machine halfway. These are closer to
+  what you asked for, not yet there. If you dislike the idea, it is three holes and one flag to take out.
+- More holes or more polish next. There are fourteen holes, and the fourteenth is written as the last. The last
+  one (Crossed Wires) has no grilles in it and is now easier than the three before it; it wants rebuilding as the
+  hole that uses everything. I did not wait
   for the answer: I kept doing both (a new hole, then the worst-looking hole made better). Say if you want one or
   the other.
 
@@ -190,15 +193,26 @@ between holes, 0 is hole 10, minus is 11, equals is 12 and the left bracket is 1
 - **A mirror's glass is a pale sheet on the web.** The phone renderer has nothing for a perfect mirror to reflect
   and drew it black.
 
+- **Hole 13, Wait Here** (the finale is now hole 14): the canyon at night. Two machines, three grilles. The chamber
+  with the cup opens from a plate back at the start, so the second machine has to be carried through the first
+  grille and left in the middle while the first changes plates. Five carries. Take away the two plinths in the
+  middle and the proof fails: there is nowhere to wait.
+
 **Verified**
 - In Chrome at phone size, from a fresh web build: the hole list in two columns, the settings, the pause menu; and on
   hole 12 by touch: GRAB, PLACE, TURN, GRAB again (the game's own state after each press), and a carried mirror
   stopped at a shut grille with its message on screen.
 - Safari 27 on the Mac: by the page's log, WebGPU on, engine started, first frame presented. Not seen by anyone.
+- Wait Here: its proof passes (24 working swings) with the five carries printed, and its answer plays in the engine
+  with those carries in order.
 - Desktop: the same code compiles; the menus were not looked at on the desktop after the change (the editor stayed
   closed). The two-column rule only applies to lists of eight or more whose rows would be under 40 units.
 
 **Critique**
+- *Wait Here* is the third hole in a row whose swing is a tap down a straight line. The grille holes are all
+  logistics and no golf, and none yet makes both hard at once. Its first design was wrong in a way I did not see
+  and the planner did (a plain gate where a grille was needed); a design tool that says "two carries" when I meant
+  five is the most useful thing built today. Its walls are nearly black under an overhead moon.
 - *The phone goal is still unmet where it counts.* Everything about touch that can be checked without a phone is
   now checked, and it is all emulation. One real phone on one real network would be worth more than all of it.
 - *Three waits of mine sat in the background for hours*, two of them unable ever to finish (a `pgrep -f` that

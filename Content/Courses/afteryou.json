@@ -483,6 +483,6 @@
 			"radius": 65
 		}
 	],
-	"next": "Wires",
+	"next": "WaitHere",
 	"ambience": "water"
 }

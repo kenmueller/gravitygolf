@@ -158,9 +158,14 @@ def markers(course, m):
     c.mesh(c.CYLINDER, (x, y, z + 0.9), (cup["radius"] * 2, cup["radius"] * 2, 1), material=m["black"], label="Cup",
            folder="Course/Markers", cast_shadow=False)
     c.mesh(c.CYLINDER, (x, y, z + 130), (2.5, 2.5, 260), material=m["stone"], label="FlagPole", folder="Course/Markers")
-    for machine in course["attractors"]:
-        mx, my, _ = machine["position"]
-        c.dais((mx, my), 130, m["stone"], m["dais"])
+    plinths = course.get("plinths", [])
+    for plinth in plinths:
+        # A plinth: a disc of pale stone in the sand with a ring of light, the only place a machine will stand.
+        c.dais((plinth["position"][0], plinth["position"][1]), plinth["radius"] * 2 + 30, m["stone"], m["dais"], label="Plinth")
+    if not plinths:
+        for machine in course["attractors"]:
+            mx, my, _ = machine["position"]
+            c.dais((mx, my), 130, m["stone"], m["dais"])
 
 
 def sky_ring(m, boulder):
@@ -190,7 +195,11 @@ def sky_ring(m, boulder):
 
 c.fresh_level(LEVEL)
 mats = materials()
-c.sky_and_sun(**SUN)
+if "night" in VARIANT:
+    # The canyon at night: the moon has to stand almost overhead to reach the floor between walls this tall.
+    c.night_sky(**VARIANT["night"])
+else:
+    c.sky_and_sun(**SUN)
 with open(COURSE) as f:
     course_data = json.load(f)
 cliff_mesh = c.fab_mesh("Desert_Western_Cliff_Layered_XL_14")

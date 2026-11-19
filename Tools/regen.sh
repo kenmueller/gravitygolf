@@ -8,7 +8,7 @@ python3 - "$ROOT" "$LEVEL" "$2" <<'PY'
 import json, subprocess, sys
 root, level, flag = sys.argv[1], sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else ""
 # Rebuilding the materials resets every level's material instances, so it is always followed by every level.
-EVERY = ["terraces", "saltmirror", "canyon", "lantern", "returning", "brief", "colonnade", "stones", "glass", "periscope", "leapfrog", "afteryou", "wires", "workshop"]
+EVERY = ["terraces", "saltmirror", "canyon", "lantern", "returning", "brief", "colonnade", "stones", "glass", "periscope", "leapfrog", "afteryou", "waithere", "wires", "workshop"]
 levels = EVERY if level == "all" or flag != "--no-materials" else [level]
 code = "import runpy\n"
 if flag != "--no-materials":

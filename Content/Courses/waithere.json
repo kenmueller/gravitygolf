@@ -1,0 +1,399 @@
+{
+	"id": "waithere",
+	"name": "Wait Here",
+	"level": "WaitHere",
+	"par": 1,
+	"ballRadius": 6,
+	"gravity": [
+		0,
+		0,
+		-980
+	],
+	"killZ": -1400,
+	"tee": {
+		"position": [
+			300,
+			0,
+			6
+		],
+		"yaw": 0
+	},
+	"cup": {
+		"position": [
+			3700,
+			0,
+			0
+		],
+		"radius": 42,
+		"captureSpeed": 650
+	},
+	"noMachine": [
+		{
+			"position": [
+				3700,
+				0,
+				0
+			],
+			"radius": 180,
+			"kind": "court"
+		}
+	],
+	"safeZones": [],
+	"attractors": [
+		{
+			"position": [
+				500,
+				-420,
+				0
+			],
+			"strength": 220,
+			"range": 800,
+			"coreHeight": 45,
+			"movable": true
+		},
+		{
+			"position": [
+				1100,
+				-420,
+				0
+			],
+			"strength": 220,
+			"range": 800,
+			"coreHeight": 45,
+			"movable": true
+		}
+	],
+	"boxes": [
+		{
+			"name": "Floor",
+			"center": [
+				2100.0,
+				0,
+				-15
+			],
+			"size": [
+				4800,
+				2200,
+				30
+			],
+			"surface": "green",
+			"look": "floor",
+			"shape": "box"
+		},
+		{
+			"name": "Wall_South",
+			"center": [
+				2100.0,
+				-950.0,
+				200.0
+			],
+			"size": [
+				4800,
+				300,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "Wall_North",
+			"center": [
+				2100.0,
+				950.0,
+				200.0
+			],
+			"size": [
+				4800,
+				300,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "Wall_West",
+			"center": [
+				-150.0,
+				0.0,
+				200.0
+			],
+			"size": [
+				300,
+				1600,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "Wall_East",
+			"center": [
+				4350.0,
+				0.0,
+				200.0
+			],
+			"size": [
+				300,
+				1600,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "First_S",
+			"center": [
+				1500.0,
+				-450.0,
+				200.0
+			],
+			"size": [
+				120,
+				700,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "First_N",
+			"center": [
+				1500.0,
+				450.0,
+				200.0
+			],
+			"size": [
+				120,
+				700,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "Second_S",
+			"center": [
+				2750.0,
+				-445.0,
+				200.0
+			],
+			"size": [
+				120,
+				710,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "Second_M",
+			"center": [
+				2750.0,
+				235.0,
+				200.0
+			],
+			"size": [
+				120,
+				290,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		},
+		{
+			"name": "Second_N",
+			"center": [
+				2750.0,
+				690.0,
+				200.0
+			],
+			"size": [
+				120,
+				220,
+				400
+			],
+			"surface": "sand",
+			"look": "rock",
+			"shape": "box"
+		}
+	],
+	"switches": [
+		{
+			"position": [
+				900,
+				0,
+				0
+			],
+			"radius": 75,
+			"weight": true
+		},
+		{
+			"position": [
+				800,
+				520,
+				0
+			],
+			"radius": 75,
+			"weight": true
+		},
+		{
+			"position": [
+				3250,
+				0,
+				0
+			],
+			"radius": 75,
+			"weight": true
+		}
+	],
+	"gates": [
+		{
+			"name": "FirstGrille",
+			"center": [
+				1500,
+				0,
+				110
+			],
+			"size": [
+				70,
+				200,
+				220
+			],
+			"switch": 0,
+			"openSeconds": 0.0,
+			"surface": "sand",
+			"grille": true
+		},
+		{
+			"name": "ChamberGrille",
+			"center": [
+				2750,
+				480,
+				110
+			],
+			"size": [
+				70,
+				200,
+				220
+			],
+			"switch": 1,
+			"openSeconds": 0.0,
+			"surface": "sand",
+			"grille": true
+		},
+		{
+			"name": "CupGrille",
+			"center": [
+				2750,
+				0,
+				110
+			],
+			"size": [
+				70,
+				180,
+				220
+			],
+			"switch": 2,
+			"openSeconds": 0.0,
+			"surface": "sand",
+			"grille": true
+		}
+	],
+	"solutions": [
+		{
+			"leg": 0,
+			"machines": [
+				[
+					900,
+					0
+				],
+				[
+					3250,
+					0
+				]
+			],
+			"yaw": 0,
+			"power": 0.25,
+			"turns": [
+				0,
+				0
+			]
+		}
+	],
+	"plinths": [
+		{
+			"position": [
+				500,
+				-420,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				1100,
+				-420,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				900,
+				0,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				800,
+				520,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				3250,
+				0,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				2100,
+				450,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				2100,
+				-450,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				3400,
+				480,
+				0
+			],
+			"radius": 65
+		}
+	],
+	"next": "Wires",
+	"ambience": "canyon"
+}
