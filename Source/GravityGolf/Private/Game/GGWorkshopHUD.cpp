@@ -18,6 +18,7 @@ const FLinearColor ShopGood(0.45f, 1.f, 0.62f);
 const FLinearColor ShopBad(1.f, 0.42f, 0.36f);
 const FLinearColor ShopPull(0.3f, 0.62f, 1.f);
 const FLinearColor ShopPush(1.f, 0.55f, 0.18f);
+const FLinearColor ShopPlinth(0.7f, 0.85f, 1.f);
 const FLinearColor ShopPanel(0.015f, 0.02f, 0.035f, 0.72f);
 } // namespace
 
@@ -145,6 +146,20 @@ void AGGHUD::DrawTool(int32 Tool, const FVector2D& Center, float Size)
 		Line(-0.8f, 0.05f, -0.08f, 0.05f, ShopDim, Stroke * 0.6f);
 		Line(-0.05f, 0.08f, -0.05f, 0.8f, ShopDim, Stroke * 0.6f);
 		break;
+	case EGGTool::Plinth:
+		// A dark disc in a thin ring of light, as it lies in the ground.
+		Disc(Center, H * 0.6f, FLinearColor(0.13f, 0.17f, 0.25f));
+		Ring(Center, H * 0.76f, ShopPlinth, Stroke * 0.7f);
+		break;
+	case EGGTool::Grille:
+		// The gate's bars, with rails across them.
+		for (int32 I = 0; I < 5; ++I)
+		{
+			Line(-0.7f + 0.35f * I, -0.7f, -0.7f + 0.35f * I, 0.7f, ShopPush, Stroke);
+		}
+		Line(-0.85f, -0.32f, 0.85f, -0.32f, ShopInk, Stroke);
+		Line(-0.85f, 0.32f, 0.85f, 0.32f, ShopInk, Stroke);
+		break;
 	case EGGTool::Erase:
 		Line(-0.6f, -0.6f, 0.6f, 0.6f, ShopBad, Stroke * 1.3f);
 		Line(-0.6f, 0.6f, 0.6f, -0.6f, ShopBad, Stroke * 1.3f);
@@ -181,8 +196,28 @@ void AGGHUD::DrawWorkshop(AGGWorkshop* Workshop)
 		FLinearColor Tie = AGGCourse::SwitchColor(Gate.Plate);
 		const FVector At = Project(FVector(Middle.X, Middle.Y, 160.0), false);
 		Label(FString::FromInt(Gate.Plate + 1), At.X, At.Y - 14.f * S, 20.f * T, Tie, true, true);
+		if (Gate.bGrille)
+		{
+			// Rails, drawn over the gate's top from above: two lines along it, so a grille reads at a glance.
+			const bool bAlongY = Gate.Rect.Height() >= Gate.Rect.Width();
+			for (const double Side : {0.3, 0.7})
+			{
+				const FVector2D From = bAlongY ? FVector2D(FMath::Lerp(double(Gate.Rect.Min.X), double(Gate.Rect.Max.X), Side), Gate.Rect.Min.Y)
+					: FVector2D(Gate.Rect.Min.X, FMath::Lerp(double(Gate.Rect.Min.Y), double(Gate.Rect.Max.Y), Side));
+				const FVector2D To = bAlongY ? FVector2D(From.X, Gate.Rect.Max.Y) : FVector2D(Gate.Rect.Max.X, From.Y);
+				GroundLine(From, To, ShopInk, 3.f * S, 152.f);
+			}
+		}
 		Tie.A = 0.55f;
 		GroundLine(Middle, FVector2D(Plate.X, Plate.Y), Tie, Thin);
+	}
+	if (Design.PlinthsOnly())
+	{
+		// Every place a machine may stand, the ones the hole gives for nothing included (starts and weight plates).
+		for (const FIntPoint& Station : Design.Stations())
+		{
+			GroundRing(FVector2D(Station.X, Station.Y), 92.0, FLinearColor(ShopPlinth.R, ShopPlinth.G, ShopPlinth.B, 0.75f), Thin);
+		}
 	}
 	for (int32 I = 0; I < Design.Plates.Num(); ++I)
 	{
@@ -239,6 +274,10 @@ void AGGHUD::DrawWorkshop(AGGWorkshop* Workshop)
 		else if (Tool == EGGTool::Pad)
 		{
 			GroundRing(Middle, 240.0, FLinearColor(ShopGood.R, ShopGood.G, ShopGood.B, 0.7f), Thin);
+		}
+		else if (Tool == EGGTool::Plinth)
+		{
+			GroundRing(Middle, 92.0, ShopPlinth, Thin);
 		}
 	}
 

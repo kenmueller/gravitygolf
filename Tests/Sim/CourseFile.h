@@ -110,6 +110,12 @@ inline bool LoadCourse(const char* Path, FSetup& S)
 			In >> Plinth.X >> Plinth.Y >> Plinth.Z;
 			S.Plinths.push_back(Plinth);
 		}
+		// Then whether the hole was drawn in the Workshop (a carried machine stays on its ground).
+		int Drawn = 0;
+		if (In >> Drawn)
+		{
+			S.bGroundOnly = Drawn != 0;
+		}
 	}
 	return bRead;
 }

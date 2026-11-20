@@ -24,6 +24,20 @@ while [ $attempt -le 4 ]; do
 	i=0
 	while [ $i -lt 170 ]; do
 		if ready; then
+			# Answering is not yet idle: a fresh editor goes on to load its first map and build meshes, and for those
+			# seconds it queues what it is sent, or loses it (a test begun then sent its first commands to a game that
+			# did not exist yet, and once play started in that window crashed the editor). Wait until the log has been
+			# still for six seconds and the editor still answers.
+			quiet=0
+			waited=0
+			size=$(wc -c <"$LOG" 2>/dev/null || echo 0)
+			while [ $quiet -lt 3 ] && [ $waited -lt 90 ]; do
+				sleep 2
+				waited=$((waited + 1))
+				now=$(wc -c <"$LOG" 2>/dev/null || echo 0)
+				if [ "$now" = "$size" ] && ready; then quiet=$((quiet + 1)); else quiet=0; fi
+				size=$now
+			done
 			echo "editor ready (launch attempt $attempt)"
 			exit 0
 		fi

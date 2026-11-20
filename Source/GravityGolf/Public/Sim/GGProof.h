@@ -45,6 +45,9 @@ struct FSetup
 	std::vector<FHint> Hints;
 	/** Per safe zone: a switch that must be pressed on the leg that reaches it, or -1. */
 	std::vector<int> ZoneNeeds;
+	/** A hole drawn in the Workshop stands on a table anyone can walk on, so there a carried machine may not leave
+	 *  the hole's own ground (or it would be walked round every wall). */
+	bool bGroundOnly = false;
 };
 
 /** A leg runs from Start to a target: safe zone Target, or the cup when Target is -1. */

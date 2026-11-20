@@ -331,6 +331,56 @@ static void TestCarrying()
 	// A grille the ball has banked open (a light plate pressed on an earlier leg) is open to everyone.
 	const FCarryPlans Banked = PlanCarries(S, Map, {0, 1}, {true, false});
 	CHECK(Banked.To({4, 1}).size() == 1);
+
+	// A plinth hard against a wall (its middle 25 cm from the face, nearer than half a body) is still served: a
+	// machine is set down at arm's length. One inside a wall is not, and neither is one at the mouth of a shut
+	// grille, until the grille opens.
+	S.Plinths.push_back({945, 0, 65});    // 5: against the dividing wall, on the near side
+	S.Plinths.push_back({1000, 0, 65});   // 6: inside the wall
+	S.Plinths.push_back({950, -300, 65}); // 7: at the mouth of grille 1
+	const FCarryMap More = MakeCarryMap(S);
+	const std::vector<bool> Near = CarryReach(S, More, 0, None);
+	CHECK(Near[5] && !Near[6] && !Near[7] && !Near[3]);
+	const std::vector<bool> Opened = CarryReach(S, More, 0, {true, false});
+	CHECK(Opened[7] && Opened[3]);
+	S.Plinths.resize(5);
+}
+
+static void TestCarryingOnADrawnHole()
+{
+	// A hole drawn in the Workshop: a strip of ground on a table, cut in two by a wall one square thick that does
+	// not reach the table's edge... because there is none. The wall has a grille in it. Without the rule that a
+	// carried machine stays on the hole's ground, it would be walked round the end of the wall.
+	FSetup S;
+	S.Course.Tee = {125, 25, 6};
+	S.Course.BallRadius = 6;
+	S.MinX = 0, S.MinY = -300, S.MaxX = 1200, S.MaxY = 300;
+	S.Course.Boxes.push_back({{0, -300, -30}, {1200, 300, 0}, ESurface::Green});
+	S.Course.Boxes.push_back({{600, -300, 0}, {650, -50, 150}, ESurface::Sand});
+	S.Course.Boxes.push_back({{600, 50, 0}, {650, 300, 150}, ESurface::Sand});
+	S.Course.Switches.push_back({{225, 225, 0}, 100, true});
+	FGate Grille;
+	Grille.Box = {{600, -50, 0}, {650, 50, 150}, ESurface::Sand};
+	Grille.Switch = 0;
+	Grille.bGrille = true;
+	S.Course.Gates = {Grille};
+	// The two machines' starts, the plate, and two beyond the wall.
+	S.Plinths = {{125, -225, 65}, {325, -225, 65}, {225, 225, 65}, {925, 25, 65}, {1025, -225, 65}};
+	S.Machines = {{420, 1900, 45, 125, -225, false}, {420, 1900, 45, 325, -225, false}};
+	const std::vector<bool> None(1, false);
+
+	// On open ground (the hole as one of the game's own would be): round the wall it goes, in one carry.
+	const FCarryMap Open = MakeCarryMap(S);
+	CHECK(PlanCarries(S, Open, {0, 1}, None).To({3, 1}).size() == 1);
+	// Drawn: the ground ends where the hole does, and the grille (a metre wide) is the only way through.
+	S.bGroundOnly = true;
+	const FCarryMap Drawn = MakeCarryMap(S);
+	const FCarryPlans Plans = PlanCarries(S, Drawn, {0, 1}, None);
+	// One machine on the plate, the other through: two carries. The weight back where it began: a third.
+	CHECK(Plans.To({3, 2}).size() == 2);
+	CHECK(Plans.To({3, 1}).size() == 3);
+	// Both through: never. The weight cannot follow.
+	CHECK(!Plans.Can({3, 4}) && !Plans.Can({4, 3}));
 }
 
 int main()
@@ -346,6 +396,7 @@ int main()
 	TestGateAndSwitch();
 	TestMirrorTurnsTheBall();
 	TestCarrying();
+	TestCarryingOnADrawnHole();
 	TestDeterminism();
 	std::printf(Failures ? "%d FAILED\n" : "all passed\n", Failures);
 	return Failures ? 1 : 0;

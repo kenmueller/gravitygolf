@@ -142,10 +142,15 @@ public:
 	FVector MachineBase(int32 Index) const;
 	/** Some ground refuses machines (the paved court around a cup, for instance). */
 	bool CanPlaceMachine(const FVector& Base) const;
-	/** Would a carried machine have to cross a shut grille to go in a straight line from From to To? With bReach
-	 *  (picking up, setting down) the answer is also yes for anyone standing inside a shut grille. */
-	bool CarryBlocked(const FVector& From, const FVector& To, bool bReach = false) const;
+	/** Why a carried machine may not go in a straight line from From to To, in words for the player; null if it may.
+	 *  A shut grille stops it. On a hole with grilles so does a wall (nothing is handed through one or carried over
+	 *  one), and on a hole drawn in the Workshop it may not leave the hole's ground. With bReach (picking up, setting
+	 *  down) the answer is also no for anyone standing inside a shut grille, on a wall or off the ground. */
+	const TCHAR* CarryBar(const FVector& From, const FVector& To, bool bReach = false) const;
+	bool CarryBlocked(const FVector& From, const FVector& To, bool bReach = false) const { return CarryBar(From, To, bReach) != nullptr; }
 	bool HasGrilles() const;
+	/** On a hole drawn in the Workshop: is this point over the hole's own ground? (Everywhere is, on the game's holes.) */
+	bool OnGround(const FVector& At) const;
 	/** The switches the ball has banked so far (pressed on a leg that ended on a pad). */
 	const std::vector<bool>& Banked() const { return HeldSwitches; }
 	/** Where a machine set down near Base comes to stand: the middle of the plinth it is on, if the hole has plinths. */

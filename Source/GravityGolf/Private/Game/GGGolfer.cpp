@@ -844,9 +844,9 @@ void AGGGolfer::GGNet(const FString& Command, const FString& Argument)
 	{
 		// As the E key does it, rules and all, but at any distance.
 		const int32 Index = static_cast<int32>(N[0]);
-		if (C->CarryBlocked(GetActorLocation(), C->MachineBase(Index), true))
+		if (const TCHAR* Why = C->CarryBar(GetActorLocation(), C->MachineBase(Index), true))
 		{
-			Tell(TEXT("A machine won't pass a shut grille."));
+			Tell(Why);
 		}
 		else if (HasAuthority())
 		{
@@ -1167,10 +1167,11 @@ void AGGGolfer::Interact()
 	else
 	{
 		const int32 Index = C->FindMachine(HoldPoint(), PickUpReach);
-		if (Index != INDEX_NONE && !C->CarrierOf(Index) && C->CarryBlocked(GetActorLocation(), C->MachineBase(Index), true))
+		const TCHAR* Why = Index != INDEX_NONE && !C->CarrierOf(Index) ? C->CarryBar(GetActorLocation(), C->MachineBase(Index), true) : nullptr;
+		if (Why)
 		{
-			// No reaching through the bars for it either.
-			Tell(TEXT("A machine won't pass a shut grille."));
+			// No reaching through the bars for it either (or through a wall, where carrying is the puzzle).
+			Tell(Why);
 		}
 		else if (Index != INDEX_NONE && !C->CarrierOf(Index))
 		{
@@ -1420,14 +1421,16 @@ void AGGGolfer::Tick(float DeltaSeconds)
 	}
 
 	// A shut grille stops whoever carries a machine: they are put back where they stood before the step that crossed
-	// it. Each machine does this for its own player and the server for everyone, so they agree.
-	if (IsCarrying() && (IsLocallyControlled() || HasAuthority()) && C->CarryBlocked(LastCarryStand, GetActorLocation()))
+	// it. (So does the top of a wall on a hole with grilles, and the edge of the ground on a hole drawn in the
+	// Workshop.) Each machine does this for its own player and the server for everyone, so they agree.
+	const TCHAR* Barred = IsCarrying() && (IsLocallyControlled() || HasAuthority()) ? C->CarryBar(LastCarryStand, GetActorLocation()) : nullptr;
+	if (Barred)
 	{
 		SetActorLocation(LastCarryStand, false, nullptr, ETeleportType::TeleportPhysics);
 		GetCharacterMovement()->Velocity = FVector::ZeroVector;
 		if (IsLocallyControlled())
 		{
-			Tell(TEXT("A machine won't pass a shut grille."));
+			Tell(Barred);
 		}
 	}
 	else

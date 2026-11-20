@@ -177,3 +177,5 @@ def write_flat(data, placement, path):
         f.write(f"{len(plinths)}\n")
         for p in plinths:
             f.write(f"{p['position'][0]} {p['position'][1]} {p['radius']}\n")
+        # A hole drawn in the Workshop stands on a table: there a carried machine may not leave the hole's ground.
+        f.write(f"{1 if data.get('drawn') else 0}\n")

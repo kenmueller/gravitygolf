@@ -24,6 +24,8 @@ enum class EGGTool : uint8
 	Pull,
 	Push,
 	Mirror,
+	Plinth,
+	Grille,
 	Erase,
 	Count,
 };
@@ -55,6 +57,8 @@ struct FGGDesign
 	{
 		FIntRect Rect;
 		int32 Plate = 0;
+		/** A grille: a gate with rails, which stops a carried machine as well as the ball while it is shut. */
+		bool bGrille = false;
 	};
 	struct FMachine
 	{
@@ -74,6 +78,9 @@ struct FGGDesign
 	TArray<FPlate> Plates;
 	TArray<FGate> Gates;
 	TArray<FMachine> Machines;
+	/** Plinths the designer has set down. A hole that has any, or any grille, lets a machine stand only on a plinth,
+	 *  and there the places its machines start and its weight plates count as plinths as well (Stations). */
+	TArray<FIntPoint> Plinths;
 	/** Legs the designer has played out since the last change: the proof that the hole can be solved. */
 	TArray<FGGSolution> Solutions;
 	/** Has it been checked that no swing works without the machines? 0 not checked, 1 proven, -1 it isn't true. */
@@ -94,6 +101,10 @@ struct FGGDesign
 	bool Bounds(FIntRect& Out) const;
 	int32 Legs() const { return Pads.Num() + 1; }
 	bool Solved() const;
+	/** Does a machine stand only on a plinth here? True once the hole has a plinth or a grille. */
+	bool PlinthsOnly() const;
+	/** Every place a machine may stand when that is so: the plinths, the machines' starts, the weight plates. */
+	TArray<FIntPoint> Stations() const;
 
 	FString ToJson() const;
 	bool FromJson(const FString& Text);
@@ -184,6 +195,7 @@ private:
 		Plate,
 		Pad,
 		Gate,
+		Plinth,
 	};
 
 	AGGGolfer* Golfer() const;

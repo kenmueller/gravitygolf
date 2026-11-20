@@ -35,6 +35,10 @@ constexpr double PullReach = 1900.0;
 constexpr double PushStrength = -420.0;
 constexpr double PushReach = 1500.0;
 constexpr double MachineCore = 45.0;
+constexpr double PlinthRadius = 65.0;
+constexpr int32 MaxPlinths = 8;
+// Said when a hole gets its first plinth or its first grille: the rule changes for the whole hole.
+const TCHAR* PlinthsOnlySays = TEXT("From now on a machine stands only on a plinth, on a weight plate, or where it starts.");
 constexpr int32 MaxSquares = 16000;
 constexpr int32 MaxExtent = 400; // squares from the origin, each way: 200 m
 constexpr int32 ProofRows = 720;
@@ -200,6 +204,35 @@ const TCHAR* FGGDesign::RatingName(int32 Luck)
 	return Luck < 0 ? TEXT("") : Luck > 35 ? TEXT("Too easy") : Luck > 15 ? TEXT("Easy") : Luck > 5 ? TEXT("Medium") : Luck > 1 ? TEXT("Hard") : TEXT("Fiendish");
 }
 
+bool FGGDesign::PlinthsOnly() const
+{
+	return Plinths.Num() > 0 || Gates.ContainsByPredicate([](const FGate& Gate) { return Gate.bGrille; });
+}
+
+TArray<FIntPoint> FGGDesign::Stations() const
+{
+	TArray<FIntPoint> Out;
+	if (PlinthsOnly())
+	{
+		for (const FIntPoint& Plinth : Plinths)
+		{
+			Out.AddUnique(Plinth);
+		}
+		for (const FMachine& Machine : Machines)
+		{
+			Out.AddUnique(Machine.At);
+		}
+		for (const FPlate& Plate : Plates)
+		{
+			if (Plate.bWeight)
+			{
+				Out.AddUnique(Plate.At);
+			}
+		}
+	}
+	return Out;
+}
+
 bool FGGDesign::Solved() const
 {
 	for (int32 Leg = 0; Leg < Legs(); ++Leg)
@@ -310,9 +343,23 @@ FString FGGDesign::ToJson() const
 		Object->SetNumberField(TEXT("switch"), Gates[I].Plate);
 		Object->SetNumberField(TEXT("openSeconds"), 0);
 		Object->SetStringField(TEXT("surface"), TEXT("sand"));
+		Object->SetBoolField(TEXT("grille"), Gates[I].bGrille);
 		GateValues.Add(MakeShared<FJsonValueObject>(Object));
 	}
 	Root->SetArrayField(TEXT("gates"), GateValues);
+
+	// Plinths: the ones set down, and (where machines stand only on plinths) each machine's start and each weight
+	// plate too. "placed" marks the ones that are the designer's own, to tell them apart when this is read back.
+	TArray<TSharedPtr<FJsonValue>> PlinthValues;
+	for (const FIntPoint& At : Stations())
+	{
+		const TSharedRef<FJsonObject> Object = MakeShared<FJsonObject>();
+		Object->SetArrayField(TEXT("position"), Nums({double(At.X), double(At.Y), 0}));
+		Object->SetNumberField(TEXT("radius"), PlinthRadius);
+		Object->SetBoolField(TEXT("placed"), Plinths.Contains(At));
+		PlinthValues.Add(MakeShared<FJsonValueObject>(Object));
+	}
+	Root->SetArrayField(TEXT("plinths"), PlinthValues);
 
 	TArray<TSharedPtr<FJsonValue>> MachineValues;
 	for (const FMachine& Machine : Machines)
@@ -450,7 +497,21 @@ bool FGGDesign::FromJson(const FString& Text)
 			if (ReadNumbers(Value->AsObject(), TEXT("center"), 3, A) && ReadNumbers(Value->AsObject(), TEXT("size"), 3, B)
 				&& Value->AsObject()->TryGetNumberField(TEXT("switch"), Plate) && Design.Plates.IsValidIndex(Plate) && Design.Gates.Num() < 8)
 			{
-				Design.Gates.Add({RectOf(A, B), Plate});
+				FGate Gate{RectOf(A, B), Plate};
+				Value->AsObject()->TryGetBoolField(TEXT("grille"), Gate.bGrille);
+				Design.Gates.Add(Gate);
+			}
+		}
+	}
+	if (Root->TryGetArrayField(TEXT("plinths"), Values))
+	{
+		for (const TSharedPtr<FJsonValue>& Value : *Values)
+		{
+			bool bPlaced = false;
+			if (Value->AsObject().IsValid() && Value->AsObject()->TryGetBoolField(TEXT("placed"), bPlaced) && bPlaced
+				&& ReadNumbers(Value->AsObject(), TEXT("position"), 2, A) && Design.Plinths.Num() < MaxPlinths)
+			{
+				Design.Plinths.AddUnique(SpotOf(A[0], A[1]));
 			}
 		}
 	}
@@ -565,14 +626,14 @@ AGGGolfer* AGGWorkshop::Golfer() const
 const TCHAR* AGGWorkshop::ToolName(EGGTool Tool)
 {
 	static const TCHAR* Names[] = {TEXT("Move"), TEXT("Ground"), TEXT("Sand"), TEXT("Wall"), TEXT("Soft wall"), TEXT("Safe pad"), TEXT("Light plate"),
-		TEXT("Weight plate"), TEXT("Gate"), TEXT("Attractor"), TEXT("Repulsor"), TEXT("Mirror"), TEXT("Erase")};
+		TEXT("Weight plate"), TEXT("Gate"), TEXT("Attractor"), TEXT("Repulsor"), TEXT("Mirror"), TEXT("Plinth"), TEXT("Grille"), TEXT("Erase")};
 	return Names[FMath::Clamp(static_cast<int32>(Tool), 0, static_cast<int32>(EGGTool::Count) - 1)];
 }
 
 const TCHAR* AGGWorkshop::ToolHelp(EGGTool Tool)
 {
 	static const TCHAR* Help[] = {
-		TEXT("Drag the tee, the cup, a machine, a plate, a pad or a gate to move it"),
+		TEXT("Drag the tee, the cup, a machine, a plate, a pad, a plinth or a gate to move it"),
 		TEXT("Drag to lay ground. A ball that rolls off its edge is lost"),
 		TEXT("Drag to lay sand. It slows the ball"),
 		TEXT("Drag to raise a stone wall. The ball bounces off it"),
@@ -584,6 +645,8 @@ const TCHAR* AGGWorkshop::ToolHelp(EGGTool Tool)
 		TEXT("Bends the ball toward it as the ball comes, then lets it go"),
 		TEXT("Pushes the ball away"),
 		TEXT("The ball bounces off it at a right angle. Click a mirror to turn it to its other diagonal"),
+		TEXT("Where a hole has plinths, a machine stands only on one, on a weight plate, or where it starts"),
+		TEXT("Drag to bar a gap with a grille: a gate that also stops a carried machine. Click a gate to add or remove its rails"),
 		TEXT("Click a thing to remove it, or drag across ground to clear it"),
 	};
 	return Help[FMath::Clamp(static_cast<int32>(Tool), 0, static_cast<int32>(EGGTool::Count) - 1)];
@@ -832,6 +895,14 @@ AGGWorkshop::EPick AGGWorkshop::PickAt(const FVector2D& World, int32& OutIndex) 
 			return EPick::Plate;
 		}
 	}
+	for (int32 I = Current.Plinths.Num() - 1; I >= 0; --I)
+	{
+		if (Near(Current.Plinths[I], 80.0))
+		{
+			OutIndex = I;
+			return EPick::Plinth;
+		}
+	}
 	for (int32 I = Current.Gates.Num() - 1; I >= 0; --I)
 	{
 		const FIntRect& R = Current.Gates[I].Rect;
@@ -916,6 +987,9 @@ void AGGWorkshop::Press(const FVector2D& World)
 		case EPick::Gate:
 			Current.Gates.RemoveAt(Index);
 			break;
+		case EPick::Plinth:
+			Current.Plinths.RemoveAt(Index);
+			break;
 		default:
 			break;
 		}
@@ -935,6 +1009,17 @@ void AGGWorkshop::Press(const FVector2D& World)
 		FGGDesign::FGate& Gate = Current.Gates[Index];
 		Gate.Plate = (Gate.Plate + 1) % FMath::Max(1, Current.Plates.Num());
 		Say(FString::Printf(TEXT("That gate now opens with plate %d."), Gate.Plate + 1));
+		Changed(StrokeBefore);
+	}
+	else if (CurrentTool == EGGTool::Grille && Pick == EPick::Gate)
+	{
+		// Clicking a gate puts rails on it, or takes them off.
+		bPressed = false;
+		const bool bFirst = !Current.PlinthsOnly();
+		FGGDesign::FGate& Gate = Current.Gates[Index];
+		Gate.bGrille = !Gate.bGrille;
+		Say(!Gate.bGrille ? TEXT("The rails are off: this gate stops only the ball.")
+			: bFirst ? PlinthsOnlySays : TEXT("Rails: shut, this gate now stops a carried machine as well as the ball."));
 		Changed(StrokeBefore);
 	}
 }
@@ -976,6 +1061,9 @@ void AGGWorkshop::Drag(const FVector2D& World)
 	case EPick::Pad:
 		MoveTo(Current.Pads[HeldIndex]);
 		break;
+	case EPick::Plinth:
+		MoveTo(Current.Plinths[HeldIndex]);
+		break;
 	case EPick::Gate:
 	{
 		const FIntPoint Shift = (Square(World) - Square(PressWorld)) * FGGDesign::Cell;
@@ -1010,7 +1098,7 @@ void AGGWorkshop::Cancel()
 bool AGGWorkshop::Dragging(FIntRect& OutRect) const
 {
 	const bool bRectTool = CurrentTool == EGGTool::Floor || CurrentTool == EGGTool::Sand || CurrentTool == EGGTool::Wall
-		|| CurrentTool == EGGTool::Soft || CurrentTool == EGGTool::Gate || CurrentTool == EGGTool::Erase;
+		|| CurrentTool == EGGTool::Soft || CurrentTool == EGGTool::Gate || CurrentTool == EGGTool::Grille || CurrentTool == EGGTool::Erase;
 	if (!bPressed || !bRectTool)
 	{
 		return false;
@@ -1075,6 +1163,8 @@ void AGGWorkshop::Release()
 		Current.Paint(Squares, EGGCell::None);
 		break;
 	case EGGTool::Gate:
+	case EGGTool::Grille:
+	{
 		if (Current.Plates.Num() == 0)
 		{
 			Say(TEXT("A gate needs a plate to open it. Place a light plate or a weight plate first."));
@@ -1085,8 +1175,33 @@ void AGGWorkshop::Release()
 			Say(TEXT("Eight gates is the most a hole can have."));
 			return;
 		}
-		Current.Gates.Add({Rect, Current.Plates.Num() - 1});
-		Say(FString::Printf(TEXT("This gate opens with plate %d. Click it with the gate tool to give it another."), Current.Plates.Num()));
+		const bool bRails = CurrentTool == EGGTool::Grille;
+		const bool bFirst = bRails && !Current.PlinthsOnly();
+		Current.Gates.Add({Rect, Current.Plates.Num() - 1, bRails});
+		Say(bFirst ? FString(PlinthsOnlySays)
+			: FString::Printf(TEXT("This %s opens with plate %d. Click it with the gate tool to give it another."), bRails ? TEXT("grille") : TEXT("gate"), Current.Plates.Num()));
+		break;
+	}
+	case EGGTool::Plinth:
+		if (!NeedsGround())
+		{
+			return;
+		}
+		if (Current.Plinths.Contains(At))
+		{
+			Say(TEXT("There is a plinth here already."));
+			return;
+		}
+		if (Current.Plinths.Num() >= MaxPlinths)
+		{
+			Say(TEXT("Eight plinths is the most a hole can have. (Weight plates and the machines' own starts count as plinths too.)"));
+			return;
+		}
+		if (!Current.PlinthsOnly())
+		{
+			Say(PlinthsOnlySays);
+		}
+		Current.Plinths.Add(At);
 		break;
 	case EGGTool::Pad:
 		if (!NeedsGround())
@@ -1469,6 +1584,15 @@ FString AGGWorkshop::ShareCode() const
 	{
 		Code += FString::Printf(TEXT(";g%d,%d,%d,%d,%d"), Gate.Rect.Min.X / FGGDesign::Cell, Gate.Rect.Min.Y / FGGDesign::Cell,
 			Gate.Rect.Width() / FGGDesign::Cell, Gate.Rect.Height() / FGGDesign::Cell, Gate.Plate);
+		if (Gate.bGrille)
+		{
+			// (A sixth number: a copy of the game from before grilles reads the first five and opens it as a plain gate.)
+			Code += TEXT(",1");
+		}
+	}
+	for (const FIntPoint& Plinth : Current.Plinths)
+	{
+		Code += FString::Printf(TEXT(";o%d,%d"), SquareOf(Plinth).X, SquareOf(Plinth).Y);
 	}
 	for (const FGGDesign::FMachine& Machine : Current.Machines)
 	{
@@ -1538,7 +1662,12 @@ bool AGGWorkshop::ImportCode(const FString& Code)
 		}
 		else if (bRect && N.Num() >= 5 && Tag == TEXT('g') && Design.Plates.IsValidIndex(N[4]) && Design.Gates.Num() < 8)
 		{
-			Design.Gates.Add({FIntRect(N[0] * FGGDesign::Cell, N[1] * FGGDesign::Cell, (N[0] + N[2]) * FGGDesign::Cell, (N[1] + N[3]) * FGGDesign::Cell), N[4]});
+			Design.Gates.Add({FIntRect(N[0] * FGGDesign::Cell, N[1] * FGGDesign::Cell, (N[0] + N[2]) * FGGDesign::Cell, (N[1] + N[3]) * FGGDesign::Cell), N[4],
+				N.Num() >= 6 && N[5] != 0});
+		}
+		else if (bPoint && Tag == TEXT('o') && Design.Plinths.Num() < MaxPlinths)
+		{
+			Design.Plinths.AddUnique(Middle());
 		}
 		else if (bPoint && (Tag == TEXT('a') || Tag == TEXT('r')) && Design.Machines.Num() < 4)
 		{
@@ -1744,10 +1873,18 @@ void AGGWorkshop::StartRating()
 	// The second question the puzzle law asks: does it matter where the machines go? Stand them at random, many
 	// times over, and see how often some swing still works. The hole is as hard as its hardest swing.
 	RateGround.Reset();
+	for (const GG::FVec3& Plinth : ProofSetup.Plinths)
+	{
+		// Where machines stand only on plinths, the plinths are all the places there are.
+		if (GG::MachineAllowed(ProofSetup, Plinth.X, Plinth.Y))
+		{
+			RateGround.AddUnique(FIntPoint(FMath::RoundToInt32(Plinth.X), FMath::RoundToInt32(Plinth.Y)));
+		}
+	}
 	for (const TPair<FIntPoint, EGGCell>& Pair : Current.Cells)
 	{
 		const FIntPoint At(Pair.Key.X * FGGDesign::Cell + FGGDesign::Cell / 2, Pair.Key.Y * FGGDesign::Cell + FGGDesign::Cell / 2);
-		if ((Pair.Value == EGGCell::Floor || Pair.Value == EGGCell::Sand) && GG::MachineAllowed(ProofSetup, At.X, At.Y))
+		if (ProofSetup.Plinths.empty() && (Pair.Value == EGGCell::Floor || Pair.Value == EGGCell::Sand) && GG::MachineAllowed(ProofSetup, At.X, At.Y))
 		{
 			RateGround.Add(At);
 		}
@@ -1780,9 +1917,16 @@ void AGGWorkshop::StartRating()
 void AGGWorkshop::NextPlacement()
 {
 	RateMachines.clear();
+	// (On plinths two machines never share one, so each takes its plinth out of the draw while others are left.)
+	TArray<FIntPoint> Free = RateGround;
 	for (const GG::FMachineDef& Machine : ProofSetup.Machines)
 	{
-		const FIntPoint At = RateGround[RateRandom.RandRange(0, RateGround.Num() - 1)];
+		const int32 Drawn = RateRandom.RandRange(0, Free.Num() - 1);
+		const FIntPoint At = Free[Drawn];
+		if (!ProofSetup.Plinths.empty() && Free.Num() > 1)
+		{
+			Free.RemoveAt(Drawn);
+		}
 		// (A mirror is turned one way or the other at random.)
 		RateMachines.push_back(GG::Stand(Machine, At.X, At.Y, RateRandom.RandRange(0, 1)));
 	}

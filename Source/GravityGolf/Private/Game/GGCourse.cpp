@@ -20,6 +20,7 @@
 #include "Game/GGGolfer.h"
 #include "Net/UnrealNetwork.h"
 #include "Game/GGSave.h"
+#include "Sim/GGLogistics.h"
 #include "HAL/IConsoleManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/PackageName.h"
@@ -492,6 +493,7 @@ GG::FSetup AGGCourse::MakeSetup() const
 	{
 		Setup.Plinths.push_back({Plinth.X, Plinth.Y, Plinth.Z});
 	}
+	Setup.bGroundOnly = bDrawn;
 	Setup.ZoneNeeds.assign(Course.SafeZones.size(), -1);
 	for (const FGGSolution& Answer : Solutions)
 	{
@@ -589,6 +591,46 @@ void AGGCourse::BuildDrawn()
 		const double Scale = (Zone.Radius - 9.0) / 50.0;
 		AddMesh(Cylinder, LookFor(TEXT("pad")), FTransform(FRotator::ZeroRotator, ToUnreal(Zone.Center) + FVector(0, 0, 0.8), FVector(Scale, Scale, 0.004)))
 			->SetCastShadow(false);
+	}
+	// Plinths, where a hole has them: a dark disc in a thin ring of light, the only places a machine will stand.
+	// (A weight plate that is also one is marked by the plate itself.)
+	for (const FVector& Plinth : Plinths)
+	{
+		bool bPlate = false;
+		for (const GG::FSwitch& Switch : Course.Switches)
+		{
+			bPlate |= Switch.bWeight && FVector::DistSquared2D(ToUnreal(Switch.Center), Plinth) < 1.0;
+		}
+		if (bPlate)
+		{
+			continue;
+		}
+		// As wide as the room it has: a disc that ran under a wall or out over the table's edge would be a cut one.
+		// (Things stand in the middles of 50 cm squares, so the room comes in steps of 25 cm.)
+		double Room = 0.0;
+		for (const double Reach : {25.0, 50.0, 75.0})
+		{
+			bool bClear = true;
+			for (int32 Side = 0; Side < 8 && bClear; ++Side)
+			{
+				const double Angle = UE_DOUBLE_PI * 0.25 * Side;
+				const FVector At(Plinth.X + FMath::Cos(Angle) * (Reach - 1.0), Plinth.Y + FMath::Sin(Angle) * (Reach - 1.0), 0.0);
+				bClear = OnGround(At);
+				for (const GG::FBox& Box : Course.Boxes)
+				{
+					bClear = bClear && !(GG::IsCarryWall(Course, Box) && At.X > Box.Min.X && At.X < Box.Max.X && At.Y > Box.Min.Y && At.Y < Box.Max.Y);
+				}
+			}
+			if (!bClear)
+			{
+				break;
+			}
+			Room = Reach;
+		}
+		const double Size = (Room >= 75.0 ? 144.0 : Room >= 50.0 ? 96.0 : 46.0) / 100.0;
+		AddMesh(Cylinder, Glow(FLinearColor(0.7f, 0.85f, 1.f), 3.f), FTransform(FRotator::ZeroRotator, FVector(Plinth.X, Plinth.Y, 0.5), FVector(Size, Size, 0.008)))
+			->SetCastShadow(false);
+		AddMesh(Cylinder, Stone, FTransform(FRotator::ZeroRotator, FVector(Plinth.X, Plinth.Y, 0.7), FVector(Size - 0.1, Size - 0.1, 0.008)))->SetCastShadow(false);
 	}
 	// The court around the cup, where machines can't stand: a thin ring of light.
 	for (const FVector& Zone : NoMachineZones)
@@ -1004,8 +1046,39 @@ FVector AGGCourse::MachineSpot(const FVector& Base) const
 	return Base;
 }
 
+bool AGGCourse::OnGround(const FVector& At) const
+{
+	if (!bDrawn)
+	{
+		return true;
+	}
+	for (const GG::FBox& Box : Course.Boxes)
+	{
+		if (GG::IsCarryGround(Course, Box) && At.X >= Box.Min.X && At.X <= Box.Max.X && At.Y >= Box.Min.Y && At.Y <= Box.Max.Y)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 bool AGGCourse::CanPlaceMachine(const FVector& Base) const
 {
+	if (bDrawn)
+	{
+		// A drawn hole stands on a table. Its machines stand on its own open ground: not on the table, not on a wall.
+		if (!OnGround(Base))
+		{
+			return false;
+		}
+		for (const GG::FBox& Box : Course.Boxes)
+		{
+			if (GG::IsCarryWall(Course, Box) && Base.X > Box.Min.X && Base.X < Box.Max.X && Base.Y > Box.Min.Y && Base.Y < Box.Max.Y)
+			{
+				return false;
+			}
+		}
+	}
 	if (Plinths.Num() > 0)
 	{
 		bool bOnOne = false;
@@ -1028,40 +1101,24 @@ bool AGGCourse::CanPlaceMachine(const FVector& Base) const
 	return true;
 }
 
-bool AGGCourse::CarryBlocked(const FVector& From, const FVector& To, bool bReach) const
+const TCHAR* AGGCourse::CarryBar(const FVector& From, const FVector& To, bool bReach) const
 {
 	// A shut grille stops a machine in someone's arms. The walker is a disc 35 cm across the middle (as the proof's
 	// map has it, Sim/GGLogistics.h); what is tested is the straight line of this step, or of a reach.
 	constexpr double Body = 35.0;
-	for (int32 I = 0; I < static_cast<int32>(Course.Gates.size()); ++I)
-	{
-		const GG::FGate& Gate = Course.Gates[I];
-		if (!Gate.bGrille || (GateOpenNow.IsValidIndex(I) && GateOpenNow[I]))
-		{
-			continue;
-		}
-		const FBox2D Box(FVector2D(Gate.Box.Min.X - Body, Gate.Box.Min.Y - Body), FVector2D(Gate.Box.Max.X + Body, Gate.Box.Max.Y + Body));
-		const FVector2D A(From), B(To);
-		if (Box.IsInside(A))
-		{
-			if (bReach)
-			{
-				// Standing in a shut grille (empty hands walk into one freely) and reaching for a machine, or setting
-				// one down: no. Otherwise a machine is picked up from inside the bars and walked out the far side.
-				return true;
-			}
-			// Carrying, and already in it: it shut around them (a partner lifted the weight). They may walk out.
-			continue;
-		}
-		// Does the segment A..B enter the box? (Slab test.)
+	const FVector2D A(From), B(To);
+	// Does the line A..B enter the box? (Slab test.)
+	auto Enters = [&](const FBox2D& Box) {
 		double T0 = 0.0, T1 = 1.0;
-		bool bHit = true;
-		for (int32 Axis = 0; Axis < 2 && bHit; ++Axis)
+		for (int32 Axis = 0; Axis < 2; ++Axis)
 		{
 			const double D = B[Axis] - A[Axis];
 			if (FMath::Abs(D) < 1e-9)
 			{
-				bHit = A[Axis] >= Box.Min[Axis] && A[Axis] <= Box.Max[Axis];
+				if (A[Axis] < Box.Min[Axis] || A[Axis] > Box.Max[Axis])
+				{
+					return false;
+				}
 				continue;
 			}
 			double Near = (Box.Min[Axis] - A[Axis]) / D, Far = (Box.Max[Axis] - A[Axis]) / D;
@@ -1071,14 +1128,73 @@ bool AGGCourse::CarryBlocked(const FVector& From, const FVector& To, bool bReach
 			}
 			T0 = FMath::Max(T0, Near);
 			T1 = FMath::Min(T1, Far);
-			bHit = T0 <= T1;
+			if (T0 > T1)
+			{
+				return false;
+			}
 		}
-		if (bHit)
+		return true;
+	};
+	static const TCHAR* GrilleSays = TEXT("A machine won't pass a shut grille.");
+	static const TCHAR* WallSays = TEXT("A machine won't pass a wall.");
+	static const TCHAR* GroundSays = TEXT("A machine stays on the hole's ground.");
+	bool bGrilles = false;
+	for (int32 I = 0; I < static_cast<int32>(Course.Gates.size()); ++I)
+	{
+		const GG::FGate& Gate = Course.Gates[I];
+		bGrilles |= Gate.bGrille;
+		if (!Gate.bGrille || (GateOpenNow.IsValidIndex(I) && GateOpenNow[I]))
 		{
-			return true;
+			continue;
+		}
+		const FBox2D Box(FVector2D(Gate.Box.Min.X - Body, Gate.Box.Min.Y - Body), FVector2D(Gate.Box.Max.X + Body, Gate.Box.Max.Y + Body));
+		if (Box.IsInside(A))
+		{
+			if (bReach)
+			{
+				// Standing in a shut grille (empty hands walk into one freely) and reaching for a machine, or setting
+				// one down: no. Otherwise a machine is picked up from inside the bars and walked out the far side.
+				return GrilleSays;
+			}
+			// Carrying, and already in it: it shut around them (a partner lifted the weight). They may walk out.
+			continue;
+		}
+		if (Enters(Box))
+		{
+			return GrilleSays;
 		}
 	}
-	return false;
+	if (bGrilles)
+	{
+		// Where carrying is the puzzle the walls count as well. An arm is long (a machine is taken from five metres
+		// off): without this one is handed straight through a wall, or carried along the top of a low one.
+		for (const GG::FBox& Wall : Course.Boxes)
+		{
+			if (!GG::IsCarryWall(Course, Wall))
+			{
+				continue;
+			}
+			const FBox2D Foot(FVector2D(Wall.Min.X, Wall.Min.Y), FVector2D(Wall.Max.X, Wall.Max.Y));
+			if (Foot.IsInside(A))
+			{
+				if (bReach)
+				{
+					return WallSays;
+				}
+				continue;
+			}
+			if (Enters(Foot))
+			{
+				return WallSays;
+			}
+		}
+	}
+	if (bDrawn && (bReach ? !OnGround(From) || !OnGround(To) : OnGround(From) && !OnGround(To)))
+	{
+		// A drawn hole stands on a table anyone can walk on. Its machines stay on it, or every wall is walked round.
+		return GroundSays;
+	}
+	return nullptr;
 }
 
 bool AGGCourse::HasGrilles() const
@@ -1289,13 +1405,19 @@ bool AGGCourse::PlaceMachine(int32 Index, const FVector& Base, AGGGolfer* Carrie
 	{
 		if (Carrier)
 		{
-			Carrier->Tell(Plinths.Num() > 0 ? TEXT("Here a machine stands only on a plinth.") : TEXT("The machine won't stand on the court."));
+			bool bOpenGround = OnGround(Base);
+			for (const GG::FBox& Box : Course.Boxes)
+			{
+				bOpenGround = bOpenGround && !(bDrawn && GG::IsCarryWall(Course, Box) && Base.X > Box.Min.X && Base.X < Box.Max.X && Base.Y > Box.Min.Y && Base.Y < Box.Max.Y);
+			}
+			Carrier->Tell(!bOpenGround ? TEXT("A machine stands on the hole's open ground.")
+				: Plinths.Num() > 0 ? TEXT("Here a machine stands only on a plinth.") : TEXT("The machine won't stand on the court."));
 		}
 		return false;
 	}
-	if (Carrier && CarryBlocked(Carrier->GetActorLocation(), MachineSpot(Base), true))
+	if (const TCHAR* Why = Carrier ? CarryBar(Carrier->GetActorLocation(), MachineSpot(Base), true) : nullptr)
 	{
-		Carrier->Tell(TEXT("A machine won't pass a shut grille."));
+		Carrier->Tell(Why);
 		return false;
 	}
 	// Whole centimeters keep the simulation's inputs identical on every machine.
