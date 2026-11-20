@@ -15,7 +15,7 @@ STAGE="${GG_WEB_OUT:-$WEB/Saved/Web}/Wasm"
 PY="$UE/Engine/Binaries/ThirdParty/Python3/Mac/bin/python3"
 STATUS=0
 # "tour" stands for every hole: open it, picture from the tee, play its solution. A web smoke test.
-TOUR="hole-Terraces hole-SaltMirror hole-Canyon hole-Lantern hole-Returning hole-Brief hole-Colonnade hole-Stones hole-Glass hole-Periscope hole-Leapfrog hole-AfterYou hole-WaitHere hole-Wires"
+TOUR="hole-Terraces hole-SaltMirror hole-Canyon hole-Lantern hole-Returning hole-Brief hole-Colonnade hole-Stones hole-Glass hole-Periscope hole-Leapfrog hole-AfterYou hole-WaitHere hole-HandOver hole-Wires"
 NAMES=""
 for NAME in ${*:-play phone}; do
 	[ "$NAME" = "tour" ] && NAMES="$NAMES $TOUR" || NAMES="$NAMES $NAME"
@@ -36,4 +36,4 @@ for NAME in $NAMES; do
 done
 exit $STATUS
 }
-main "$@"
+main "$@"; exit

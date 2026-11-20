@@ -88,7 +88,8 @@ Built, proven by the solver and played end to end in the engine (`Tools/smoke.sh
 | 11 | Leapfrog | The lantern court in the last hour of the night, rose lanterns | A grille (a gate with rails) stops a machine in your arms as well as the ball, and the weight that opens it is a machine too: one holds the near plate while the other goes through, then holds the far plate for the first to follow. The order of the carries is the puzzle; the swing is a tap | 2 attractors, 3 weight plates, 2 grilles, 1 gate, 9 plinths |
 | 12 | After You | The hall of columns in the evening | The ball can open a door for a machine. One machine is a mirror, too light to hold a plate, so there is no leapfrog: the weight lets the mirror through, the first swing is spent rolling the ball over a plate that drops a second grille, and only then can the weight follow and hold the cup's gate. Mirror first, ball second, weight last | 1 attractor, 1 mirror, 2 weight plates, 1 light plate, 2 grilles, 1 gate, 1 pad, 9 plinths |
 | 13 | Wait Here | The canyon at night, the moon overhead | A machine can be left halfway. The chamber with the cup is shut by a grille whose plate is back at the start, and one machine cannot hold the first grille and that one at once: the second machine is carried through and set down to wait, the first changes plates, the second goes in, the first goes back. Five carries in the only order there is | 2 attractors, 3 weight plates, 3 grilles, 8 plinths |
-| 14 | Crossed Wires | The hall of columns at night, lit by its gates | The last hole, and everything at once. The attractor is the weight on the plate whose colour matches the gate; the mirror stands beyond and turns the ball into the wall's shadow. Every gate is a grille, so the gate the weight opens is the mirror's only way through, and the weight itself can never follow: the first swing rolls the ball over a plate that opens a fourth door for it | 1 attractor, 1 mirror, 5 weight plates, 1 light plate, 6 grilles, 1 pad, 12 plinths |
+| 14 | Hand Over Hand | The orrery: a low-walled court on a dark dial that floats among the stars, under a lamp, with hoops of light for orbits and a planet on each | The one who got through holds the door for the one behind. Both of the ball's grilles open from plates in the last yard, so both machines must end there. Side grilles opened from the tee's end get one in (as on Wait Here); the other can only follow through a grille the first opens from the far side, and then the first changes plates once more. Seven carries. Found by trying every layout of its size for the one that needs the most | 2 attractors, 4 weight plates, 4 grilles, 7 plinths |
+| 15 | Crossed Wires | The hall of columns at night, lit by its gates | The last hole, and everything at once. The attractor is the weight on the plate whose colour matches the gate; the mirror stands beyond and turns the ball into the wall's shadow. Every gate is a grille, so the gate the weight opens is the mirror's only way through, and the weight itself can never follow: the first swing rolls the ball over a plate that opens a fourth door for it | 1 attractor, 1 mirror, 5 weight plates, 1 light plate, 6 grilles, 1 pad, 12 plinths |
 
 Holes 1 to 4 are the tutorial. Hole 5 is the first exam: everything so far, on both swings. None is walkthrough-hard yet. Ideas for the worlds after them (not built):
 
@@ -127,13 +128,16 @@ Holes 1 to 4 are the tutorial. Hole 5 is the first exam: everything so far, on b
 - Joining a friend: Play together in the menu hosts the hole you are on, or joins a host by address. Verified with
   two standalone copies on one machine (`Tools/hosttest.sh`). Not built: invites, a lobby, anything across the
   internet without opening a port.
-- The Workshop (the level editor): build a hole on a grid with twelve tools, test it, and have the game check it
+- The Workshop (the level editor): build a hole on a grid with fourteen tools (ground, sand, two kinds of wall,
+  pads, plates, gates, the three machines, and now plinths and grilles), test it, and have the game check it
   against the puzzle law (you solved it; no swing works without the machines) and rate how much placement matters
   (Too easy to Fiendish, from 120 random placements a swing). Holes are kept in the save and
   shared as a short code. Mouse, gamepad and touch; it runs in the browser build. A Workshop hole can be hosted and
   played together (the host builds, everyone plays), and the rival can race one once it has been solved. Not built:
-  a place to browse other people's holes, the solver's remaining checks in-game (one machine alone must fail).
-- Fourteen holes in five places (each place seen at two to four hours of the day), the fourteenth written as the last,
+  a place to browse other people's holes, the solver's remaining checks in-game (one machine alone must fail), and
+  three things the game's own holes have: a pad that counts only once a plate is pressed (holes 12 and 15), machines
+  of other strengths (hole 11's are weak on purpose), and ground at different heights (hole 1).
+- Fifteen holes in six places (five of them seen at two to four hours of the day), the fifteenth written as the last,
   and a fast-forward for a rolling ball (hold Space).
 - Three machines: the attractor, the repulsor and the mirror. Plates, gates, pads and plinths. Grilles: gates that
   stop a carried machine while shut, which makes the order of carrying a puzzle (three holes so far; the proof plans

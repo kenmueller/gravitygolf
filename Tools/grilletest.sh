@@ -1,6 +1,6 @@
 #!/bin/sh
 # Checks the grille rule in the running game, on hole 11 (Leapfrog): a shut grille stops a carried machine, an open
-# one does not, and the carries that solve the hole go through.   Tools/grilletest.sh     (needs the editor open)
+# one does not, nothing is handed through a wall, and the carries that solve the hole go through.   Tools/grilletest.sh     (needs the editor open)
 # The player is moved in straight steps (GGView); the game's own per-frame rule decides whether each step is allowed.
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 LOG="$HOME/Library/Logs/Unreal Engine/GravityGolfEditor/GravityGolf.log"
@@ -40,6 +40,11 @@ expect "the side grille opens while a machine stands on the near plate" far "$(w
 # 3. With that machine set on the first plate beyond, the ball's grille opens, and the other can follow through it.
 run "GGView 1950,60,100,0,0"
 run "GGNet place 2000,0,0"
+# 3a. No reaching through the wall for it: an arm is five metres long, and the wall is one metre thick.
+run "GGView 1400,-250,100,0,0"
+run "GGNet pick 0"
+CARRYING="$(MARK=$(($(wc -l <"$LOG") + 1)); "$ROOT/Tools/console.sh" "GGWhere"; sleep 1; tail -n +"$MARK" "$LOG" | grep "Where: at" | tail -1 | sed 's/.*carrying \([01]\).*/\1/')"
+if [ "$CARRYING" = "0" ]; then echo "ok    no reaching through a wall for a machine"; else echo "FAIL  a machine was picked up through a wall"; FAILED=1; run "GGNet place 2000,0,0"; fi
 run "GGView 850,-350,100,0,0"
 run "GGNet carry 1"
 run "GGView 1300,450,100,0,0"

@@ -7,7 +7,7 @@
 main() {
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 LOG="$HOME/Library/Logs/Unreal Engine/GravityGolfEditor/GravityGolf.log"
-LEVELS="${*:-Terraces SaltMirror Canyon Lantern Returning Brief Colonnade Stones Glass Periscope Leapfrog AfterYou WaitHere Wires}"
+LEVELS="${*:-Terraces SaltMirror Canyon Lantern Returning Brief Colonnade Stones Glass Periscope Leapfrog AfterYou WaitHere HandOver Wires}"
 call() {
 	python3 "$ROOT/Tools/mcp.py" call call_tool "$1" 2>&1
 }
@@ -34,4 +34,4 @@ done
 "$ROOT/Tools/play.sh" stop
 exit $STATUS
 }
-main "$@"
+main "$@"; exit

@@ -609,9 +609,56 @@ def build_grid():
     finish(material, path)
 
 
+PLANET = NOISE + r"""
+// A planet seen from far off: lit from one side by a sun a long way away, banded along its own axis, darker toward
+// its edge, with a thin limb of air. Unlit, so it looks the same on every renderer and needs no light to reach it.
+float3 Nrm = normalize(WorldPos - ObjectPos);
+float3 L = normalize(SunPos - ObjectPos);
+float NdotL = dot(Nrm, L);
+float Day = smoothstep(-0.1, 0.3, NdotL);
+float Shade = Day * (0.3 + 0.7 * saturate(NdotL));
+float3 D = normalize(LocalPos);
+float Wobble = N.Fbm(D * 2.6 + Seed, 4) - 0.5;
+float Band = 0.5 + 0.5 * sin((D.z + Wobble * Turbulence) * Bands);
+float3 Albedo = lerp(ColorA, ColorB, smoothstep(0.2, 0.8, Band));
+Albedo *= 0.75 + 0.5 * N.Fbm(D * 7.0 + Seed * 1.7, 3);
+float3 V = normalize(CameraPos - WorldPos);
+float NdotV = saturate(dot(Nrm, V));
+float Edge = lerp(0.5, 1.0, sqrt(NdotV));
+float Limb = pow(1.0 - NdotV, 4.0);
+return Albedo * (Shade * Edge + 0.012) + Air * Limb * (0.05 + 0.5 * Day);
+"""
+
+
+def build_planet():
+    material, path = fresh("M_GG_Planet")
+    material.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_UNLIT)
+    body = custom(material, PLANET, ["LocalPos", "WorldPos", "ObjectPos", "CameraPos", "SunPos", "ColorA", "ColorB", "Air",
+                                     "Bands", "Turbulence", "Seed"], -500, 0)
+    sources = (("LocalPos", node(material, unreal.MaterialExpressionLocalPosition, -1000, -300)),
+               ("WorldPos", node(material, unreal.MaterialExpressionWorldPosition, -1000, -200)),
+               ("ObjectPos", node(material, unreal.MaterialExpressionObjectPositionWS, -1000, -100)),
+               ("CameraPos", node(material, unreal.MaterialExpressionCameraPositionWS, -1000, 0)),
+               ("SunPos", vector_param(material, "SunPos", (0, 0, 3000, 1), -1000, 100)),
+               ("ColorA", vector_param(material, "ColorA", (0.8, 0.55, 0.3, 1), -1000, 300)),
+               ("ColorB", vector_param(material, "ColorB", (0.5, 0.3, 0.18, 1), -1000, 500)),
+               ("Air", vector_param(material, "Air", (0.4, 0.6, 1.0, 1), -1000, 700)),
+               ("Bands", scalar_param(material, "Bands", 14.0, -1000, 900)),
+               ("Turbulence", scalar_param(material, "Turbulence", 0.25, -1000, 1000)),
+               ("Seed", scalar_param(material, "Seed", 0.0, -1000, 1100)))
+    for name, source in sources:
+        MEL.connect_material_expressions(source, "", body, name)
+    strength = scalar_param(material, "Strength", 1.0, -500, 400)
+    lit = node(material, unreal.MaterialExpressionMultiply, -200, 100)
+    MEL.connect_material_expressions(body, "", lit, "A")
+    MEL.connect_material_expressions(strength, "", lit, "B")
+    MEL.connect_material_property(lit, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    finish(material, path)
+
+
 BUILDS = {"surface": build_surface, "glow": build_glow, "lantern": build_lantern, "sky": build_sky, "ball": build_ball,
           "ocean": build_ocean, "scan": build_scan, "salt": build_salt, "mirror": build_mirror, "night_sky": build_night_sky,
-          "grid": build_grid}
+          "grid": build_grid, "planet": build_planet}
 # GG_ONLY (set by the caller) rebuilds just the named materials. A material that is rebuilt resets every instance
 # made from it, so adding a new one this way leaves the levels alone.
 for build_name in globals().get("GG_ONLY") or BUILDS:

@@ -254,4 +254,33 @@ def avatar():
     return report
 
 
-"\n".join(putter() + machine() + web_plants() + avatar() + NOTES)
+def orrery():
+    """Hole 14's place. A hoop (a thin torus of radius 100: scaled up, it is an orbit drawn across the sky) and a disc
+    (radius 100, 2 thick, its top at zero: the dial the court stands on). Both are round enough to be scaled to
+    hundreds of metres: the engine's own cylinder has 32 sides, and at that size its rim is a row of straight walls."""
+    report = []
+    hoop = unreal.DynamicMesh()
+    P.append_torus(hoop, options(), at(0, 0, 0), unreal.GeometryScriptRevolveOptions(), 100.0, 0.25, 360, 8, CENTER)
+    report.append(bake(hoop, "SM_Hoop", 1))
+    # The same, a third as thick: an orbit hundreds of metres across should be a line two pixels wide, not a cable.
+    fine = unreal.DynamicMesh()
+    P.append_torus(fine, options(), at(0, 0, 0), unreal.GeometryScriptRevolveOptions(), 100.0, 0.085, 360, 6, CENTER)
+    report.append(bake(fine, "SM_HoopFine", 1))
+    # A flat band for lines inlaid in a floor: the same circle, 1 wide and almost no height.
+    band = unreal.DynamicMesh()
+    profile = [(99.5, 0.0), (100.5, 0.0), (100.5, 0.02), (99.5, 0.02)]
+    P.append_revolve_polygon(band, options(), unreal.Transform(), [unreal.Vector2D(r, z) for r, z in profile],
+                             unreal.GeometryScriptRevolveOptions(), 0.0, 360)
+    report.append(bake(band, "SM_Band", 1))
+    disc = unreal.DynamicMesh()
+    P.append_cylinder(disc, options(), at(0, 0, -2.0), 100.0, 2.0, 360, 0, True, BASE)
+    report.append(bake(disc, "SM_Disc", 1))
+    return report
+
+
+BUILDS = {"putter": putter, "machine": machine, "web_plants": web_plants, "avatar": avatar, "orrery": orrery}
+# GG_ONLY (set by the caller) rebuilds just the named meshes: runpy.run_path(path, init_globals={"GG_ONLY": ["orrery"]}).
+GG_REPORT = []
+for build_name in globals().get("GG_ONLY") or BUILDS:
+    GG_REPORT += BUILDS[build_name]()
+"\n".join(GG_REPORT + NOTES)

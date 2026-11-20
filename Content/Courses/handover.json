@@ -1,0 +1,434 @@
+{
+	"id": "handover",
+	"name": "Hand Over Hand",
+	"level": "HandOver",
+	"par": 1,
+	"ballRadius": 6,
+	"gravity": [
+		0,
+		0,
+		-980
+	],
+	"killZ": -1400,
+	"tee": {
+		"position": [
+			1200,
+			0,
+			6
+		],
+		"yaw": 0
+	},
+	"cup": {
+		"position": [
+			3850,
+			0,
+			0
+		],
+		"radius": 42,
+		"captureSpeed": 650
+	},
+	"noMachine": [
+		{
+			"position": [
+				3850,
+				0,
+				0
+			],
+			"radius": 200,
+			"kind": "court"
+		}
+	],
+	"safeZones": [],
+	"attractors": [
+		{
+			"position": [
+				1330,
+				300,
+				0
+			],
+			"strength": 220,
+			"range": 700,
+			"coreHeight": 45,
+			"movable": true
+		},
+		{
+			"position": [
+				1330,
+				-300,
+				0
+			],
+			"strength": 220,
+			"range": 700,
+			"coreHeight": 45,
+			"movable": true
+		}
+	],
+	"boxes": [
+		{
+			"name": "Floor",
+			"center": [
+				2200.0,
+				0,
+				-15
+			],
+			"size": [
+				4800,
+				1800,
+				30
+			],
+			"surface": "green",
+			"look": "paving",
+			"shape": "box"
+		},
+		{
+			"name": "Outer_S",
+			"center": [
+				2200.0,
+				-800.0,
+				55.0
+			],
+			"size": [
+				4800,
+				200,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Outer_N",
+			"center": [
+				2200.0,
+				800.0,
+				55.0
+			],
+			"size": [
+				4800,
+				200,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Outer_W",
+			"center": [
+				-100.0,
+				0.0,
+				55.0
+			],
+			"size": [
+				200,
+				1400,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Outer_E",
+			"center": [
+				4500.0,
+				0.0,
+				55.0
+			],
+			"size": [
+				200,
+				1400,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "First_S",
+			"center": [
+				1500.0,
+				-400.0,
+				55.0
+			],
+			"size": [
+				100,
+				600,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "First_M",
+			"center": [
+				1500.0,
+				225.0,
+				55.0
+			],
+			"size": [
+				100,
+				250,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "First_N",
+			"center": [
+				1500.0,
+				625.0,
+				55.0
+			],
+			"size": [
+				100,
+				150,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Second_S",
+			"center": [
+				2300.0,
+				-625.0,
+				55.0
+			],
+			"size": [
+				100,
+				150,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Second_M",
+			"center": [
+				2300.0,
+				-225.0,
+				55.0
+			],
+			"size": [
+				100,
+				250,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		},
+		{
+			"name": "Second_N",
+			"center": [
+				2300.0,
+				400.0,
+				55.0
+			],
+			"size": [
+				100,
+				600,
+				110
+			],
+			"surface": "sand",
+			"look": "wall",
+			"shape": "box"
+		}
+	],
+	"switches": [
+		{
+			"position": [
+				900,
+				-400,
+				0
+			],
+			"radius": 75,
+			"weight": true
+		},
+		{
+			"position": [
+				900,
+				400,
+				0
+			],
+			"radius": 75,
+			"weight": true
+		},
+		{
+			"position": [
+				2700,
+				0,
+				0
+			],
+			"radius": 75,
+			"weight": true
+		},
+		{
+			"position": [
+				3250,
+				0,
+				0
+			],
+			"radius": 75,
+			"weight": true
+		}
+	],
+	"gates": [
+		{
+			"name": "First_Side",
+			"center": [
+				1500,
+				450,
+				110
+			],
+			"size": [
+				60,
+				200,
+				220
+			],
+			"switch": 1,
+			"openSeconds": 0.0,
+			"surface": "sand",
+			"grille": true
+		},
+		{
+			"name": "First_Ball",
+			"center": [
+				1500,
+				0,
+				110
+			],
+			"size": [
+				60,
+				200,
+				220
+			],
+			"switch": 3,
+			"openSeconds": 0.0,
+			"surface": "sand",
+			"grille": true
+		},
+		{
+			"name": "Second_Side",
+			"center": [
+				2300,
+				-450,
+				110
+			],
+			"size": [
+				60,
+				200,
+				220
+			],
+			"switch": 0,
+			"openSeconds": 0.0,
+			"surface": "sand",
+			"grille": true
+		},
+		{
+			"name": "Second_Ball",
+			"center": [
+				2300,
+				0,
+				110
+			],
+			"size": [
+				60,
+				200,
+				220
+			],
+			"switch": 2,
+			"openSeconds": 0.0,
+			"surface": "sand",
+			"grille": true
+		}
+	],
+	"solutions": [
+		{
+			"leg": 0,
+			"machines": [
+				[
+					3250,
+					0
+				],
+				[
+					2700,
+					0
+				]
+			],
+			"yaw": 0,
+			"power": 0.2,
+			"turns": [
+				0,
+				0
+			]
+		}
+	],
+	"plinths": [
+		{
+			"position": [
+				1330,
+				300,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				1330,
+				-300,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				900,
+				-400,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				900,
+				400,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				2700,
+				0,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				3250,
+				0,
+				0
+			],
+			"radius": 65
+		},
+		{
+			"position": [
+				1900,
+				420,
+				0
+			],
+			"radius": 65
+		}
+	],
+	"next": "Wires",
+	"ambience": "hum",
+	"music": "night"
+}

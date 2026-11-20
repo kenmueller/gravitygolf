@@ -9,21 +9,29 @@ left click to swing (aim is where you look, longer hold is harder), E picks up a
 the ball, Backspace resets the hole, B jumps you to the ball, right click watches the ball, hold Space while the
 ball rolls to run it fast. **F1 plays the
 solution for the leg you are on (a hole solved that way is not recorded). Tab opens the menu. Keys 1 to 9 jump
-between holes, 0 is hole 10, minus is 11, equals is 12, and the left and right brackets are 13 and 14.** F turns a
+between holes, 0 is hole 10, minus is 11, equals is 12, the left and right brackets are 13 and 14, and backslash is
+15.** F turns a
 mirror.
 
 **Five things to try, in this order**
-1. **Holes 10 to 14** (0 is hole 10, minus is 11, equals is 12, the brackets are 13 and 14). Ten, Periscope, is the
-   best looking. Eleven to thirteen are the newest idea and the nearest this game has come to The Talos Principle:
-   gates with rails stop a machine in your arms, so the order you carry things in is the puzzle. Eleven teaches it;
-   twelve (the ball opens a door for a machine) and thirteen (a machine left halfway) use it; fourteen is the
-   finale, rebuilt to use all of it. Try twelve to fourteen without F1 and tell me whether they made you stop and
-   think or just made you walk.
+1. **Hole 14, Hand Over Hand** (the right bracket). New, in a new place: the Orrery. It is the hardest hole so far
+   and the first I did not design by hand: I had the computer try every layout of its size and took the one that
+   needs the most carries (seven). The walls are low so that you can plan it from the tee. Play it without F1 and
+   tell me how long it held you. Then **holes 10 to 15** (0 is hole 10, minus 11, equals 12, the brackets 13 and
+   14, backslash 15). Ten, Periscope, and fourteen are the best looking. Eleven to fourteen are the newest idea and
+   the nearest this game has come to The Talos Principle: gates with rails stop a machine in your arms, so the order
+   you carry things in is the puzzle. Eleven teaches it; twelve (the ball opens a door for a machine) and thirteen
+   (a machine left halfway) use it; fifteen is the finale, which uses all of it.
 2. **Play with a friend who is in a browser:** `Tools/together.sh Canyon`. You play in a window on this Mac; the
    link it prints puts their browser in your hole. Proved on this Mac only; the internet part is yours to try.
 3. **The Workshop** (Tab, then Workshop). Build a hole: pick a tool along the bottom, drag on the table. Press T to
    test it, T again to come back. CHECK runs every swing without the machines; solving it yourself in a test is the
-   other half of the proof. Tab has Keep, My holes, and a code you can copy to a friend.
+   other half of the proof. Tab has Keep, My holes, and a code you can copy to a friend. **New: it can build holes
+   like 11 to 14.** The last two tools before the red cross are Plinth and Grille. Paste this code (Tab, Hole code)
+   for a small one to take apart:
+   `GG1;nRails;f0,-10,56,20;w26,-10,2,9;w26,1,2,9;t6,0;c48,0;k2,0;g26,-1,2,2,0,1;o28,4;o40,-4;a2,6;a2,-6`
+   And this one is hole 14 itself, rebuilt with the Workshop's pieces (I played it there: seven carries, one putt):
+   `GG1;nHand_Over_Hand;f0,-14,88,28;w0,-14,88,1;w0,13,88,1;w0,-13,1,26;w87,-13,1,26;w30,-13,2,11;w30,2,2,5;w30,11,2,2;w46,-13,2,2;w46,-7,2,5;w46,2,2,11;t24,0;c77,0;k18,-8;k18,8;k54,0;k65,0;g30,7,2,4,1,1;g30,-2,2,4,3,1;g46,-11,2,4,0,1;g46,-2,2,4,2,1;o38,8;a26,6;a26,-6`
 4. **The music.** Every place has its own four chords. Settings has a Music volume and Off.
 5. **A phone, but not an iPhone.** Epic's notes for this engine preview say Safari on iOS cannot run a web build
    yet (see docs/WEB.md). An Android phone with Chrome should: `Tools/share.sh` gives a link that works on any
@@ -60,10 +68,113 @@ mirror.
   changes no existing hole: the grille** (a gate with rails), which stops a machine in your arms while it is shut.
   Hole 11, Leapfrog, teaches it; hole 12, After You, uses it with a mirror that cannot be the weight, so the ball
   has to open the door for the machine; hole 13, Wait Here, makes you leave a machine halfway. These are closer to
-  what you asked for, not yet there. If you dislike the idea, it is three holes and one flag to take out.
-- More holes or more polish next. There are fourteen holes, and the fourteenth is written as the last. I did not wait
+  what you asked for, not yet there. Hole 14, Hand Over Hand, is the first that might be: seven carries in the
+  only order there is, found by search rather than by me. If you dislike the idea, it is four holes and one flag
+  to take out.
+- More holes or more polish next. There are fifteen holes, and the fifteenth is written as the last. I did not wait
   for the answer: I kept doing both (a new hole, then the worst-looking hole made better). Say if you want one or
   the other.
+
+## 2026-11-19, session 4 (autonomous): the Workshop builds grille holes; hole 14 and the Orrery; the carrying rule tightened
+
+**Changed**
+- **Two new tools in the Workshop: Plinth and Grille.** Until now players could not build anything like holes 11
+  to 14, the game's best idea. A grille is drawn like a gate (or made by clicking a gate with the tool; clicking
+  again takes the rails off). Once a hole has a plinth or a grille, a machine stands only on a plinth, on a weight
+  plate, or where it starts, and the Workshop says so at the moment that becomes true. Both are in the hole code
+  and the kept design; old codes still open; a new code opened by an old copy of the game loses its rails.
+- **A carried machine stays on a drawn hole's ground.** A Workshop hole stands on a table the player can walk on,
+  so every wall could be walked round with a machine in your arms. The game stops the step, as it does at a shut
+  grille, and the planner's map ends where the ground does.
+- **No reaching through walls on a hole with grilles.** I found this by reading, not by playing: a machine is
+  picked up from as far as 5.5 m, and only grilles were checked, never walls. On the finale the second pair of plates
+  is 2.3 m beyond the first wall: in reach from the wrong side. On a hole with grilles a reach now stops at a wall,
+  and so does a step onto the top of one (the finale's walls are 1.1 m with a ledge at 28 cm; a jump clears 1.17 m.
+  I did not prove a player could get up there. The rule makes it not matter).
+- **The planner is fairer and faster.** Its map shut any gap a metre wide (it marked every square a wall's margin
+  touched); a square is now a wall when its middle is. A plinth against a wall is served from the nearest place a
+  walker can stand. What it works out for each state of the grilles is kept, so a hole with four machines and
+  eighteen places to stand plans in a fraction of a second, not seconds. Holes 11 to 14 prove exactly as before.
+- **`Tools/editor.sh` waits for a quiet editor.** It used to say "ready" when the editor first answered; the editor
+  then loaded its first map, and for twenty seconds queued or lost what it was sent.
+- The network version is 4 (the carrying rules changed; an older copy would disagree about a step).
+
+- **Hole 14, Hand Over Hand, in a sixth place: the Orrery.** (The finale is now hole 15.) Two walls, four weight
+  plates, four grilles, two machines, one plinth in the middle. Both of the ball's grilles open from plates in the
+  last yard, so both machines must end there. Side grilles opened from the tee's end get one of them in, as on
+  Wait Here. The other can only follow through a grille the first opens from the far side, and then the first has
+  to change plates again while the second waits. Seven carries; the planner finds no shorter way and no other
+  ending. The swing is a gentle straight putt (within four degrees, a sixth to a quarter of full strength).
+- **How it was found: `Tests/Sim/rooms.sh`.** A carrying puzzle does not need the ball to be judged, so I wrote the
+  smallest model of one (rooms in a row, walls, grilles, plates, heavy and light machines) and had it try every
+  layout of a given size and report the ones whose shortest answer is longest. Of 360 layouts with three rooms and
+  four plates, four need seven carries (one layout and its mirror images); the rest need five or fewer or cannot
+  be done. With four rooms the longest is eleven. I then drew the winner as a real hole and the real proof agreed
+  on the first run.
+- **The Orrery.** A low-walled court on a dark dial 260 m across that floats among the stars. A lamp hangs over
+  the middle in three brass hoops; round it go five orbits, fine lines of gold light up to 1.7 km across, each with
+  its planet (shaded from one distant sun, banded, a ringed giant standing over the line to the cup). The floor is
+  polished dark stone and gives the gates' light back. New generated assets: a hoop, a fine hoop, a flat band and
+  a disc (`Tools/build_meshes.py`), and a planet material (`Tools/build_materials.py`), all unlit or cheap.
+- **The Workshop can build this hole.** I rebuilt it from a hole code with the Workshop's pieces, played it there
+  under the game's rules (all seven carries, then the putt) and put the saved design through the standalone proof:
+  PASS, seven carries.
+
+**Critique**
+- *Hole 14 as a puzzle.* It is the first hole here whose answer I could not see at a glance after building it,
+  which is the point, and also a warning: I know it is long, I do not know it is fun. The seven steps are forced
+  one at a time, so a player who understands Wait Here can grind forward by asking "what does this open?" at each
+  step. Talos at its best hides the first step; this hides the fifth (go back and stand on the far plate for the
+  one you left behind). Whether that is one idea or a chore is Ken's to say. What would make it wrong: if players
+  solve it by trying carries until grilles open, without ever forming the plan. The low walls are there to invite
+  the plan.
+- *Found by search.* The search maximises length, and length is not difficulty. It gave me a symmetrical, legible
+  layout, which was luck: the four-room winner (eleven carries) is the same idea said twice and I did not build it.
+- *The Orrery's look, honestly.* The best view is straight up at the lamp. From the tee the giant over the grille
+  is a strong picture. Weak: the dial beyond the walls is a black band at the horizon with a few gold lines; the
+  planets are shader spheres and look it up close to the bloom; nothing moves, and an orrery that does not turn
+  is a missed chance (moving hoops must stay out of the lighting or they cost 6 to 14 ms; they are unlit, so this
+  is possible, and not done). The first version had orbits as fat as neon tubes and planets blown out to pastel;
+  both were fixed by looking at the pictures, not by reasoning.
+- *The decision to make starts and weight plates plinths without asking.* The alternative was a rule ("a hole with
+  rails needs a plinth under every machine and on every plate") checked when the test starts. That is three more
+  things to place and a message that reads like a compiler error. What would make my choice wrong: a designer who
+  wants a weight plate no machine can stand on. I cannot think why they would.
+- *The decision to fit a plinth's disc to the room it has.* First version: every plinth 1.6 m wide, and one against
+  a wall was a half-moon cut by the wall. Ugly. Now 1.44 m in the open, 46 cm against a wall. The small one is
+  honest but easy to miss from across a hole. A square tile would have clipped cleanly, but then a plinth and a
+  weight plate would differ only in colour, which I have already ruled out once (the colour-blind marks).
+- *The game.* A grille hole needs an idea about order, and the Workshop does nothing to help a designer find one;
+  it only makes the pieces available. The check still proves only that no swing works without the machines. It
+  does not prove the rails matter: a hole whose grille can be ignored passes. The standalone solver has the same
+  blind spot for the game's own holes, where I checked it by hand each time (take the grille away, see the proof
+  change). That check should be a button.
+- *The rating.* On a hole with plinths it is honest about placement (which plinths) and says nothing about the
+  order of carrying, which is where such a hole is hard. The test hole rates "Easy, 35 in 100" and that is fair
+  for its swing and silent about its one idea.
+- *The look.* The building screen with fifteen tiles is at the limit: on a phone the row is 826 of 852 pixels.
+  One more tool and it needs two rows or a drawer. The plinth is a dark disc on white card: clear, plain, and it
+  reads a little like a hole in the table. The grille's rails read well on foot and adequately from above.
+- *Process.* I ran a test seconds after starting the editor, twice, and lost twenty minutes to a crash and a run
+  of 42 false failures before looking at the log's timestamps instead of the test's output. The cause was in my
+  own start-up script, which had always been racy and had been getting away with it.
+
+**Verified in the engine:** `Tools/workshoptest.sh`, 54 checks (16 of them new: both tools, undo, the code there
+and back, a kept hole, then a hole with a grille played through: stopped at the shut grille, stopped at the edge
+of the ground, refused off a plinth, let through with the plate held, no reach through a wall in either direction,
+a plinth hard against a wall, the solve, the proof, the rating, and the answer replayed with its carry planned).
+`Tools/grilletest.sh` (8, one new: no reach through hole 11's wall). The rival solved the Workshop grille hole.
+Holes 11 to 14 replay; the two-player grille test passes.
+
+Hole 14: its proof, its replay in the engine (the seven carries planned, then the swing), holes 13 and 15 still
+chained either side of it.
+
+**Not verified:** nobody has built a grille hole by hand. Whether a player can in fact jump onto the finale's wall
+(the rule covers it either way). The Workshop's new tools on a real phone. **The new hole's frame rate:** every hole
+measured about 47 fps while I was testing it (hole 11 and the canyon included, which measure 73 and 83 on a quiet
+machine; an older log shows the same dip hours before this work, with the Mac's photo analysis and backup running).
+Under that load the Orrery cost what hole 11 does (GPU 17.8 ms against 17.1). It needs measuring again on a quiet
+machine.
 
 ## 2026-11-19, session 3 (autonomous): Periscope, music, a phone command
 

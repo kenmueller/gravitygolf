@@ -20,7 +20,7 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 from coursekit import Course  # noqa: E402
 
-c = Course("waithere", "Wait Here", "WaitHere", next_level="Wires")
+c = Course("waithere", "Wait Here", "WaitHere", next_level="HandOver")
 X0, X1, HALF = 0, 4200, 800
 c.box("Floor", ((X0 + X1) / 2, 0, -15), (X1 - X0 + 600, 2 * HALF + 600, 30), "green", "floor")
 WALL_H = 400

@@ -12,7 +12,7 @@ namespace
  * alike, so what has to match is this game's code, not the engine build. Raise the number whenever the simulation,
  * a course, or anything sent between players changes in a way an older copy would not follow.
  */
-constexpr uint32 GGNetVersion = 0x47470003; // "GG", then the count
+constexpr uint32 GGNetVersion = 0x47470004; // "GG", then the count
 } // namespace
 
 class FGravityGolfModule : public FDefaultGameModuleImpl

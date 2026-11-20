@@ -29,6 +29,7 @@ const TArray<FGGHoleInfo>& UGGSave::Holes()
 		{TEXT("Leapfrog"), TEXT("leapfrog"), TEXT("Leapfrog"), TEXT("The court before dawn"), 1},
 		{TEXT("AfterYou"), TEXT("afteryou"), TEXT("After You"), TEXT("The hall of columns in the evening"), 2},
 		{TEXT("WaitHere"), TEXT("waithere"), TEXT("Wait Here"), TEXT("The canyon at night"), 1},
+		{TEXT("HandOver"), TEXT("handover"), TEXT("Hand Over Hand"), TEXT("The orrery"), 1},
 		{TEXT("Wires"), TEXT("wires"), TEXT("Crossed Wires"), TEXT("The hall of columns at night"), 2},
 	};
 	return All;

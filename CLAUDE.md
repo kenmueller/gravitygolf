@@ -65,15 +65,18 @@ Source/GravityGolf/
   */Game/GGHUD.*              play HUD, touch controls, solved card and the menus (title, pause, holes, settings)
   */Game/GGSave.*             saved progress and settings; the list of holes in play order
   */Game/GGRival.*            the bot to race: plays the hole in a ghost copy of its own, at three skills
-  */Game/GGWorkshop.*         the level editor: a design on a 50 cm grid, its tools, the view from above, the proof
+  */Game/GGWorkshop.*         the level editor: a design on a 50 cm grid, its tools (plinths and grilles among
+                              them), the view from above, the proof
   */Game/GGWorkshopHUD.cpp    the Workshop's building screen (drawn by AGGHUD)
   */Sim/GGProof.h             the proof's building blocks, shared by Tests/Sim and the Workshop
   */Sim/GGLogistics.h         carrying behind grilles: which plinths a carried machine can reach, and the carries that
-                              take the machines from one standing to another (the proof and the demo use it)
+                              take the machines from one standing to another (the proof, the demo and the rival use
+                              it; on a hole drawn in the Workshop the map ends where the hole's ground does)
 Content/Courses/*.json        collision boxes + rules, written by Tools/courses/<level>.py (plain Python)
 Tools/levels/<level>.py       builds the level in the editor from the course JSON plus dressing (common.py helpers)
 Tools/build_materials.py      generates /Game/Materials (custom HLSL: triplanar scans, ocean, ball, glow)
-Tools/build_meshes.py         generates /Game/Meshes with Geometry Script (putter, gravity machine); Tools/py.sh runs it
+Tools/build_meshes.py         generates /Game/Meshes with Geometry Script (putter, gravity machine, the orrery's hoop and
+                              disc); Tools/py.sh runs it, or `init_globals={'GG_ONLY': ['orrery']}` for one group
 Tools/fab_assets.json         Fab/Megascans packs the levels need. They are gitignored; reinstall via the Fab toolset
 Tools/editor.sh               start the editor and wait until its MCP server is idle
 Tools/mcp.py                  shell client for the editor's MCP server
@@ -115,6 +118,9 @@ Tools/grilletest.sh           in the editor, on hole 11: a shut grille stops a c
 Tools/nettest_grille.sh       two players on hole 11: the joined player makes the carries; both copies compared
 Tools/workshoptest.sh         works the Workshop without hands: every tool, undo, hole codes, touch, the proof, a test play
 Tests/Sim/cupscan.sh <course> <min x> <ax> <ay> <bx> <by>   design aid: cup spots that a machine at A serves and one at B cannot
+Tests/Sim/rooms.sh <rooms> <plates> <heavy> <mirrors>   design aid for carrying puzzles: tries every layout of rooms, walls,
+                              grilles and weight plates of that size and prints the ones needing the most carries
+                              (no ball, no geometry; `rooms.sh 3 4 2 0` found hole 14)
 Tests/Sim/design.sh <json> solve|search|probe   the standalone tools on a Workshop design (`GGWorkshop json <file>` writes one)
 Tools/net.sh <player|all> "<cmd>"    run a console command on one player's machine (GGNet where|carry|place|swing...)
 ```
@@ -146,7 +152,8 @@ Work through the Unreal MCP (`mcp__unreal__*`) while the editor is open:
   title|pause|holes|settings|together|workshop|designs|none`, `GGWhere` (logs the player's position, facing and state).
 - The Workshop from the console: `GGWorkshop tool wall`, `GGWorkshop stroke x0,y0,x1,y1` (one stroke of the tool, in
   centimetres), `test`, `build`, `undo`, `new`, `keep`, `open <name>`, `code [text]`, `check`, `json <file>`. Every call
-  logs the Workshop's state.
+  logs the Workshop's state. Tool names are the ones on screen without spaces (`lightplate`, `plinth`, `grille`).
+  `GGRival <skill>` puts a rival on the hole being played, a Workshop hole included.
 - `execute_python` takes `{"script": {"content": "<code>"}}` and returns the last expression's value; `print`
   goes to the log only.
 
@@ -277,6 +284,31 @@ console and read the pass list in the log before guessing.
   Standing inside a shut grille, nobody picks a machine up or sets one down (otherwise it is taken from inside the
   bars and walked out the far side). The rival carries in the planner's order too, though it still walks through
   walls like the ghost it is.
+- Carrying has three rules, all in `AGGCourse::CarryBar` (which returns the words the player is told, or null):
+  a shut grille stops a carried machine (any hole); on a hole with grilles a wall does too, for a step and for a
+  reach (a machine is picked up from 5.5 m, `HoldDistance` + `PickUpReach`: before this one was handed straight
+  through a metre of wall, and hole 14's far plates were in reach from the wrong side); and on a hole drawn in the
+  Workshop a carried machine may not leave the hole's ground (the table can be walked on, so every wall would be
+  walked round). The planner's map has the same three (`FSetup::bGroundOnly` for the last). Change one side, change
+  the other, and run `Tools/grilletest.sh`, `Tools/workshoptest.sh` and the four grille holes' proofs.
+- The planner's map (`MakeCarryMap`) marks a square as wall when its middle is within half a body of one. Marking
+  every square the grown wall touched shut a gap one metre wide, which a player walks through. A plinth whose own
+  square is that close to a wall is served from the nearest square a walker can stand in (a machine is set down at
+  arm's length); one inside a shut grille is out of use while it is shut, as in the game.
+- Workshop designs: once a design has a plinth or a grille, machines stand only on "stations": the plinths the
+  designer placed, each machine's start, and each weight plate (`FGGDesign::Stations`; written to the course JSON
+  as plinths, the designer's own marked `"placed": true` so they can be told apart when read back). In the hole
+  code a plinth is `;o x,y` and a grille is a sixth number on its gate (`;g x,y,w,h,plate,1`); an older copy of the
+  game reads such a code as plain gates and no plinths. The rating draws its random placements from the stations
+  and never stands two machines on one.
+- The Workshop's row of tools is as wide as the screen allows, so adding a tool moves every tile. The browser tests
+  click tiles by pixel (`workshop` and `workshop-phone` in `Build/Wasm/fixtures.json`): tile width is
+  `min(84 S, (W - 56 S) / count - 6 S)` with `S = H / 1080` (on touch, `max(84 S, 0.135 H)` in place of `84 S`), a gap
+  of `6 S`, the row centred. `Tools/workshoptest.sh` taps across until the sand tile answers instead.
+- `Tools/editor.sh` waits until the editor's log has been still for six seconds, not only until it answers. A fresh
+  editor answers, then loads its first map: commands sent in that window were queued for twenty seconds or lost
+  (a whole test ran against a game that did not exist yet), and play started in it crashed the editor once
+  (`pthread_rwlock_init failed`, inside the engine).
 - `until ! pgrep -f "Tools/testall.sh"; do sleep 5; done` never ends: `pgrep -f` matches the waiting shell's own
   command line, which contains the pattern. Write the pattern so it cannot match itself (`"[T]ools/testall.sh"`).
   Two such waits sat in the background for four hours and held up the session's own bookkeeping.
@@ -297,7 +329,9 @@ console and read the pass list in the log before guessing.
   rows under 3 mm tall once it reached thirteen.
 - The long-running scripts (`testall.sh`, `webtest.sh`, `smoke.sh`, `perf.sh`, `web.sh`) are each one `main` function
   called on the last line, so the shell has read the whole file before it runs any of it and an edit mid-run cannot
-  touch the run in progress. Write any new long script the same way. (I edited a running script three times in one
+  touch the run in progress. The last line is `main "$@"; exit`, with the `exit` on the same line: without it the
+  shell goes back to the file when `main` returns, at the old offset, and an edit that moved the text makes it read
+  half a word (a passing 25-minute run ended "ain: command not found", exit 127). Write any new long script the same way. (I edited a running script three times in one
   day, each time after writing the next line down.)
 - Never edit a shell script while it is running: `sh` reads the file as it goes, and a script changed under it fails
   with a syntax error at whatever line it had reached (`Tools/webtest.sh` did, after passing).
@@ -305,7 +339,7 @@ console and read the pass list in the log before guessing.
   had not committed.
 - Adding a hole: its course and level scripts, an entry in `UGGSave::Holes()` (GGSave.cpp), the previous course's
   `next_level`, the level lists in `Tools/smoke.sh`, `Tools/perf.sh`, `Tools/regen.sh`, `Tools/web.sh` (MAPS) and
-  `Tools/webtest.sh` (tour), a `hole-<Level>` fixture in `Build/Wasm/fixtures.json`, a number key in GGGolfer (1 to 9, 0, minus, equals, left and right bracket so far), and
+  `Tools/webtest.sh` (tour), a `hole-<Level>` fixture in `Build/Wasm/fixtures.json`, a number key in GGGolfer (1 to 9, 0, minus, equals, left and right bracket, backslash so far), the proof list in `Tools/testall.sh`, and
   the table in `docs/VISION.md`. The ending card appears on whichever hole has no `next_level`.
 - Test a hole's stated idea, not only the hole: change what the idea depends on (move the cup, hold the gate open)
   and check the proof changes. Hole 6's timed gate turned out to be decoration this way.
@@ -321,6 +355,12 @@ console and read the pass list in the log before guessing.
   off by default; `c.night_sky(sky=<instance>)`). Being part of the dome, they are mirrored by still water; a glowing
   ball hung in the level is not. A ray-marched effect in a sky shader needs a per-frame dither on its first step, or
   each step draws its own contour line.
+- The Orrery (hole 14, `Tools/levels/handover.py`): everything in its sky is unlit, so it costs little and looks the
+  same on the web. Its planets are lit in the shader from one far-off point (`SunPos`), not from the lamp: seen from
+  the court, where the lamp is, a planet lit by the lamp is always full, and a full planet is a flat pastel disc.
+  An orbit is the `SM_HoopFine` torus scaled up; its tube must stay about two pixels wide (tube radius near 0.0008
+  of the hoop's), or it reads as a neon cable. Each planet is placed by bearing and height from the lamp
+  (`orbit_through`), then its hoop is turned to pass through it.
 - A level script can serve several holes: `Tools/levels/returning.py` runs `canyon.py` with its own settings, and
   `stones.py` and `periscope.py` run `saltmirror.py`.
 - A sun at 50 degrees throws a 15 m wall's shadow 12 m: across a whole lane. Check the picture from the tee before

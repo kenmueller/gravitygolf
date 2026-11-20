@@ -57,7 +57,7 @@ DEPLOY=""
 if [ -n "$HOST" ]; then
 	DEPLOY="-deploy -WasmHost=$HOST"
 fi
-MAPS="/Game/Levels/Terraces+/Game/Levels/SaltMirror+/Game/Levels/Canyon+/Game/Levels/Lantern+/Game/Levels/Returning+/Game/Levels/Brief+/Game/Levels/Colonnade+/Game/Levels/Stones+/Game/Levels/Glass+/Game/Levels/Periscope+/Game/Levels/Leapfrog+/Game/Levels/AfterYou+/Game/Levels/WaitHere+/Game/Levels/Wires+/Game/Levels/Workshop"
+MAPS="/Game/Levels/Terraces+/Game/Levels/SaltMirror+/Game/Levels/Canyon+/Game/Levels/Lantern+/Game/Levels/Returning+/Game/Levels/Brief+/Game/Levels/Colonnade+/Game/Levels/Stones+/Game/Levels/Glass+/Game/Levels/Periscope+/Game/Levels/Leapfrog+/Game/Levels/AfterYou+/Game/Levels/WaitHere+/Game/Levels/HandOver+/Game/Levels/Wires+/Game/Levels/Workshop"
 # GG_WEB_OUT puts the finished build somewhere else: a Shipping build can be made beside the Development one without
 # touching the folder a local server (or a friend's link) is serving from.
 OUT="${GG_WEB_OUT:-$WEB/Saved/Web}"
@@ -68,4 +68,4 @@ OUT="${GG_WEB_OUT:-$WEB/Saved/Web}"
 "$UE/Engine/Binaries/ThirdParty/Python3/Mac/bin/python3" "$UE/Engine/Platforms/Wasm/Build/Tools/deploy/check_stage.py" "$OUT/Wasm"
 echo "Site: $OUT/Wasm    Play locally: $OUT/play-gravitygolf.sh"
 }
-main "$@"
+main "$@"; exit

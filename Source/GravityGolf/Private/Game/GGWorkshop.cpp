@@ -646,7 +646,7 @@ const TCHAR* AGGWorkshop::ToolHelp(EGGTool Tool)
 		TEXT("Pushes the ball away"),
 		TEXT("The ball bounces off it at a right angle. Click a mirror to turn it to its other diagonal"),
 		TEXT("Where a hole has plinths, a machine stands only on one, on a weight plate, or where it starts"),
-		TEXT("Drag to bar a gap with a grille: a gate that also stops a carried machine. Click a gate to add or remove its rails"),
+		TEXT("A gate that also stops a carried machine. Drag to draw one; click a gate to add or remove its rails"),
 		TEXT("Click a thing to remove it, or drag across ground to clear it"),
 	};
 	return Help[FMath::Clamp(static_cast<int32>(Tool), 0, static_cast<int32>(EGGTool::Count) - 1)];
@@ -1194,7 +1194,7 @@ void AGGWorkshop::Release()
 		}
 		if (Current.Plinths.Num() >= MaxPlinths)
 		{
-			Say(TEXT("Eight plinths is the most a hole can have. (Weight plates and the machines' own starts count as plinths too.)"));
+			Say(TEXT("Eight plinths is the most a hole can have (weight plates and the machines' starts are plinths too)."));
 			return;
 		}
 		if (!Current.PlinthsOnly())
