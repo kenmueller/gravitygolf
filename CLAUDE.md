@@ -96,6 +96,7 @@ Tools/licenses.py             gathers the open-source licence texts into Build/W
 Tools/share.sh [check]        a temporary public link to the web build (a Cloudflare quick tunnel to this Mac), for a
                               friend to play; the only tool that puts the game on the internet. Ken runs it, not Claude
 Tools/webplay.sh [browser]    serve the web build on this Mac and open it in Safari (default) or the browser named
+Tools/package.sh [config]     package the desktop game as a Mac app in Saved/Package (editor closed; long the first time)
 Tools/phone.sh [check]        serve the web build to a real phone on the LAN over HTTPS (address and QR code); check proves it is reachable
 Tools/nettest.sh              two players in the editor; compares both copies of the hole after every step
 Tools/sounds.sh               writes every sound the game makes to WAV and measures it (length, level, pitch, brightness)
@@ -230,6 +231,11 @@ console and read the pass list in the log before guessing.
 - Nobody building this can hear it. Sound is judged by `Tools/sounds.sh` (levels, pitch, brightness, clipping) and
   the music also by its notes: every chord's spectrum must show the notes written, the loop's seam must be smaller
   than an ordinary step between samples, and no chord may hold two notes a semitone apart (three did at first).
+- If every hole's replay suddenly "has no result within two minutes", ask the running game who the player is: the
+  editor starts play in spectator mode whenever it believes Control is held (`PlayLevel.cpp`), and a Control press it
+  never saw released (the Mac's desktop-switching keys with the editor in front) sticks. No golfer is spawned; the
+  log looks normal. `AGGGameMode::InitNewPlayer` now strips the spectator option, and a restart of the editor clears
+  the stuck key. It cost a whole test run before I looked at the game instead of the scripts.
 - Close the editor when a stretch of work ends (`Tools/play.sh stop`, then the MCP `ExitEditor`). It is configured not
   to throttle in the background, so an idle editor holds three cores and runs the fans for as long as it is open.
   Ken came back to a hot laptop after three and a half hours of it.

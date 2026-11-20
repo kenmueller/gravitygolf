@@ -30,6 +30,9 @@ public:
 
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
+	/** Nobody only watches in this game: see the note in the .cpp on why this is here. */
+	virtual FString InitNewPlayer(APlayerController* NewPlayerController, const FUniqueNetIdRepl& UniqueId, const FString& Options,
+		const FString& Portal = TEXT("")) override;
 
 	/** Console: write every sound the game makes to a folder as WAV files, to be measured (Tools/sounds.sh). */
 	UFUNCTION(Exec)

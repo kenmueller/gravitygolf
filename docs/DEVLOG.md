@@ -12,22 +12,22 @@ solution for the leg you are on (a hole solved that way is not recorded). Tab op
 between holes, 0 is hole 10, minus is 11, equals is 12, and the left and right brackets are 13 and 14.** F turns a
 mirror.
 
-**Four things to try, in this order**
-1. **Holes 5, 10, 11 and 12** (press the number; 0 is hole 10, minus is 11, equals is 12). Five is the first one
-   meant to be hard: the cup is behind you, behind a gate. Ten, Periscope, is the best looking: two mirrors, the
-   salt at night under an aurora. Eleven and twelve are the newest idea and the nearest this game has come to The
-   Talos Principle: gates with rails stop a machine in your arms, so the order you carry things in is the puzzle.
-   Eleven (Leapfrog) teaches it. **Twelve (After You) is the one I most want you to try without F1**: it took me
-   one design, which worries me, so tell me whether it made you stop and think or just made you walk.
-2. **The Workshop** (Tab, then Workshop). Build a hole: pick a tool along the bottom, drag on the table. Press T to
+**Five things to try, in this order**
+1. **Holes 10 to 14** (0 is hole 10, minus is 11, equals is 12, the brackets are 13 and 14). Ten, Periscope, is the
+   best looking. Eleven to thirteen are the newest idea and the nearest this game has come to The Talos Principle:
+   gates with rails stop a machine in your arms, so the order you carry things in is the puzzle. Eleven teaches it;
+   twelve (the ball opens a door for a machine) and thirteen (a machine left halfway) use it; fourteen is the
+   finale, rebuilt to use all of it. Try twelve to fourteen without F1 and tell me whether they made you stop and
+   think or just made you walk.
+2. **Play with a friend who is in a browser:** `Tools/together.sh Canyon`. You play in a window on this Mac; the
+   link it prints puts their browser in your hole. Proved on this Mac only; the internet part is yours to try.
+3. **The Workshop** (Tab, then Workshop). Build a hole: pick a tool along the bottom, drag on the table. Press T to
    test it, T again to come back. CHECK runs every swing without the machines; solving it yourself in a test is the
    other half of the proof. Tab has Keep, My holes, and a code you can copy to a friend.
-3. **Playing together.** Tab, Play together, Host this hole. A second copy of the game on your network joins by
-   typing this machine's address there. (I tested it with two copies on this Mac: `Tools/hosttest.sh`.)
-4. **Your phone.** Run `Tools/phone.sh` in a terminal, point the phone's camera at the square it prints (same
-   Wi-Fi), and choose to visit the page when the phone warns about the certificate. Tell me what happens. This is
-   the one thing in the whole project I have no way to try: I can prove the Mac serves the game correctly
-   (`Tools/phone.sh check` does) and that touch works in Chrome's phone mode, not that a real phone runs it.
+4. **The music.** Every place has its own four chords. Settings has a Music volume and Off.
+5. **A phone, but not an iPhone.** Epic's notes for this engine preview say Safari on iOS cannot run a web build
+   yet (see docs/WEB.md). An Android phone with Chrome should: `Tools/share.sh` gives a link that works on any
+   network.
 
 **What I need from you** (things I cannot judge)
 1. **Swing feel and sound.** I have never heard the game, but I can measure it (`Tools/sounds.sh`): every
@@ -43,11 +43,16 @@ mirror.
    touches, and real mouse clicks in Chrome), but nobody has dragged a wall with a mouse for ten minutes. Tell me
    the first thing that annoys you.
 4. **The look in motion.** Stills flatter it. Walk each world and tell me the first thing that looks cheap.
-5. **A real phone.** See "Your phone" above: one command, and I need you to hold the phone.
+5. **A real phone.** Everything about touch that can be checked without one is checked (docs/WEB.md); none of it
+   is a hand on a screen.
 
 **Decisions waiting on you**
 - The name. "Gravity Golf" is used by other games (see VISION, Competition).
-- Publishing the web build. It runs locally; nothing is public, and I will not publish without your word.
+- **Hosting.** You asked for the best legitimate way: a Cloudflare R2 bucket behind a Worker on your own domain
+  (docs/WEB.md has the reasons, the costs and Epic's upload plan, already written out for a Shipping build that
+  passes its release scan). Only you can open the account, the domain and the bucket. Nothing is uploaded.
+- **Whose name is on it.** The Credits screen names the engine and the open software, and no person.
+- **Multiplayer for strangers** needs a rented server (docs/WEB.md). For friends it does not: one of you hosts.
 - **How the game gets hard.** You asked for puzzles people look up walkthroughs for. None of these is one yet.
   With plinths and mirrors the holes became pure deduction, which is fair but quick. What makes The Talos Principle
   hard is logistics: the thing that opens the door is the thing you need on the other side of it. This game had
@@ -266,6 +271,10 @@ mirror.
   relay for browser players. The second now works in a test on one machine, started by a script with the address
   typed for it: there is no menu for it in the browser version, nothing has crossed a real network, and the browser
   player's avatar and movement were not looked at, only the hole.
+- *A whole test run reported every hole broken, and none was.* The editor had begun starting play in spectator
+  mode (it thought Control was held, from some key press while Ken was using the Mac), so there was no player to
+  play the answers. I waited through twenty minutes of timeouts before asking the running game what its player
+  was. The game now refuses to start anyone as a spectator.
 - *The phone goal is still unmet where it counts.* Everything about touch that can be checked without a phone is
   now checked, and it is all emulation. One real phone on one real network would be worth more than all of it.
 - *Three waits of mine sat in the background for hours*, two of them unable ever to finish (a `pgrep -f` that

@@ -527,6 +527,20 @@ void AGGGameMode::PlacePlayer()
 	}
 }
 
+FString AGGGameMode::InitNewPlayer(APlayerController* NewPlayerController, const FUniqueNetIdRepl& UniqueId, const FString& Options,
+	const FString& Portal)
+{
+	// The editor starts a play session in spectator mode when it believes the Control key is held (PlayLevel.cpp: "If
+	// control is pressed, start in spectator mode"). A Control press the editor never saw released, such as the Mac's
+	// desktop-switching keys while the editor is in front, leaves it believing that for every session after: no
+	// golfer is spawned, and every automated replay waits two minutes for a player who is not there. It cost a full
+	// test run. This game has no spectators, so the option is taken out before the engine reads it.
+	FString Cleaned = Options;
+	Cleaned.ReplaceInline(TEXT("?SpectatorOnly=1"), TEXT(""), ESearchCase::IgnoreCase);
+	Cleaned.ReplaceInline(TEXT("SpectatorOnly=1"), TEXT(""), ESearchCase::IgnoreCase);
+	return Super::InitNewPlayer(NewPlayerController, UniqueId, Cleaned, Portal);
+}
+
 void AGGGameMode::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
