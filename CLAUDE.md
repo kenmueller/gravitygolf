@@ -238,6 +238,14 @@ console and read the pass list in the log before guessing.
   never saw released (the Mac's desktop-switching keys with the editor in front) sticks. No golfer is spawned; the
   log looks normal. `AGGGameMode::InitNewPlayer` now strips the spectator option, and a restart of the editor clears
   the stuck key. It cost a whole test run before I looked at the game instead of the scripts.
+- Looking at a packaged game: `-GGShot=<seconds>,<name.png>` saves a picture (through the engine's capture hook; in
+  a packaged app it lands in the app's own folder,
+  `~/Library/Containers/com.YourCompany.GravityGolf/Data/Library/Application Support/Epic/GravityGolf/Saved/Pictures`,
+  and the log line "Picture: saved ..." gives the path), and `-GGPerfAt=<seconds>` measures the frame rate from then.
+  A packaged app cannot write outside its own folders, and the engine's own screenshot request writes nothing in one.
+- Mouse look ignores the first three quarters of a second of a hole, a quarter second after a menu, and any single
+  frame over 600 counts (`AGGGolfer::MouseLookSteady`): a window taking hold of the pointer reports its distance
+  from the middle as one huge movement, and the packaged game opened looking at the ground.
 - Close the editor when a stretch of work ends (`Tools/play.sh stop`, then the MCP `ExitEditor`). It is configured not
   to throttle in the background, so an idle editor holds three cores and runs the fans for as long as it is open.
   Ken came back to a hot laptop after three and a half hours of it.

@@ -745,15 +745,36 @@ AGGCourse* AGGGolfer::Course() const
 	return It ? *It : nullptr;
 }
 
+bool AGGGolfer::MouseLookSteady(float Value)
+{
+	// When the window takes hold of the mouse (at launch, or as a menu closes) the first movement it reports is the
+	// distance the pointer happened to be from the middle of the window, as if the player had flicked it there. The
+	// packaged game opened with the player staring at their feet. So the mouse is not listened to for the first
+	// moments of the hole or just after a menu, and no single frame may turn the view by more than a flick could.
+	const double Now = GetWorld()->GetRealTimeSeconds();
+	if (MenuOpen())
+	{
+		LookQuietUntil = Now + 0.25;
+		return false;
+	}
+	return GetGameTimeSinceCreation() > 0.75f && Now >= LookQuietUntil && FMath::Abs(Value) < 600.f;
+}
+
 void AGGGolfer::Turn(float Value)
 {
 	// The engine turns mouse counts into degrees at 2.5 per unit of yaw input; AddLook works in degrees.
-	AddLook(Value * 0.55f * 2.5f, 0.f);
+	if (MouseLookSteady(Value))
+	{
+		AddLook(Value * 0.55f * 2.5f, 0.f);
+	}
 }
 
 void AGGGolfer::LookUp(float Value)
 {
-	AddLook(0.f, Value * 0.55f * 2.5f);
+	if (MouseLookSteady(Value))
+	{
+		AddLook(0.f, Value * 0.55f * 2.5f);
+	}
 }
 
 double AGGGolfer::DistanceToBall() const

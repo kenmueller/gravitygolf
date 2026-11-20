@@ -218,6 +218,9 @@ private:
 	bool bCharging = false;
 	float ChargeAmount = 0.f;
 	int32 Carried = INDEX_NONE;
+	/** Is this mouse movement the player's, rather than the jump of a pointer just taken hold of? */
+	bool MouseLookSteady(float Value);
+	double LookQuietUntil = 0.0;
 	/** Where this golfer last stood without a carried machine being inside a shut grille. */
 	FVector LastCarryStand = FVector::ZeroVector;
 

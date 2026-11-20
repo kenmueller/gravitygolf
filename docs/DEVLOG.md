@@ -255,8 +255,10 @@ mirror.
   answer (solved in one swing); hole 1 has its 183 scanned plants; two copies of it host and join; and the browser
   version joins it through the relay with the same swings logged on both. Measured in its first twelve seconds
   from the tee at 1920x1080, start-up hitches included: hole 1 at 56 frames a second (GPU 14 ms), hole 10 at 116.
-  Not looked at: a single picture of it. I have no way to take one from a packaged app, so that it looks like the
-  game in the editor is unverified.
+  Pictures of it, taken by the app itself (`-GGShot=<seconds>,<name>`), on six holes: it looks like the game in the
+  editor (hole 1 with its scanned trees, heather and striped lawn; hole 10 with its moon and aurora). After warm-up
+  (`-GGPerfAt=`), at 1920x1080 from the tee: hole 1 at 114 frames a second, 10 at 117, 11 at 87, 12 at 87, 13 at
+  109, 14 at 90. These are the first numbers from the game as a player would run it, not from inside the editor.
 - **The last full run of the suite**, after everything above except the packaging: ALL PASSED.
 - Ken's share link, tried from here: the page, the three isolation headers, and a byte range answered as a range.
 - Not yet in any web build when this was written: hole 13 in the Development build Ken is sharing (it has 13 holes
@@ -281,6 +283,15 @@ mirror.
   relay for browser players. The second now works in a test on one machine, started by a script with the address
   typed for it: there is no menu for it in the browser version, nothing has crossed a real network, and the browser
   player's avatar and movement were not looked at, only the hole.
+- *The first pictures of the packaged app showed the player staring at their own feet.* When a window takes hold
+  of the mouse, the first movement it reports is however far the pointer was from the middle, and the game read
+  that as a look. Every launch of the real game would have started that way; nothing in the editor showed it,
+  because there the tests never touch the mouse. Getting the picture at all took four tries (the engine's own
+  screenshot writes nothing in a packaged app; a packaged app may not write outside its own folders; reading the
+  window between frames gives black). Worth it: this is the only look anyone has had at the game outside the editor.
+- *The app's identifier is still the engine's placeholder* (`com.YourCompany.GravityGolf`), and it is signed for this
+  Mac only. Both need Ken: a name to put there, and an Apple Developer ID to sign with before a friend's Mac will
+  open it.
 - *A whole test run reported every hole broken, and none was.* The editor had begun starting play in spectator
   mode (it thought Control was held, from some key press while Ken was using the Mac), so there was no player to
   play the answers. I waited through twenty minutes of timeouts before asking the running game what its player

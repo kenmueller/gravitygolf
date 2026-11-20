@@ -116,6 +116,10 @@ private:
 	TObjectPtr<AGGCourse> Course;
 
 	double Elapsed = 0.0;
+	/** From the command line: when to save a picture and where, and when to start measuring the frame rate. */
+	double ShotAt = 0.0;
+	FString ShotFile;
+	double PerfAt = 0.0;
 	/** Pawns already stood at the tee. */
 	TSet<TWeakObjectPtr<APawn>> PlacedPawns;
 	FString CapturePath;

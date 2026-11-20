@@ -35,6 +35,7 @@
 #include "DynamicRHI.h"
 #include "RenderTimer.h"
 #include "UnrealClient.h"
+#include "ImageUtils.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogGGMode, Log, All);
 
@@ -84,6 +85,20 @@ void AGGGameMode::BeginPlay()
 	}
 	// The picture quality the player chose last time (it was only ever applied when they changed it).
 	UGGSave::Get().ApplyQuality();
+	// -GGShot=<seconds>,<file.png>: save a picture of the game that many seconds after the hole starts, and
+	// -GGPerfAt=<seconds> start measuring the frame rate then (GGPerf 8). For looking at and measuring a packaged
+	// game, which has no console to ask and nothing outside it that can take its picture.
+	FString ShotArg;
+	if (FParse::Value(FCommandLine::Get(), TEXT("GGShot="), ShotArg, false))
+	{
+		FString Seconds, File;
+		if (ShotArg.Split(TEXT(","), &Seconds, &File))
+		{
+			ShotAt = FCString::Atod(*Seconds);
+			ShotFile = File;
+		}
+	}
+	FParse::Value(FCommandLine::Get(), TEXT("GGPerfAt="), PerfAt);
 
 	const FString CourseId = UGameplayStatics::GetCurrentLevelName(this, true).ToLower();
 	if (CourseId == TEXT("workshop"))
@@ -548,6 +563,41 @@ void AGGGameMode::Tick(float DeltaSeconds)
 
 	PlacePlayer();
 	TickDemo(DeltaSeconds);
+	if (ShotAt > 0.0 && Elapsed >= ShotAt)
+	{
+		ShotAt = 0.0;
+		// The engine reads the frame as it is drawn and hands it over; the file is written here. (Its own way of
+		// writing the file works in the editor's copy of the game and writes nothing in a packaged one; and reading
+		// the window from here, between frames, gives a black picture.)
+		const FString File = ShotFile;
+		UGameViewportClient::OnScreenshotCaptured().Clear();
+		UGameViewportClient::OnScreenshotCaptured().AddLambda([File](int32 Width, int32 Height, const TArray<FColor>& Bitmap) {
+			TArray<FColor> Pixels = Bitmap;
+			for (FColor& Pixel : Pixels)
+			{
+				Pixel.A = 255;
+			}
+			TArray64<uint8> Png;
+			FImageUtils::PNGCompressImageArray(Width, Height, TArrayView64<const FColor>(Pixels.GetData(), Pixels.Num()), Png);
+			// A packaged game may write only inside its own folders: if the place asked for is refused, the picture
+			// goes into the game's saved folder under the same name, and the log says where that is.
+			FString Written = File;
+			bool bSaved = FFileHelper::SaveArrayToFile(Png, *Written);
+			if (!bSaved)
+			{
+				Written = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Pictures"), FPaths::GetCleanFilename(File)));
+				bSaved = FFileHelper::SaveArrayToFile(Png, *Written);
+			}
+			UE_LOG(LogGGMode, Display, TEXT("Picture: %s %s (%d x %d)"), bSaved ? TEXT("saved") : TEXT("could not write"), *Written, Width, Height);
+			UGameViewportClient::OnScreenshotCaptured().Clear();
+		});
+		FScreenshotRequest::RequestScreenshot(false);
+	}
+	if (PerfAt > 0.0 && Elapsed >= PerfAt)
+	{
+		PerfAt = 0.0;
+		GGPerf(8.f);
+	}
 
 	if (PerfLeft > 0.0)
 	{
