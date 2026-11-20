@@ -131,7 +131,8 @@ Holes 1 to 4 are the tutorial. Hole 5 is the first exam: everything so far, on b
 - The Workshop (the level editor): build a hole on a grid with fourteen tools (ground, sand, two kinds of wall,
   pads, plates, gates, the three machines, and now plinths and grilles), test it, and have the game check it
   against the puzzle law (you solved it; no swing works without the machines) and rate how much placement matters
-  (Too easy to Fiendish, from 120 random placements a swing). Holes are kept in the save and
+  (Too easy to Fiendish, from 120 random placements a swing). A solved hole with rails is also told whether its
+  rails matter (the carries its answer takes, with them and without). Holes are kept in the save and
   shared as a short code. Mouse, gamepad and touch; it runs in the browser build. A Workshop hole can be hosted and
   played together (the host builds, everyone plays), and the rival can race one once it has been solved. Not built:
   a place to browse other people's holes, the solver's remaining checks in-game (one machine alone must fail), and

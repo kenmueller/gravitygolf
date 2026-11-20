@@ -28,7 +28,7 @@ What is different from the desktop game on the web:
 - World textures are capped at 1K.
 
 At phone size in Chrome (852x393, touch), checked on 2026-11-19: the title and play (stick, BALL, SWING), the
-Workshop (tools, paint, pinch, TEST), the menus (the list of thirteen holes is in two columns since its rows became
+Workshop (tools, paint, pinch, TEST), the menus (the list of holes, fifteen now, is in two columns since its rows became
 too thin to tap), and the machine buttons on hole 12: GRAB picks the mirror up, PLACE sets it on a plinth, TURN turns
 it, and a carried mirror is stopped at a shut grille with its message. The player is moved between spots by the test;
 every button press is a touch.
@@ -67,8 +67,9 @@ makes the public build beside the Development one and writes the plan to `../gra
 (`deploy-plan.txt`, `deploy-plan.json`, `worker.js`). Measured on 2026-11-19: Epic's release scan passes (a Development
 build is refused: it carries this Mac's source paths), 55 objects, 258 MB stored, the code 25 MB over the wire (40 MB
 in Development), and the build boots to the title in Chrome in 3.3 seconds from the local server. It was made again
-at the end of the day from the final code (fourteen holes, the Credits screen, `licenses.txt` at the site's root); its
-plan is in `Deploy/20261120-024333` (the newest folder there is always the one that matches the build).
+after hole 14 and the Workshop's new tools went in (fifteen holes, the Credits screen, `licenses.txt` at the site's
+root; it boots in 3.3 seconds); its plan is in `Deploy/20261120-062528` (the newest folder there is always the one
+that matches the build).
 
 Before a public launch: a licences page (Epic's `THIRD-PARTY.md` lists what every web build must carry notices for),
 the name (other games are called Gravity Golf), and the 5.9 release rather than its preview. Only Ken can open the

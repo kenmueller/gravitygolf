@@ -164,22 +164,37 @@ mirror.
   of 42 false failures before looking at the log's timestamps instead of the test's output. The cause was in my
   own start-up script, which had always been racy and had been getting away with it.
 
-**Verified in the engine:** `Tools/workshoptest.sh`, 54 checks (16 of them new: both tools, undo, the code there
+**Verified in the engine:** `Tools/workshoptest.sh`, 60 checks (22 of them new: both tools, undo, the code there
 and back, a kept hole, then a hole with a grille played through: stopped at the shut grille, stopped at the edge
 of the ground, refused off a plinth, let through with the plate held, no reach through a wall in either direction,
-a plinth hard against a wall, the solve, the proof, the rating, and the answer replayed with its carry planned).
-`Tools/grilletest.sh` (8, one new: no reach through hole 11's wall). The rival solved the Workshop grille hole.
-Holes 11 to 14 replay; the two-player grille test passes.
+a plinth hard against a wall, the solve, the proof, the rating, the answer replayed with its carry planned, its
+rails found idle; then hole 14 rebuilt from a code and played: a carry tried too early stopped, the seven carries
+in order, the putt, seven carries against two). `Tools/grilletest.sh` (8, one new: no reach through hole 11's
+wall). The rival solved the Workshop grille hole. **`Tools/testall.sh` passed on the final game code** (15 proofs,
+all 15 holes replayed in the engine, grilles, Workshop, three two-player tests, host and join); the carry count
+was added after that run and the Workshop test passed again with it.
+
+**Verified in the browser** (the Development web build made from the final code, in Chrome): all 15 holes open and
+replay their answers, hole 14's seven carries included, with the same numbers as the desktop; the Workshop by
+mouse (the wall tool, then the plinth tool, undo, check, test, solve) and by touch at phone size (fifteen tiles
+fit: 826 of 852 pixels); play, the phone screens and menus, the machine buttons by touch; mouse look; a gamepad;
+a browser joining a desktop host at desktop and phone size, both sides logging the same swings.
+
+**The builds, all remade from the final code:** the Development web build (tested above), the Shipping web build
+(passes Epic's release scan, boots in 3.3 s; its upload plan is written and nothing is uploaded), and the Mac app.
+The packaged app hosts and joins on hole 14 and runs it at 90 fps at 1920 x 1080 (GPU 10.3 ms); its own picture of
+the tee is `docs/screenshots/handover-01-tee.png`.
 
 Hole 14: its proof, its replay in the engine (the seven carries planned, then the swing), holes 13 and 15 still
 chained either side of it.
 
 **Not verified:** nobody has built a grille hole by hand. Whether a player can in fact jump onto the finale's wall
-(the rule covers it either way). The Workshop's new tools on a real phone. **The new hole's frame rate:** every hole
-measured about 47 fps while I was testing it (hole 11 and the canyon included, which measure 73 and 83 on a quiet
-machine; an older log shows the same dip hours before this work, with the Mac's photo analysis and backup running).
-Under that load the Orrery cost what hole 11 does (GPU 17.8 ms against 17.1). It needs measuring again on a quiet
-machine.
+(the rule covers it either way). The Workshop's new tools on a real phone. Ken's share link was still open all
+session, serving the web build from two days of work ago (13 holes); I did not touch the folder it serves.
+*Frame rates in the editor were unreliable for most of the session:* every hole read about 47 fps for a while (hole
+11 and the canyon included, which measure 73 and 83 on a quiet machine; an older log shows the same dip hours before
+this work, with the Mac's photo analysis and backup running). In one quiet minute the Orrery measured 81 fps in
+the editor, and the packaged app gives 90.
 
 ## 2026-11-19, session 3 (autonomous): Periscope, music, a phone command
 

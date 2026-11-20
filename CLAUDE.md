@@ -287,7 +287,7 @@ console and read the pass list in the log before guessing.
 - Carrying has three rules, all in `AGGCourse::CarryBar` (which returns the words the player is told, or null):
   a shut grille stops a carried machine (any hole); on a hole with grilles a wall does too, for a step and for a
   reach (a machine is picked up from 5.5 m, `HoldDistance` + `PickUpReach`: before this one was handed straight
-  through a metre of wall, and hole 14's far plates were in reach from the wrong side); and on a hole drawn in the
+  through a metre of wall, and the finale's far plates were in reach from the wrong side); and on a hole drawn in the
   Workshop a carried machine may not leave the hole's ground (the table can be walked on, so every wall would be
   walked round). The planner's map has the same three (`FSetup::bGroundOnly` for the last). Change one side, change
   the other, and run `Tools/grilletest.sh`, `Tools/workshoptest.sh` and the four grille holes' proofs.
