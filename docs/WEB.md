@@ -63,7 +63,7 @@ makes the public build beside the Development one and writes the plan to `../gra
 build is refused: it carries this Mac's source paths), 55 objects, 258 MB stored, the code 25 MB over the wire (40 MB
 in Development), and the build boots to the title in Chrome in 3.3 seconds from the local server. It was made again
 at the end of the day from the final code (fourteen holes, the Credits screen, `licenses.txt` at the site's root); its
-plan is in `Deploy/20261120-020644`.
+plan is in `Deploy/20261120-024333` (the newest folder there is always the one that matches the build).
 
 Before a public launch: a licences page (Epic's `THIRD-PARTY.md` lists what every web build must carry notices for),
 the name (other games are called Gravity Golf), and the 5.9 release rather than its preview. Only Ken can open the
