@@ -278,6 +278,8 @@ mirror.
   usefully: the limit on a single frame's movement was ten times too loose (written in pixels; the engine's units
   are about eleven to the pixel), so a jump like the one at launch would still have been obeyed any time after the
   first three quarters of a second.
+- **Saved progress in the browser survives a reload.** Hole 1 solved by its real answer in a browser tab, the page
+  reloaded, the list of holes then showing "Perfect, 1" and hole 2 unlocked. Until today this was listed as untested.
 - **After the mouse limit was corrected**, the last change of the day: the Mac app repackaged (two copies of it host
   and join), the hosting build remade (Epic's scan passes, it boots in Chrome; plan in `Deploy/20261120-024333`),
   and the rival run on holes 11, 13 and 14 at all three skills (it finishes each; Leapfrog on hard in 14 seconds

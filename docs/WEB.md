@@ -40,8 +40,13 @@ log. Nobody has confirmed the picture.
 code alone holds about 913 MiB) and that Test and Shipping builds draw the 3D scene black with no errors, "under
 investigation". So an iPhone is not a working target yet, on any network. Android Chrome and desktop browsers are.
 
-Not done: a real phone in a real hand (see below: one command serves it; nobody has held it yet), Safari and Firefox,
-frame-rate measurement, a Shipping build, saved progress across page reloads (untested).
+Saved progress survives a reload (checked 2026-11-19 in a Chromium tab: hole 1 solved by its real answer, the page
+reloaded, and the list of holes showed "Perfect, 1" with hole 2 unlocked). The save lives in the browser's own
+storage for the site, so it is per browser and per address: a new quick-tunnel link is a new address and starts
+empty, which is one more reason to host it at an address that stays.
+
+Not done: a real phone in a real hand (see below: one command serves it; nobody has held it yet), Firefox, and
+frame-rate measurement in a browser.
 
 ## Hosting it properly (researched 2026-11-19; nothing is hosted yet)
 
