@@ -259,7 +259,14 @@ mirror.
   editor (hole 1 with its scanned trees, heather and striped lawn; hole 10 with its moon and aurora). After warm-up
   (`-GGPerfAt=`), at 1920x1080 from the tee: hole 1 at 114 frames a second, 10 at 117, 11 at 87, 12 at 87, 13 at
   109, 14 at 90. These are the first numbers from the game as a player would run it, not from inside the editor.
-- **The last full run of the suite**, after everything above except the packaging: ALL PASSED.
+- **The last full run of the suite**, on the final code (after the mouse fix and the spectator fix): ALL PASSED.
+- **The last web builds**, both made from that code: the Development one passes play, phone, the machine buttons by
+  touch, the menus, holes 11 and 14, the Workshop, and both join tests (desktop size and phone size by touch); the
+  Shipping one passes Epic's release scan and boots to the title in Chrome, with its upload plan beside it
+  (`../gravitygolf-web/Saved/Wasm/Deploy/20261120-020644`). The whole fourteen-hole tour last ran one build
+  earlier, before the mouse and spectator fixes, and passed.
+- Not re-run on the final code: frame rates in the editor, the rival, and mouse look itself (no test moves a mouse:
+  the guard against the first jump was seen to work only in the packaged app's pictures).
 - Ken's share link, tried from here: the page, the three isolation headers, and a byte range answered as a range.
 - Not yet in any web build when this was written: hole 13 in the Development build Ken is sharing (it has 13 holes
   and the old finale).
