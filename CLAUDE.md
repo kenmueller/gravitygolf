@@ -300,7 +300,9 @@ console and read the pass list in the log before guessing.
   as plinths, the designer's own marked `"placed": true` so they can be told apart when read back). In the hole
   code a plinth is `;o x,y` and a grille is a sixth number on its gate (`;g x,y,w,h,plate,1`); an older copy of the
   game reads such a code as plain gates and no plinths. The rating draws its random placements from the stations
-  and never stands two machines on one.
+  and never stands two machines on one. A solved design with rails also gets `Carries` and `PlainCarries`
+  (`AGGWorkshop::CountCarries`): the carries its own answer takes, and the same with every grille made a plain
+  gate; equal means the rails are decoration, and the building screen says so.
 - The Workshop's row of tools is as wide as the screen allows, so adding a tool moves every tile. The browser tests
   click tiles by pixel (`workshop` and `workshop-phone` in `Build/Wasm/fixtures.json`): tile width is
   `min(84 S, (W - 56 S) / count - 6 S)` with `S = H / 1080` (on touch, `max(84 S, 0.135 H)` in place of `84 S`), a gap

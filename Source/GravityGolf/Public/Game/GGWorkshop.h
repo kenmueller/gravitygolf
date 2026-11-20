@@ -88,6 +88,10 @@ struct FGGDesign
 	/** How much placement matters: of a hundred random ways to stand the machines, how many can be made to work, on
 	 *  the hole's hardest swing. Lower is harder. -1 until it has been rated (the check does it). */
 	int32 Luck = -1;
+	/** A solved hole with rails: how many carries its answer takes, swing by swing and added up, and how many the
+	 *  same answer would take with the rails off. Equal means the rails change nothing. -1 until worked out. */
+	int32 Carries = -1;
+	int32 PlainCarries = -1;
 	/** The rating in a word: Too easy, Easy, Medium, Hard, Fiendish. Empty until rated. */
 	static const TCHAR* RatingName(int32 Luck);
 
@@ -213,6 +217,8 @@ private:
 	void StepRating();
 	void NextPlacement();
 	void CollectAnswers();
+	/** Work out Carries and PlainCarries for the design as it stands (see FGGDesign). */
+	void CountCarries();
 	void PlaceCamera();
 	static FIntPoint Square(const FVector2D& World);
 	/** The middle of the square a point is in: where things stand. */

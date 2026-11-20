@@ -12,6 +12,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "Policies/CondensedJsonPrintPolicy.h"
+#include "Sim/GGLogistics.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonWriter.h"
@@ -409,6 +410,8 @@ FString FGGDesign::ToJson() const
 	Root->SetArrayField(TEXT("solutions"), Answers);
 	Root->SetNumberField(TEXT("necessary"), Necessary);
 	Root->SetNumberField(TEXT("luck"), Luck);
+	Root->SetNumberField(TEXT("carries"), Carries);
+	Root->SetNumberField(TEXT("plainCarries"), PlainCarries);
 
 	FString Text;
 	const TSharedRef<TJsonWriter<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>> Writer = TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&Text);
@@ -584,6 +587,8 @@ bool FGGDesign::FromJson(const FString& Text)
 	}
 	Root->TryGetNumberField(TEXT("necessary"), Design.Necessary);
 	Root->TryGetNumberField(TEXT("luck"), Design.Luck);
+	Root->TryGetNumberField(TEXT("carries"), Design.Carries);
+	Root->TryGetNumberField(TEXT("plainCarries"), Design.PlainCarries);
 	*this = MoveTemp(Design);
 	return true;
 }
@@ -698,6 +703,8 @@ void AGGWorkshop::Changed(const FString& Before)
 	Current.Solutions.Reset();
 	Current.Necessary = 0;
 	Current.Luck = -1;
+	Current.Carries = -1;
+	Current.PlainCarries = -1;
 	bProving = false;
 	bRating = false;
 	Rebuild();
@@ -1520,6 +1527,7 @@ bool AGGWorkshop::LoadJson(const FString& Json)
 				Current.Solutions.Add(Answer);
 			}
 		}
+		CountCarries();
 		Rebuild();
 	}
 	UGGSave::Get().Draft = Current.ToJson();
@@ -1742,8 +1750,69 @@ void AGGWorkshop::CollectAnswers()
 			Hole->Notify(TEXT("That one was too fine to count as the answer. Leave more room."));
 		}
 	}
+	CountCarries();
 	UGGSave::Get().Draft = Current.ToJson();
 	bDraftDirty = true;
+}
+
+void AGGWorkshop::CountCarries()
+{
+	// The other thing a hole with rails can be held to: do the rails matter? Plan the carries the designer's own
+	// answer needs (Sim/GGLogistics.h, as the proof of the game's holes does), then plan them again with every
+	// grille made a plain gate. If the count is the same, the rails are decoration.
+	Current.Carries = -1;
+	Current.PlainCarries = -1;
+	const bool bRails = Current.Gates.ContainsByPredicate([](const FGGDesign::FGate& Gate) { return Gate.bGrille; });
+	if (!Hole || !bRails || !Current.Solved())
+	{
+		return;
+	}
+	const GG::FSetup Setup = Hole->MakeSetup();
+	auto Count = [&](const GG::FSetup& S) {
+		const GG::FCarryMap Map = GG::MakeCarryMap(S);
+		std::vector<int> On;
+		for (const GG::FMachineDef& Machine : S.Machines)
+		{
+			On.push_back(GG::PlinthAt(S, Machine.StartX, Machine.StartY));
+		}
+		int32 Total = 0;
+		for (int32 Leg = 0; Leg < Current.Legs(); ++Leg)
+		{
+			const FGGSolution* Answer = Current.Solutions.FindByPredicate([&](const FGGSolution& Each) { return Each.Leg == Leg; });
+			if (!Answer || Answer->Machines.Num() != static_cast<int32>(S.Machines.size()))
+			{
+				return -1;
+			}
+			std::vector<int> Goal;
+			for (const FVector& Spot : Answer->Machines)
+			{
+				Goal.push_back(GG::PlinthAt(S, Spot.X, Spot.Y));
+			}
+			// What the ball had banked when this swing was played: light plates only (a weight plate is held by
+			// whatever stands on it, which the planner works out for itself).
+			std::vector<bool> Banked(S.Course.Switches.size(), false);
+			for (int32 I = 0; I < Answer->Held.Num() && I < static_cast<int32>(Banked.size()); ++I)
+			{
+				Banked[I] = Answer->Held[I] && !S.Course.Switches[I].bWeight;
+			}
+			const GG::FCarryPlans Plans = GG::PlanCarries(S, Map, On, Banked);
+			if (!Plans.Can(Goal))
+			{
+				return -1;
+			}
+			Total += static_cast<int32>(Plans.To(Goal).size());
+			On = Goal;
+		}
+		return Total;
+	};
+	Current.Carries = Count(Setup);
+	GG::FSetup Plain = Setup;
+	for (GG::FGate& Gate : Plain.Course.Gates)
+	{
+		Gate.bGrille = false;
+	}
+	Current.PlainCarries = Count(Plain);
+	UE_LOG(LogGGWorkshop, Display, TEXT("Workshop: the answer takes %d carries (%d with the rails off)"), Current.Carries, Current.PlainCarries);
 }
 
 void AGGWorkshop::StartProof()

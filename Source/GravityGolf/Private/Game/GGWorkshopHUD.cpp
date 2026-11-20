@@ -309,28 +309,37 @@ void AGGHUD::DrawWorkshop(AGGWorkshop* Workshop)
 		DrawRect(FLinearColor(0.f, 0.f, 0.f, 0.5f), Pad + 42.f * T, 26.f * S + 98.f * T, BarW, 6.f * T);
 		DrawRect(ShopGold, Pad + 42.f * T, 26.f * S + 98.f * T, BarW * Workshop->ProofProgress(), 6.f * T);
 	}
-	else if (Design.Necessary == 1 && Design.Luck >= 0)
+	else
 	{
-		// How hard it is: how often a random placement of the machines can be made to work.
-		const bool bEasy = Design.Luck > 35;
-		if (Design.Luck == 0 && !bSolved)
+		float Next = 26.f * S + 100.f * T;
+		bool bEasy = false;
+		if (Design.Necessary == 1 && Design.Luck >= 0)
 		{
-			// Nothing worked at random and nobody has solved it: it may not be possible at all. Say so.
-			Step(26.f * S + 100.f * T, TEXT("No random placement works: very hard, or impossible"), 0);
+			// How hard it is: how often a random placement of the machines can be made to work.
+			bEasy = Design.Luck > 35;
+			if (Design.Luck == 0 && !bSolved)
+			{
+				// Nothing worked at random and nobody has solved it: it may not be possible at all. Say so.
+				Step(Next, TEXT("No random placement works: very hard, or impossible"), 0);
+			}
+			else
+			{
+				Step(Next, *FString::Printf(TEXT("%s: %d in 100 random placements work"), FGGDesign::RatingName(Design.Luck), Design.Luck), bEasy ? -1 : 1);
+			}
+			Next += 30.f * T;
 		}
-		else
+		if (Design.Carries >= 0 && Design.PlainCarries >= 0)
 		{
-			Step(26.f * S + 100.f * T, *FString::Printf(TEXT("%s: %d in 100 random placements work"), FGGDesign::RatingName(Design.Luck), Design.Luck),
-				bEasy ? -1 : 1);
+			// A solved hole with rails: do the rails matter? The carries its answer takes, with them and without.
+			const bool bIdle = Design.Carries <= Design.PlainCarries;
+			Step(Next, bIdle ? *FString::Printf(TEXT("The rails change nothing: %d %s with them or without"), Design.Carries, Design.Carries == 1 ? TEXT("carry") : TEXT("carries"))
+				: *FString::Printf(TEXT("The rails matter: %d carries, %d without them"), Design.Carries, Design.PlainCarries), bIdle ? -1 : 1);
+			Next += 30.f * T;
 		}
 		if (bProven)
 		{
-			Label(bEasy ? TEXT("PROVEN, BUT EASY") : TEXT("PROVEN PUZZLE"), Pad + 12.f * S, 26.f * S + 134.f * T, 20.f * T, ShopGold, false, true);
+			Label(bEasy ? TEXT("PROVEN, BUT EASY") : TEXT("PROVEN PUZZLE"), Pad + 12.f * S, Next + 4.f * T, 20.f * T, ShopGold, false, true);
 		}
-	}
-	else if (bProven)
-	{
-		Label(TEXT("PROVEN PUZZLE"), Pad + 12.f * S, 26.f * S + 100.f * T, 20.f * T, ShopGold, false, true);
 	}
 
 	// ---- top right: the buttons.

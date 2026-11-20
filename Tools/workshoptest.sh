@@ -4,6 +4,8 @@
 # needs its machine, and the same hole with its wall taken out), a test play that records the answer, and a hole
 # with a grille and plinths played through: the carrying rules, its proof, and its answer replayed.
 #   Tools/workshoptest.sh
+# The whole script is one function, called on its last line (see CLAUDE.md: never edit a running script).
+main() {
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 python3 - "$ROOT" <<'PY'
 import json, os, re, subprocess, sys, time
@@ -40,7 +42,7 @@ def state(command=None, wait=0.4):
         found = [l for l in lines_from(at) if "LogGGMode: Display: Workshop: " in l and " squares " in l]
         if found:
             line = found[-1]
-            numbers = {k: int(v) for k, v in re.findall(r"(squares|machines|plates|gates|rails|plinths|stations|pads|solved|necessary|luck|proving) (-?\d+)", line)}
+            numbers = {k: int(v) for k, v in re.findall(r"(squares|machines|plates|gates|rails|plinths|stations|pads|solved|necessary|luck|carries|plain|proving) (-?\d+)", line)}
             numbers["mode"] = "building" if "Workshop: building" in line else "testing"
             numbers["message"] = line.split("|", 1)[-1].strip()
             numbers["log"] = lines_from(at)
@@ -284,9 +286,50 @@ for _ in range(40):
 carried = [l for l in lines_from(at) if "Demo: carried machine" in l]
 check("its answer replays, the machines carried in an order the grille allows", bool(verdict) and "PASS" in verdict[-1] and len(carried) >= 1,
       (verdict[-1:] or ["no verdict"])[0].strip())
+s = state("build")
+check("its rails are found to change nothing (one carry, with them or without)", s.get("carries") == 1 and s.get("plain") == 1,
+      f"{s.get('carries')} carries, {s.get('plain')} without the rails")
+
+# Hole 14 (Hand Over Hand) rebuilt with the Workshop's pieces and played by the game's rules: seven carries in the
+# only order there is, then a straight putt.
+HOH = ("GG1;nHand_Over_Hand;f0,-14,88,28;w0,-14,88,1;w0,13,88,1;w0,-13,1,26;w87,-13,1,26;w30,-13,2,11;w30,2,2,5;w30,11,2,2;"
+       "w46,-13,2,2;w46,-7,2,5;w46,2,2,11;t24,0;c77,0;k18,-8;k18,8;k54,0;k65,0;g30,7,2,4,1,1;g30,-2,2,4,3,1;g46,-11,2,4,0,1;"
+       "g46,-2,2,4,2,1;o38,8;a26,6;a26,-6")
+s = state(f"code {HOH}")
+check("hole 14 opens as a Workshop hole", s.get("rails") == 4 and s.get("plates") == 4 and s.get("stations") == 7, s.get("message"))
+state("test")
+# Too early: the second machine cannot go through the ball's grille in the first wall while nothing holds its plate.
+net("carry 1")
+go(1300, 0); go(1800, 0)
+check("the ball's grille is shut to a machine until its far plate is held", where()[0] == 1300, str(where()))
+go(1200, -280)
+net("place 1325,-275,0")
+steps = [("net", "carry 0"), ("go", 1000, 425), ("net", "place 925,425,0"),
+         ("net", "carry 1"), ("go", 1300, 450), ("go", 1800, 450), ("net", "place 1925,425,0"),
+         ("go", 1000, 300), ("net", "pick 0"), ("go", 1000, -300), ("net", "place 925,-375,0"),
+         ("go", 1900, 300), ("net", "pick 1"), ("go", 2200, -450), ("go", 2600, -450), ("go", 3200, -100), ("net", "place 3275,25,0"),
+         ("go", 1000, -300), ("net", "pick 0"), ("go", 1300, 0), ("go", 1800, 0), ("go", 1900, 300), ("net", "place 1925,425,0"),
+         ("go", 3200, -100), ("net", "pick 1"), ("go", 2800, -100), ("net", "place 2725,25,0"),
+         ("go", 1900, 300), ("net", "pick 0"), ("go", 2200, 0), ("go", 2600, 0), ("go", 3200, -100), ("net", "place 3275,25,0")]
+line = ""
+for step in steps:
+    if step[0] == "go":
+        go(step[1], step[2])
+    else:
+        line = net(step[1])
+check("its seven carries are all allowed, in order", "(3275,25) (2725,25)" in line and "carrying -1" in line, line)
+net("goto")
+console("GGShot 0,0.2")
+time.sleep(9)
+s = state()
+check("and a straight putt solves it", s.get("solved") == 1, s.get("message"))
+check("its rails matter: seven carries, two without them", s.get("carries") == 7 and s.get("plain") == 2,
+      f"{s.get('carries')} carries, {s.get('plain')} without the rails")
 state("build")
 state("new")
 sh(f"{root}/Tools/play.sh", "stop")
 print("PASS" if not failures else f"FAIL: {len(failures)} checks")
 sys.exit(1 if failures else 0)
 PY
+}
+main "$@"; exit

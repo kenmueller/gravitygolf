@@ -121,6 +121,10 @@ mirror.
 - **The Workshop can build this hole.** I rebuilt it from a hole code with the Workshop's pieces, played it there
   under the game's rules (all seven carries, then the putt) and put the saved design through the standalone proof:
   PASS, seven carries.
+- **The Workshop says whether your rails matter.** Once a hole with rails has been solved, the proof list gains a
+  line: "The rails matter: 7 carries, 2 without them", or in red "The rails change nothing". It plans the carries
+  the designer's own answer needs, then plans them again with every grille made a plain gate. (I wrote in this
+  entry's first critique that this check "should be a button"; it is now automatic.)
 
 **Critique**
 - *Hole 14 as a puzzle.* It is the first hole here whose answer I could not see at a glance after building it,
@@ -146,10 +150,10 @@ mirror.
   honest but easy to miss from across a hole. A square tile would have clipped cleanly, but then a plinth and a
   weight plate would differ only in colour, which I have already ruled out once (the colour-blind marks).
 - *The game.* A grille hole needs an idea about order, and the Workshop does nothing to help a designer find one;
-  it only makes the pieces available. The check still proves only that no swing works without the machines. It
-  does not prove the rails matter: a hole whose grille can be ignored passes. The standalone solver has the same
-  blind spot for the game's own holes, where I checked it by hand each time (take the grille away, see the proof
-  change). That check should be a button.
+  it only makes the pieces available. When I first wrote this the check proved only that no swing works without
+  the machines, and a hole whose grille could be ignored passed. It now counts the carries with and without the
+  rails (above). The standalone solver still has that blind spot for the game's own holes, where I check it by
+  hand each time (take the grille away, see the proof change).
 - *The rating.* On a hole with plinths it is honest about placement (which plinths) and says nothing about the
   order of carrying, which is where such a hole is hard. The test hole rates "Easy, 35 in 100" and that is fair
   for its swing and silent about its one idea.
