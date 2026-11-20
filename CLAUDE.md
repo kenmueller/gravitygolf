@@ -96,7 +96,9 @@ Tools/licenses.py             gathers the open-source licence texts into Build/W
 Tools/share.sh [check]        a temporary public link to the web build (a Cloudflare quick tunnel to this Mac), for a
                               friend to play; the only tool that puts the game on the internet. Ken runs it, not Claude
 Tools/webplay.sh [browser]    serve the web build on this Mac and open it in Safari (default) or the browser named
-Tools/package.sh [config]     package the desktop game as a Mac app in Saved/Package (editor closed; long the first time)
+Tools/package.sh [config]     package the desktop game as a Mac app in Saved/Package (editor closed; long the first time).
+                              GG_PACKAGED=1 makes hosttest.sh and webjointest.sh use that app; a packaged app prints its
+                              whole log only with -stdout -FullStdOutLogOutput (it ignores -abslog)
 Tools/phone.sh [check]        serve the web build to a real phone on the LAN over HTTPS (address and QR code); check proves it is reachable
 Tools/nettest.sh              two players in the editor; compares both copies of the hole after every step
 Tools/sounds.sh               writes every sound the game makes to WAV and measures it (length, level, pitch, brightness)

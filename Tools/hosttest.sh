@@ -18,13 +18,22 @@ wait_for() { # file, text, seconds
 	done
 	return 1
 }
-"$UE" "$ROOT/GravityGolf.uproject" "/Game/Levels/$LEVEL?listen" -game -windowed -ResX=640 -ResY=360 -GGNoTitle -GGTestSave -nosplash -unattended \
-	-abslog="$OUT/host.log" >/dev/null 2>&1 &
+# GG_PACKAGED=1 runs both copies from the packaged app (Tools/package.sh) instead of the editor's copy of the game.
+APP="$ROOT/Saved/Package/Mac/GravityGolf.app/Contents/MacOS/GravityGolf"
+run() { # log file, then the game's arguments
+	LOGFILE="$1"; shift
+	if [ -n "$GG_PACKAGED" ]; then
+		"$APP" "$@" -windowed -ResX=640 -ResY=360 -GGNoTitle -GGTestSave -nosplash -unattended -stdout -FullStdOutLogOutput >"$LOGFILE" 2>&1 &
+	else
+		"$UE" "$ROOT/GravityGolf.uproject" "$@" -game -windowed -ResX=640 -ResY=360 -GGNoTitle -GGTestSave -nosplash -unattended \
+			-abslog="$LOGFILE" >/dev/null 2>&1 &
+	fi
+}
+run "$OUT/host.log" "/Game/Levels/$LEVEL?listen"
 HOST=$!
 STATUS=0
 if wait_for "$OUT/host.log" "Loaded course " 120; then
-	"$UE" "$ROOT/GravityGolf.uproject" 127.0.0.1 -game -windowed -ResX=640 -ResY=360 -GGNoTitle -GGTestSave -nosplash -unattended \
-		-abslog="$OUT/client.log" >/dev/null 2>&1 &
+	run "$OUT/client.log" 127.0.0.1
 	CLIENT=$!
 	wait_for "$OUT/host.log" "Join succeeded" 120 && echo "ok    the host accepted the join" || { echo "FAIL  the host never accepted a join"; STATUS=1; }
 	wait_for "$OUT/client.log" "Loaded course " 30 && echo "ok    the joiner loaded $(grep 'Loaded course ' "$OUT/client.log" | tail -1 | sed 's/.*Loaded course //')" \

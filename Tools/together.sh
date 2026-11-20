@@ -66,9 +66,15 @@ fi
 # 3. The relay, which will carry packets only for that page and only to this Mac.
 "$SRC/Engine/Binaries/ThirdParty/Python3/Mac/bin/python3" -I "$RELAY" --port "$RELAYPORT" --origin "$PAGE" --allow 127.0.0.0/8 >"$OUT/relay.log" 2>&1 &
 PIDS="$PIDS $!"
-# 4. The game, hosting the hole, in a window. Your own save, your own progress.
-"$UE" "$ROOT/GravityGolf.uproject" "/Game/Levels/$LEVEL?listen" -game -windowed -ResX=1600 -ResY=900 -GGNoTitle -nosplash \
-	-abslog="$OUT/host.log" >/dev/null 2>&1 &
+# 4. The game, hosting the hole, in a window. Your own save, your own progress. The packaged app if there is one
+# (Tools/package.sh: it starts in seconds and needs no editor), else the editor's own copy of the game.
+APP="$ROOT/Saved/Package/Mac/GravityGolf.app/Contents/MacOS/GravityGolf"
+if [ -x "$APP" ]; then
+	"$APP" "/Game/Levels/$LEVEL?listen" -windowed -ResX=1600 -ResY=900 -GGNoTitle -nosplash -stdout -FullStdOutLogOutput >"$OUT/host.log" 2>&1 &
+else
+	"$UE" "$ROOT/GravityGolf.uproject" "/Game/Levels/$LEVEL?listen" -game -windowed -ResX=1600 -ResY=900 -GGNoTitle -nosplash \
+		-abslog="$OUT/host.log" >/dev/null 2>&1 &
+fi
 PIDS="$PIDS $!"
 
 LINK="$PAGE/?args=127.0.0.1:7777%20-WebRelay=${RELAYURL#https://}:443"

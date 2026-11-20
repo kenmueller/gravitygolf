@@ -228,6 +228,9 @@ mirror.
   and swung. The game now carries its own network version, because the installed engine and the source-built one
   disagree about theirs and the host refused the browser as "an incompatible version".
 
+- **A standalone Mac app.** `Tools/package.sh` packages the desktop game (2.0 GB, in `Saved/Package/Mac`); until now
+  the desktop game only ran from the editor. `Tools/together.sh` hosts with it when it is there.
+
 **Verified**
 - In Chrome at phone size, from a fresh web build: the hole list in two columns, the settings, the pause menu; and on
   hole 12 by touch: GRAB, PLACE, TURN, GRAB again (the game's own state after each press), and a carried mirror
@@ -248,6 +251,13 @@ mirror.
   the Workshop, and every phone-size check. The join test passes on it at desktop size and at phone size with the
   joined player taking and setting down a machine by touch; in the second, both machines log the same two swings
   that come to rest, (3277.22, 1288.82) and (1294.00, 394.00), the first bent by a machine set down by touch.
+- **The packaged Mac app**, run without the editor: it loads hole 3 with its air and music and plays the recorded
+  answer (solved in one swing); hole 1 has its 183 scanned plants; two copies of it host and join; and the browser
+  version joins it through the relay with the same swings logged on both. Measured in its first twelve seconds
+  from the tee at 1920x1080, start-up hitches included: hole 1 at 56 frames a second (GPU 14 ms), hole 10 at 116.
+  Not looked at: a single picture of it. I have no way to take one from a packaged app, so that it looks like the
+  game in the editor is unverified.
+- **The last full run of the suite**, after everything above except the packaging: ALL PASSED.
 - Ken's share link, tried from here: the page, the three isolation headers, and a byte range answered as a range.
 - Not yet in any web build when this was written: hole 13 in the Development build Ken is sharing (it has 13 holes
   and the old finale).

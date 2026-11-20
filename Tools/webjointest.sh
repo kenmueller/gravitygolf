@@ -14,8 +14,15 @@ PY="$SRC/Engine/Binaries/ThirdParty/Python3/Mac/bin/python3"
 OUT="$ROOT/Saved/WebJoin"
 mkdir -p "$OUT"
 rm -f "$OUT/host.log" "$OUT/relay.log"
-"$UE" "$ROOT/GravityGolf.uproject" "/Game/Levels/Canyon?listen" -game -windowed -ResX=640 -ResY=360 -GGNoTitle -GGTestSave -nosplash \
-	-unattended -abslog="$OUT/host.log" >/dev/null 2>&1 &
+# GG_PACKAGED=1: the host is the packaged app (Tools/package.sh) instead of the editor's own copy of the game. The app
+# writes its log to its output, so that is what is kept.
+if [ -n "$GG_PACKAGED" ]; then
+	"$ROOT/Saved/Package/Mac/GravityGolf.app/Contents/MacOS/GravityGolf" "/Game/Levels/Canyon?listen" -windowed -ResX=640 -ResY=360 \
+		-GGNoTitle -GGTestSave -nosplash -unattended -stdout -FullStdOutLogOutput >"$OUT/host.log" 2>&1 &
+else
+	"$UE" "$ROOT/GravityGolf.uproject" "/Game/Levels/Canyon?listen" -game -windowed -ResX=640 -ResY=360 -GGNoTitle -GGTestSave -nosplash \
+		-unattended -abslog="$OUT/host.log" >/dev/null 2>&1 &
+fi
 HOST=$!
 # GG_RELAY_PORT=8890 puts the relay somewhere the page will not look by itself, and uses the fixture that tells it.
 FIXTURE=web-join
