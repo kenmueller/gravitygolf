@@ -757,7 +757,11 @@ bool AGGGolfer::MouseLookSteady(float Value)
 		LookQuietUntil = Now + 0.25;
 		return false;
 	}
-	return GetGameTimeSinceCreation() > 0.75f && Now >= LookQuietUntil && FMath::Abs(Value) < 600.f;
+	// The limit is in the engine's mouse units, about eleven to a pixel's worth of movement on this project's
+	// settings: 45 is some 500 pixels in one frame. A hard flick at thirty frames a second is about 300. (The first
+	// limit, 600, was written as if the units were pixels, and a test that jumped the pointer 1400 pixels turned
+	// the view 120 degrees.)
+	return GetGameTimeSinceCreation() > 0.75f && Now >= LookQuietUntil && FMath::Abs(Value) < 45.f;
 }
 
 void AGGGolfer::Turn(float Value)

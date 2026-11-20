@@ -105,6 +105,7 @@ Tools/sounds.sh               writes every sound the game makes to WAV and measu
 Tools/hosttest.sh [Level]     two standalone copies of the game: one hosts, one joins by address
 Tools/together.sh [Level]     host a hole in a window on this Mac and print a link that drops a friend's browser into it
                               (two public quick tunnels: Ken runs it, not Claude; GG_LOCAL=1 does it with none, for a test)
+Tools/mousetest.sh            the web build in Chrome: mouse look works, and a single huge pointer jump is ignored
 Tools/webjointest.sh          the web build in Chrome joins a standalone desktop host through Epic's relay; both must
                               log the same swings (needs a Development web build; GG_WEB_OUT names its folder)
 Tools/nettest_workshop.sh     two players in the Workshop: the host builds, tests and solves; both copies compared
@@ -244,7 +245,8 @@ console and read the pass list in the log before guessing.
   and the log line "Picture: saved ..." gives the path), and `-GGPerfAt=<seconds>` measures the frame rate from then.
   A packaged app cannot write outside its own folders, and the engine's own screenshot request writes nothing in one.
 - Mouse look ignores the first three quarters of a second of a hole, a quarter second after a menu, and any single
-  frame over 600 counts (`AGGGolfer::MouseLookSteady`): a window taking hold of the pointer reports its distance
+  frame over 45 of the engine's mouse units, about 500 pixels (`AGGGolfer::MouseLookSteady`; `Tools/mousetest.sh`
+  checks it in Chrome, and found the first limit ten times too loose because it was written in pixels): a window taking hold of the pointer reports its distance
   from the middle as one huge movement, and the packaged game opened looking at the ground.
 - Close the editor when a stretch of work ends (`Tools/play.sh stop`, then the MCP `ExitEditor`). It is configured not
   to throttle in the background, so an idle editor holds three cores and runs the fans for as long as it is open.

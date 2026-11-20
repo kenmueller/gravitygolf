@@ -271,8 +271,14 @@ mirror.
   After You 78, Wait Here 104, Crossed Wires 85. All over the 60 the game budgets for. Hole 1 read 114 in two
   earlier runs and 69 in this one, with nothing changed between them but what else the Mac was doing: take the low
   number.
-- Not re-run on the final code: the rival, and mouse look itself (no test moves a mouse:
-  the guard against the first jump was seen to work only in the packaged app's pictures).
+- **The whole fourteen-hole browser tour on the final build:** every answer sinks, and the Workshop and menus at
+  phone size pass.
+- **Mouse look has a test now** (`Tools/mousetest.sh`, in Chrome): twelve small movements turn the view 54 degrees,
+  one jump of 1400 pixels turns it not at all, eight more small ones turn it another 44. Its first run failed
+  usefully: the limit on a single frame's movement was ten times too loose (written in pixels; the engine's units
+  are about eleven to the pixel), so a jump like the one at launch would still have been obeyed any time after the
+  first three quarters of a second.
+- Not re-run on the final code: the rival.
 - Ken's share link, tried from here: the page, the three isolation headers, and a byte range answered as a range.
 - Not yet in any web build when this was written: hole 13 in the Development build Ken is sharing (it has 13 holes
   and the old finale).
