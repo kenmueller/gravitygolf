@@ -391,6 +391,12 @@ console and read the pass list in the log before guessing.
   drawn twice). `Tools/play.sh` sets the count before every start (`GG_PLAYERS=2` for the co-op tests); anything
   that starts play another way must do the same. I once blamed this on the Mac's background load and was wrong:
   the numbers came straight back with a load average of 27.
+- And sometimes it is the Mac. On 2026-11-19 every hole read 44 to 55 fps for an hour, with 100 ms hitches and
+  "game" at 13 ms where it is usually 4, while macOS analysed photos (`mediaanalysisd` at 150% CPU) and a backup ran.
+  An editor log from hours before the day's changes showed the same figures for the same hole, and with nothing
+  changed the numbers came back (81 fps). So before blaming a change: `ps -axo pcpu,comm -r | head`, grep older logs
+  in `~/Library/Logs/Unreal Engine/GravityGolfEditor/` for `Perf:` lines of the same hole, and compare the new hole
+  with a known one in the same minute. The packaged app (`-GGPerfAt`) is the steadier measure.
 - `r.ScreenPercentage` set from the console stays set for the editor session. Play defaults to about two thirds on
   this display; setting 100 "to restore it" made every later measurement 30% worse until the editor restarted.
 - Megaplants are skeletal meshes that sway. Anything that sways redraws its shadow every frame: 26 pines cost 12 ms
