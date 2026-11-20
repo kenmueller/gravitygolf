@@ -2,6 +2,9 @@
 # Everything that can be checked without hands, in one go. Needs the editor open (Tools/editor.sh) and takes about
 # twenty minutes. Each line is one check; the last line says whether all of them passed.
 #   Tools/testall.sh            (add "web" to also run the browser tests against the last web build)
+# The whole script is one function, called on its last line: the shell reads all of it before running any of it, so
+# editing this file while it runs cannot change or break the run in progress.
+main() {
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 FAILED=""
 check() { # name, command...
@@ -34,3 +37,5 @@ if [ "$1" = "web" ]; then
 fi
 [ -z "$FAILED" ] && echo "ALL PASSED" || echo "FAILED:$FAILED"
 [ -z "$FAILED" ]
+}
+main "$@"

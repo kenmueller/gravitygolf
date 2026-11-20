@@ -175,6 +175,9 @@ mirror.
   12.4 ms in the same run. When the frame time was the GPU time (the morning's runs), those would be about 80 and
   72 frames a second. Not confirmed uncapped. (Found afterwards: the web page measured the display at 60 Hz. The
   Mac had been put on a 60 Hz screen, and that was the cap.)
+- *Process: a rule I wrote down and then broke three times.* "Never edit a shell script while it is running." Each
+  time I was adding a new check to the suite while the suite ran. Writing the rule down did nothing; the scripts
+  are now built so that it cannot matter.
 - *Process, after Ken came back.* I left the editor open and unthrottled when I reported, and it ran his fans for
   three and a half hours. The phone command printed a QR code on a public Wi-Fi where no phone could ever reach the
   Mac; it should have said so, and now does. And I told him to scan the code without ever having checked that
@@ -283,11 +286,11 @@ mirror.
   pressed by the test, and no real controller has been plugged in.
 - **Saved progress in the browser survives a reload.** Hole 1 solved by its real answer in a browser tab, the page
   reloaded, the list of holes then showing "Perfect, 1" and hole 2 unlocked. Until today this was listed as untested.
+- **The full desktop suite on the very last code** (after the mouse limit and the log line): ALL PASSED.
 - **After the mouse limit was corrected**, the last change of the day: the Mac app repackaged (two copies of it host
   and join), the hosting build remade (Epic's scan passes, it boots in Chrome; plan in `Deploy/20261120-024333`),
   and the rival run on holes 11, 13 and 14 at all three skills (it finishes each; Leapfrog on hard in 14 seconds
-  and one swing now that its swing is forgiving). The desktop suite last ran in full one small change earlier (before
-  the limit moved from 600 to 45 and one log line was raised to Display), and passed.
+  and one swing now that its swing is forgiving).
 - Ken's share link, tried from here: the page, the three isolation headers, and a byte range answered as a range.
 - Not yet in any web build when this was written: hole 13 in the Development build Ken is sharing (it has 13 holes
   and the old finale).

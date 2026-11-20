@@ -8,6 +8,9 @@
 # Needs an engine with the web libraries (a source build at ~/UE59; the 5.9 preview's Mac launcher build has none) and
 # the Emscripten SDK 6.0.10 at ~/emsdk. Works in a copy of the project (../gravitygolf-web) so the build against the
 # source engine never touches the binaries the launcher editor uses.
+# The whole script is one function, called on its last line: the shell reads all of it before running any of it, so
+# editing this file while it runs cannot change or break the run in progress.
+main() {
 set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 UE="${UE_ROOT:-$HOME/UE59}"
@@ -64,3 +67,5 @@ OUT="${GG_WEB_OUT:-$WEB/Saved/Web}"
 	-AdditionalCookerOptions="-unattended -nopause -nosplash -nullrhi"
 "$UE/Engine/Binaries/ThirdParty/Python3/Mac/bin/python3" "$UE/Engine/Platforms/Wasm/Build/Tools/deploy/check_stage.py" "$OUT/Wasm"
 echo "Site: $OUT/Wasm    Play locally: $OUT/play-gravitygolf.sh"
+}
+main "$@"

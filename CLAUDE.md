@@ -295,6 +295,10 @@ console and read the pass list in the log before guessing.
 - Menus are laid out by `AGGHUD::DrawMenu`: one column until the rows would be thinner than a finger, then two with
   Back centred beneath. Check any new menu at phone size (`Tools/webtest.sh phone-menus`): the list of holes had
   rows under 3 mm tall once it reached thirteen.
+- The long-running scripts (`testall.sh`, `webtest.sh`, `smoke.sh`, `perf.sh`, `web.sh`) are each one `main` function
+  called on the last line, so the shell has read the whole file before it runs any of it and an edit mid-run cannot
+  touch the run in progress. Write any new long script the same way. (I edited a running script three times in one
+  day, each time after writing the next line down.)
 - Never edit a shell script while it is running: `sh` reads the file as it goes, and a script changed under it fails
   with a syntax error at whatever line it had reached (`Tools/webtest.sh` did, after passing).
 - sh: `[ a ] && [ b ] || [ c ] && [ d ]` is `((a && b) || c) && d`. It made a test report three failures the game

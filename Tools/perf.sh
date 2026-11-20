@@ -2,6 +2,9 @@
 # Measures frame rate in each hole from the tee, inside the running editor (Play-In-Editor).
 #   Tools/perf.sh [Level ...]      default: every hole
 # Editor numbers are a floor, not the shipping figure: the editor adds overhead and renders into a panel.
+# The whole script is one function, called on its last line: the shell reads all of it before running any of it, so
+# editing this file while it runs cannot change or break the run in progress.
+main() {
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 LOG="$HOME/Library/Logs/Unreal Engine/GravityGolfEditor/GravityGolf.log"
 LEVELS="${*:-Terraces SaltMirror Canyon Lantern Returning Brief Colonnade Stones Glass Periscope Leapfrog AfterYou WaitHere Wires}"
@@ -21,3 +24,5 @@ for LEVEL in $LEVELS; do
 	echo "${RESULT:-$LEVEL: no result}"
 done
 "$ROOT/Tools/play.sh" stop
+}
+main "$@"

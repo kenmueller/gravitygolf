@@ -2,6 +2,9 @@
 # End-to-end check inside the running editor: opens each hole, presses Play, and has the game play its own
 # recorded solution through the real player code. Prints PASS or FAIL per hole.
 #   Tools/smoke.sh [Level ...]      default: every hole
+# The whole script is one function, called on its last line: the shell reads all of it before running any of it, so
+# editing this file while it runs cannot change or break the run in progress.
+main() {
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 LOG="$HOME/Library/Logs/Unreal Engine/GravityGolfEditor/GravityGolf.log"
 LEVELS="${*:-Terraces SaltMirror Canyon Lantern Returning Brief Colonnade Stones Glass Periscope Leapfrog AfterYou WaitHere Wires}"
@@ -30,3 +33,5 @@ for LEVEL in $LEVELS; do
 done
 "$ROOT/Tools/play.sh" stop
 exit $STATUS
+}
+main "$@"

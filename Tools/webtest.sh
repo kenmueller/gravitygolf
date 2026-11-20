@@ -4,6 +4,9 @@
 #   default: play phone; tour runs every hole; phone-menus shows the menus at phone size; phone-machines works the
 #   GRAB, PLACE and TURN buttons by touch on hole 12 and walks a carried mirror into a shut grille
 # Needs a packaged build (Tools/web.sh) and Google Chrome. Results land in ../gravitygolf-web/Saved/WebTest/<name>.
+# The whole script is one function, called on its last line: the shell reads all of it before running any of it, so
+# editing this file while it runs cannot change or break the run in progress.
+main() {
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 UE="${UE_ROOT:-$HOME/UE59}"
 WEB="${GG_WEB_COPY:-$ROOT/../gravitygolf-web}"
@@ -32,3 +35,5 @@ for NAME in $NAMES; do
 	echo
 done
 exit $STATUS
+}
+main "$@"
