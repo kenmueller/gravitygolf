@@ -115,6 +115,25 @@ def hoop(center, radius, tilt, material, label, thick=1.0, asset=FINE):
                   folder="Orrery/Orbits", cast_shadow=False, solid=False)
 
 
+def moving(actor, spin=None):
+    """Mark a piece of the sky as one that moves. It leaves the lighting scene (what moves every frame would be
+    captured again every frame), and with a spin ("Z", degrees a second) the game turns it: see AGGCourse::FindSpinners."""
+    component = actor.static_mesh_component
+    component.set_mobility(unreal.ComponentMobility.MOVABLE)
+    for flag in ("affect_dynamic_indirect_lighting", "affect_distance_field_lighting", "visible_in_ray_tracing"):
+        component.set_editor_property(flag, False)
+    if spin:
+        actor.tags = [f"GGSpin:{spin[0]}:{spin[1]}"]
+    return actor
+
+
+def ride(actor, carrier):
+    """Fix one moving piece to another, where it stands now: a planet to the hoop of its orbit."""
+    keep = unreal.AttachmentRule.KEEP_WORLD
+    moving(actor).attach_to_actor(carrier, "", keep, keep, keep, False)
+    return actor
+
+
 def toward(azimuth, elevation):
     a, e = math.radians(azimuth), math.radians(elevation)
     return unreal.Vector(math.cos(e) * math.cos(a), math.cos(e) * math.sin(a), math.sin(e))
@@ -158,30 +177,34 @@ def orrery(course, m, lamp):
     component.set_editor_property("source_radius", 200.0)
     component.set_editor_property("cast_shadows", True)
     # Three thin hoops close about the lamp, as an armillary: they are what says "instrument" when you look up.
-    for radius, tilt in ((900, (0, 0, 0)), (1050, (0, 20, 62)), (1200, (38, 110, -20))):
-        hoop(lamp, radius, tilt, m["brass"], "Armillary", thick=4.0, asset=HOOP)
+    # (They turn, each about a line across itself, slowly: the instrument is running.)
+    for radius, tilt, rate in ((900, (0, 0, 0), 2.2), (1050, (0, 20, 62), -1.4), (1200, (38, 110, -20), 0.9)):
+        moving(hoop(lamp, radius, tilt, m["brass"], "Armillary", thick=4.0, asset=HOOP), spin=("X", rate))
 
     # The orbits, near to far: radius, where in the sky its planet stands (bearing, height, and the hoop's lean), the
     # planet's look and its radius. Each planet is seen above the low walls from everywhere in the court.
+    # The last number is how fast it goes round, in degrees a second: the nearest (once round in 24 minutes) can be
+    # seen to move, the giant takes eight hours and in a quarter of an hour has barely left its place over the line
+    # to the cup.
     orbits = [
-        (9000, (100, 22, 50), "pale", 420),
-        (21000, (-75, 16, -15), "red", 1300),
-        (38000, (150, 30, 35), "green", 2100),
-        (56000, (195, 20, -20), "blue", 5200),
-        (88000, (17, 7.5, 12), "giant", 9000),
+        (9000, (100, 22, 50), "pale", 420, 0.25),
+        (21000, (-75, 16, -15), "red", 1300, 0.12),
+        (38000, (150, 30, 35), "green", 2100, 0.06),
+        (56000, (195, 20, -20), "blue", 5200, 0.03),
+        (88000, (17, 7.5, 12), "giant", 9000, 0.012),
     ]
-    for index, (radius, (azimuth, elevation, lean), look, size) in enumerate(orbits):
+    for index, (radius, (azimuth, elevation, lean), look, size, rate) in enumerate(orbits):
         turn = orbit_through(azimuth, elevation, lean)
-        hoop(lamp, radius, turn, m["farOrbit" if radius > 30000 else "orbit"], f"Orbit{index + 1}")
+        orbit = moving(hoop(lamp, radius, turn, m["farOrbit" if radius > 30000 else "orbit"], f"Orbit{index + 1}"), spin=("Z", rate))
         out = toward(azimuth, elevation)
         spot = (lamp[0] + out.x * radius, lamp[1] + out.y * radius, lamp[2] + out.z * radius)
-        c.mesh(c.SPHERE, spot, (size * 2, size * 2, size * 2), rotation=(rng.uniform(-25, 25), rng.uniform(0, 360), rng.uniform(-25, 25)),
-               material=m[look], label=f"Planet_{look}", folder="Orrery/Planets", cast_shadow=False, solid=False)
+        ride(c.mesh(c.SPHERE, spot, (size * 2, size * 2, size * 2), rotation=(rng.uniform(-25, 25), rng.uniform(0, 360), rng.uniform(-25, 25)),
+                    material=m[look], label=f"Planet_{look}", folder="Orrery/Planets", cast_shadow=False, solid=False), orbit)
         if look == "giant":
             # Its own rings: fine hoops close about it, tipped toward the court.
             for ring in (1.4, 1.5, 1.62, 1.7, 1.86, 1.95, 2.1):
-                c.mesh(FINE, spot, (size * ring, size * ring, size * ring * 2.0), rotation=(24, 35, 10), material=m["farOrbit"],
-                       label="GiantRing", folder="Orrery/Planets", cast_shadow=False, solid=False)
+                ride(c.mesh(FINE, spot, (size * ring, size * ring, size * ring * 2.0), rotation=(24, 35, 10), material=m["farOrbit"],
+                            label="GiantRing", folder="Orrery/Planets", cast_shadow=False, solid=False), orbit)
 
 
 c.fresh_level(LEVEL)

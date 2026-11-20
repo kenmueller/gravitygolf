@@ -7,16 +7,29 @@
 main() {
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 FAILED=""
+alive() { ps -axo comm | grep -q "MacOS/UnrealEditor$"; }
 check() { # name, command...
 	NAME="$1"
 	shift
 	if OUT="$("$@" 2>&1)"; then
 		printf 'ok    %s\n' "$NAME"
-	else
-		printf 'FAIL  %s\n%s\n' "$NAME" "$(echo "$OUT" | tail -5)"
-		FAILED="$FAILED $NAME"
+		return
 	fi
+	# The engine preview now and then dies as play starts (an assertion in a lock, twice in sixty starts on the day
+	# this was written). That is not this check failing: bring the editor back and run the check once more.
+	if ! alive; then
+		printf '      (the editor crashed during "%s": restarting it and trying once more)\n' "$NAME"
+		CRASHES=$((CRASHES + 1))
+		"$ROOT/Tools/editor.sh" >/dev/null 2>&1
+		if OUT="$("$@" 2>&1)"; then
+			printf 'ok    %s\n' "$NAME"
+			return
+		fi
+	fi
+	printf 'FAIL  %s\n%s\n' "$NAME" "$(echo "$OUT" | tail -5)"
+	FAILED="$FAILED $NAME"
 }
+CRASHES=0
 check "sim tests" "$ROOT/Tests/Sim/run.sh"
 for COURSE in terraces saltmirror canyon lantern returning brief colonnade stones glass periscope leapfrog afteryou waithere handover wires; do
 	check "proof: $COURSE" "$ROOT/Tests/Sim/solve.sh" "$COURSE"
@@ -35,6 +48,7 @@ if [ "$1" = "web" ]; then
 	check "a browser joins a desktop host" "$ROOT/Tools/webjointest.sh"
 	check "a phone-size browser joins a desktop host, by touch" env GG_JOIN_PHONE=1 "$ROOT/Tools/webjointest.sh"
 fi
+[ $CRASHES -gt 0 ] && echo "(the editor crashed $CRASHES time(s) and was restarted)"
 [ -z "$FAILED" ] && echo "ALL PASSED" || echo "FAILED:$FAILED"
 [ -z "$FAILED" ]
 }

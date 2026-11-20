@@ -266,6 +266,15 @@ private:
 	TArray<FDrawnBox> DrawnBoxes;
 	bool bDrawn = false;
 	bool bPlantsSpawned = false;
+	/** Scenery that turns. A level tags an actor "GGSpin:<axis>:<degrees a second>" (the axis is the actor's own X,
+	 *  Y or Z) and the course turns it, with whatever is attached to it: a planet rides the hoop of its orbit. */
+	struct FSpinner
+	{
+		TWeakObjectPtr<AActor> Actor;
+		FRotator Rate = FRotator::ZeroRotator;
+	};
+	TArray<FSpinner> Spinners;
+	void FindSpinners();
 	void BuildDrawn();
 	TArray<FGGSolution> Played;
 	int32 PlayedCount = 0;

@@ -100,6 +100,28 @@ TAutoConsoleVariable<int32> CVarPlantStandIns(TEXT("gg.Plants.StandIns"), 0,
 	TEXT("1 spawns the simple stand-in plants even where the scanned ones could be drawn (to preview the web look)"));
 }
 
+void AGGCourse::FindSpinners()
+{
+	Spinners.Reset();
+	for (TActorIterator<AActor> It(GetWorld()); It; ++It)
+	{
+		for (const FName& Tag : It->Tags)
+		{
+			TArray<FString> Parts;
+			Tag.ToString().ParseIntoArray(Parts, TEXT(":"));
+			if (Parts.Num() == 3 && Parts[0] == TEXT("GGSpin"))
+			{
+				const double Rate = FCString::Atod(*Parts[2]);
+				FSpinner Spinner;
+				Spinner.Actor = *It;
+				// (A rotator is pitch, yaw, roll: about the actor's own Y, Z and X.)
+				Spinner.Rate = Parts[1] == TEXT("X") ? FRotator(0.0, 0.0, Rate) : Parts[1] == TEXT("Y") ? FRotator(Rate, 0.0, 0.0) : FRotator(0.0, Rate, 0.0);
+				Spinners.Add(Spinner);
+			}
+		}
+	}
+}
+
 void AGGCourse::SpawnPlants(const FString& LevelName)
 {
 	FString Text;
@@ -448,6 +470,7 @@ bool AGGCourse::LoadText(const FString& Text, const FString& CourseId)
 	{
 		bPlantsSpawned = true;
 		SpawnPlants(UGameplayStatics::GetCurrentLevelName(this, true));
+		FindSpinners();
 		// The air of the place, once per level.
 		FString Bed;
 		Json->TryGetStringField(TEXT("ambience"), Bed);
@@ -1656,6 +1679,13 @@ void AGGCourse::Tick(float DeltaSeconds)
 		if (NoticeTime <= 0.0 && CurrentPhase == EGGPhase::Ready)
 		{
 			Status.Reset();
+		}
+	}
+	for (const FSpinner& Spinner : Spinners)
+	{
+		if (AActor* Actor = Spinner.Actor.Get())
+		{
+			Actor->AddActorLocalRotation(Spinner.Rate * DeltaSeconds);
 		}
 	}
 

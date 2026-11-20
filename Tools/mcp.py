@@ -8,7 +8,10 @@
 
 import json
 import os
+import subprocess
 import sys
+import threading
+import time
 import urllib.request
 
 URL = os.environ.get("UE_MCP_URL", "http://127.0.0.1:8000/mcp")
@@ -70,7 +73,32 @@ def show(result):
         sys.exit(1)
 
 
+def editor_running():
+    out = subprocess.run(["ps", "-axo", "comm"], capture_output=True, text=True).stdout
+    return any(line.rstrip().endswith("MacOS/UnrealEditor") for line in out.splitlines())
+
+
+def watch_editor():
+    """Give up at once if the editor dies. A crashed editor leaves its port open (its crash-report window holds it),
+    so a call in flight would otherwise wait out the whole ten-minute timeout, and so would every call after it."""
+    if os.environ.get("UE_MCP_URL") or not editor_running():
+        if not os.environ.get("UE_MCP_URL"):
+            sys.exit("the editor is not running (start it with Tools/editor.sh)")
+        return
+
+    def loop():
+        while True:
+            time.sleep(3)
+            if not editor_running():
+                sys.stderr.write("the editor has gone (crashed?): giving up on this call\n")
+                sys.stderr.flush()
+                os._exit(3)
+
+    threading.Thread(target=loop, daemon=True).start()
+
+
 def main():
+    watch_editor()
     init, session = connect()
     command = sys.argv[1] if len(sys.argv) > 1 else "info"
     if command == "info":

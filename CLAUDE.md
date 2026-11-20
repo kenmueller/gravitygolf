@@ -305,6 +305,13 @@ console and read the pass list in the log before guessing.
   click tiles by pixel (`workshop` and `workshop-phone` in `Build/Wasm/fixtures.json`): tile width is
   `min(84 S, (W - 56 S) / count - 6 S)` with `S = H / 1080` (on touch, `max(84 S, 0.135 H)` in place of `84 S`), a gap
   of `6 S`, the row centred. `Tools/workshoptest.sh` taps across until the sand tile answers instead.
+- The 5.9 preview's editor sometimes dies as play starts: `Assertion failed: Err == 0 [PThreadsSharedMutex.h:32]
+  pthread_rwlock_init failed with error: 16`, on the first frames of a play session, inside the engine (seen twice
+  in about sixty starts in one day, once seconds after the editor opened and once in a warm one). Nothing of the
+  game's is on the stack. `Tools/mcp.py` now gives up the moment the editor process is gone (a crashed editor's
+  port stays open behind its crash-report window, and every call used to wait ten minutes), and `Tools/testall.sh`
+  restarts the editor and repeats the check it died in, saying so at the end. After such a crash run
+  `Tools/editor.sh` before anything else.
 - `Tools/editor.sh` waits until the editor's log has been still for six seconds, not only until it answers. A fresh
   editor answers, then loads its first map: commands sent in that window were queued for twenty seconds or lost
   (a whole test ran against a game that did not exist yet), and play started in it crashed the editor once
@@ -361,6 +368,11 @@ console and read the pass list in the log before guessing.
   An orbit is the `SM_HoopFine` torus scaled up; its tube must stay about two pixels wide (tube radius near 0.0008
   of the hoop's), or it reads as a neon cable. Each planet is placed by bearing and height from the lamp
   (`orbit_through`), then its hoop is turned to pass through it.
+- Scenery that turns: a level script tags an actor `GGSpin:<X|Y|Z>:<degrees a second>` and `AGGCourse` turns it about
+  that axis of its own, with whatever is attached to it (`moving()` and `ride()` in `Tools/levels/handover.py`: a
+  planet is attached to the hoop of its orbit and the hoop is spun about its own axis, which shows no motion in
+  the hoop and carries the planet round). Such actors must be movable and out of the lighting scene (the helper
+  sets the three flags), like anything else that moves every frame.
 - A level script can serve several holes: `Tools/levels/returning.py` runs `canyon.py` with its own settings, and
   `stones.py` and `periscope.py` run `saltmirror.py`.
 - A sun at 50 degrees throws a 15 m wall's shadow 12 m: across a whole lane. Check the picture from the tee before

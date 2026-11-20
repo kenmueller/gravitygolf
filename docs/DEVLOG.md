@@ -116,6 +116,8 @@ mirror.
   its planet (shaded from one distant sun, banded, a ringed giant standing over the line to the cup). The floor is
   polished dark stone and gives the gates' light back. New generated assets: a hoop, a fine hoop, a flat band and
   a disc (`Tools/build_meshes.py`), and a planet material (`Tools/build_materials.py`), all unlit or cheap.
+  **It turns:** each planet rides its orbit (the nearest goes round in 24 minutes, the giant in eight hours) and
+  the lamp's three hoops tumble slowly. A level can now tag any actor to turn (`GGSpin`, see CLAUDE.md).
 - **The Workshop can build this hole.** I rebuilt it from a hole code with the Workshop's pieces, played it there
   under the game's rules (all seven carries, then the putt) and put the saved design through the standalone proof:
   PASS, seven carries.
@@ -132,10 +134,9 @@ mirror.
   layout, which was luck: the four-room winner (eleven carries) is the same idea said twice and I did not build it.
 - *The Orrery's look, honestly.* The best view is straight up at the lamp. From the tee the giant over the grille
   is a strong picture. Weak: the dial beyond the walls is a black band at the horizon with a few gold lines; the
-  planets are shader spheres and look it up close to the bloom; nothing moves, and an orrery that does not turn
-  is a missed chance (moving hoops must stay out of the lighting or they cost 6 to 14 ms; they are unlit, so this
-  is possible, and not done). The first version had orbits as fat as neon tubes and planets blown out to pastel;
-  both were fixed by looking at the pictures, not by reasoning.
+  planets are shader spheres and look it up close to the bloom. The first version had orbits as fat as neon tubes,
+  planets blown out to pastel, and nothing moving; the first two were fixed by looking at the pictures, the third
+  by noticing that an orrery which does not turn is a model of one.
 - *The decision to make starts and weight plates plinths without asking.* The alternative was a rule ("a hole with
   rails needs a plinth under every machine and on every plate") checked when the test starts. That is three more
   things to place and a message that reads like a compiler error. What would make my choice wrong: a designer who
