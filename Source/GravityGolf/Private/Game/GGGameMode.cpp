@@ -371,7 +371,8 @@ void AGGGameMode::GGWhere()
 	{
 		const FVector At = Golfer->GetActorLocation();
 		const FRotator Look = PC->GetControlRotation().GetNormalized();
-		UE_LOG(LogGGMode, Log, TEXT("Where: at %.0f,%.0f,%.0f yaw %.1f pitch %.1f phase %d swings %d carrying %d charging %d touch %d"),
+		// (Display, so that a browser's console shows it: the mouse-look test reads the facing from this line.)
+		UE_LOG(LogGGMode, Display, TEXT("Where: at %.0f,%.0f,%.0f yaw %.1f pitch %.1f phase %d swings %d carrying %d charging %d touch %d"),
 			At.X, At.Y, At.Z, Look.Yaw, Look.Pitch, static_cast<int32>(Course->Phase()), Course->Strokes(), Golfer->IsCarrying() ? 1 : 0,
 			Golfer->IsCharging() ? 1 : 0, Golfer->UsingTouch() ? 1 : 0);
 	}

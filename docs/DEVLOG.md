@@ -265,7 +265,13 @@ mirror.
   Shipping one passes Epic's release scan and boots to the title in Chrome, with its upload plan beside it
   (`../gravitygolf-web/Saved/Wasm/Deploy/20261120-020644`). The whole fourteen-hole tour last ran one build
   earlier, before the mouse and spectator fixes, and passed.
-- Not re-run on the final code: frame rates in the editor, the rival, and mouse look itself (no test moves a mouse:
+- **Frame rates for every hole, from the packaged app** (the final code, 1920x1080, from the tee, eight seconds
+  starting fourteen seconds in): The Terraces 69, Salt Mirror 99, The Narrows 103, Lantern Court 89, The Long Way
+  Round 94, Second Wind 96, Dead Weight 86, Stepping Stones 95, The Looking Glass 116, Periscope 116, Leapfrog 83,
+  After You 78, Wait Here 104, Crossed Wires 85. All over the 60 the game budgets for. Hole 1 read 114 in two
+  earlier runs and 69 in this one, with nothing changed between them but what else the Mac was doing: take the low
+  number.
+- Not re-run on the final code: the rival, and mouse look itself (no test moves a mouse:
   the guard against the first jump was seen to work only in the packaged app's pictures).
 - Ken's share link, tried from here: the page, the three isolation headers, and a byte range answered as a range.
 - Not yet in any web build when this was written: hole 13 in the Development build Ken is sharing (it has 13 holes
