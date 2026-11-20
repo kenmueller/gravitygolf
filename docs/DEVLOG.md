@@ -278,6 +278,9 @@ mirror.
   usefully: the limit on a single frame's movement was ten times too loose (written in pixels; the engine's units
   are about eleven to the pixel), so a jump like the one at launch would still have been obeyed any time after the
   first three quarters of a second.
+- **A gamepad works in the browser** (`Tools/padtest.sh`, Chrome with the harness's synthetic standard gamepad): the
+  left stick walked the player ten metres forward, the right stick turned the view 146 degrees. Buttons were not
+  pressed by the test, and no real controller has been plugged in.
 - **Saved progress in the browser survives a reload.** Hole 1 solved by its real answer in a browser tab, the page
   reloaded, the list of holes then showing "Perfect, 1" and hole 2 unlocked. Until today this was listed as untested.
 - **After the mouse limit was corrected**, the last change of the day: the Mac app repackaged (two copies of it host

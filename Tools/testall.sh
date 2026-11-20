@@ -28,6 +28,7 @@ check "host and join, two copies of the game" "$ROOT/Tools/hosttest.sh"
 if [ "$1" = "web" ]; then
 	check "browser: every hole, the Workshop, play, phone" "$ROOT/Tools/webtest.sh" tour workshop workshop-phone play phone phone-menus phone-machines web-menus
 	check "mouse look, and the pointer's first jump ignored" "$ROOT/Tools/mousetest.sh"
+	check "a gamepad walks and turns" "$ROOT/Tools/padtest.sh"
 	check "a browser joins a desktop host" "$ROOT/Tools/webjointest.sh"
 	check "a phone-size browser joins a desktop host, by touch" env GG_JOIN_PHONE=1 "$ROOT/Tools/webjointest.sh"
 fi
